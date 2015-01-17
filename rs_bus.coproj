@@ -4,12 +4,15 @@
     <Device manufacturerId="9" manufacturerName="ST" chipId="313" chipName="STM32F103RE" boardId="" boardName=""/>
     <BuildOption>
       <Compile>
-        <Option name="OptimizationLevel" value="0"/>
+        <Option name="OptimizationLevel" value="4"/>
         <Option name="UseFPU" value="0"/>
         <Option name="UserEditCompiler" value=""/>
         <Option name="SupportCPlusplus" value="1"/>
         <Includepaths>
           <Includepath path="."/>
+          <Includepath path="freertos"/>
+          <Includepath path="utils"/>
+          <Includepath path="frames"/>
         </Includepaths>
         <DefinedSymbols>
           <Define name="STM32F103RE"/>
@@ -22,11 +25,11 @@
       <Link useDefault="0">
         <Option name="DiscardUnusedSection" value="0"/>
         <Option name="UserEditLinkder" value=""/>
-        <Option name="UseMemoryLayout" value="1"/>
+        <Option name="UseMemoryLayout" value="0"/>
         <Option name="nostartfiles" value="0"/>
         <Option name="LTO" value="0"/>
         <Option name="IsNewStartupCode" value="1"/>
-        <Option name="Library" value="Not use C Library"/>
+        <Option name="Library" value="Use nano C Library"/>
         <Option name="UserEditLinker" value="-lstdc++; "/>
         <LinkedLibraries/>
         <MemoryAreas debugInFlashNotRAM="1">
@@ -35,7 +38,7 @@
           <Memory name="IROM2" type="ReadOnly" size="" startValue=""/>
           <Memory name="IRAM2" type="ReadWrite" size="" startValue=""/>
         </MemoryAreas>
-        <LocateLinkFile path="../../configuration/programdata/rs_bus/arm-gcc-link.ld" type="0"/>
+        <LocateLinkFile path="./arm-gcc-link.ld" type="0"/>
       </Link>
       <Output>
         <Option name="OutputFileType" value="0"/>
@@ -52,8 +55,8 @@
     <DebugOption>
       <Option name="org.coocox.codebugger.gdbjtag.core.adapter" value="ST-Link"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.debugMode" value="SWD"/>
-      <Option name="org.coocox.codebugger.gdbjtag.core.clockDiv" value="1M"/>
-      <Option name="org.coocox.codebugger.gdbjtag.corerunToMain" value="1"/>
+      <Option name="org.coocox.codebugger.gdbjtag.core.clockDiv" value="2M"/>
+      <Option name="org.coocox.codebugger.gdbjtag.corerunToMain" value="0"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.jlinkgdbserver" value=""/>
       <Option name="org.coocox.codebugger.gdbjtag.core.userDefineGDBScript" value=""/>
       <Option name="org.coocox.codebugger.gdbjtag.core.targetEndianess" value="0"/>
@@ -71,6 +74,7 @@
     <ExcludeFile/>
   </Target>
   <Components path="./">
+    <Component id="30" name="C Library" path="" type="2"/>
     <Component id="50" name="CMSIS core" path="" type="2"/>
     <Component id="440" name="RCC" path="" type="2"/>
     <Component id="444" name="GPIO" path="" type="2"/>
@@ -80,28 +84,71 @@
     <Component id="467" name="MISC" path="" type="2"/>
   </Components>
   <Files>
-    <File name="cmsis" path="" type="2"/>
-    <File name="stm_lib" path="" type="2"/>
-    <File name="cmsis_boot/system_stm32f10x.c" path="cmsis_boot/system_stm32f10x.c" type="1"/>
-    <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
-    <File name="stm_lib/inc/stm32f10x_dma.h" path="stm_lib/inc/stm32f10x_dma.h" type="1"/>
-    <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
-    <File name="cmsis/core_cm3.h" path="cmsis/core_cm3.h" type="1"/>
-    <File name="stm_lib/inc/stm32f10x_rcc.h" path="stm_lib/inc/stm32f10x_rcc.h" type="1"/>
+    <File name="Frames/Frame.cpp" path="Frames/Frame.cpp" type="1"/>
+    <File name="FreeRTOS/include/FreeRTOSConfig.h" path="FreeRTOS/include/FreeRTOSConfig.h" type="1"/>
+    <File name="FreeRTOS/src/event_groups.c" path="FreeRTOS/src/event_groups.c" type="1"/>
+    <File name="Frames/PoolNode.cpp" path="Frames/PoolNode.cpp" type="1"/>
     <File name="cmsis_boot" path="" type="2"/>
-    <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
-    <File name="stm_lib/src/stm32f10x_usart.c" path="stm_lib/src/stm32f10x_usart.c" type="1"/>
+    <File name="utils/debug.h" path="utils/debug.h" type="1"/>
+    <File name="FreeRTOS/src/queue.c" path="FreeRTOS/src/queue.c" type="1"/>
+    <File name="Frames" path="" type="2"/>
+    <File name="Frames/FramePool.h" path="Frames/FramePool.h" type="1"/>
     <File name="cmsis_boot/startup" path="" type="2"/>
     <File name="cmsis/core_cmFunc.h" path="cmsis/core_cmFunc.h" type="1"/>
     <File name="cmsis_boot/startup/startup_stm32f10x_hd.c" path="cmsis_boot/startup/startup_stm32f10x_hd.c" type="1"/>
-    <File name="stm_lib/src/stm32f10x_gpio.c" path="stm_lib/src/stm32f10x_gpio.c" type="1"/>
-    <File name="stm_lib/inc" path="" type="2"/>
-    <File name="stm_lib/inc/stm32f10x_gpio.h" path="stm_lib/inc/stm32f10x_gpio.h" type="1"/>
+    <File name="FreeRTOS/include/semphr.h" path="FreeRTOS/include/semphr.h" type="1"/>
+    <File name="stm_lib/src/misc.c" path="stm_lib/src/misc.c" type="1"/>
     <File name="cmsis_boot/stm32f10x.h" path="cmsis_boot/stm32f10x.h" type="1"/>
-    <File name="stm_lib/inc/stm32f10x_usart.h" path="stm_lib/inc/stm32f10x_usart.h" type="1"/>
     <File name="cmsis_boot/stm32f10x_conf.h" path="cmsis_boot/stm32f10x_conf.h" type="1"/>
-    <File name="main.c" path="main.c" type="1"/>
+    <File name="FreeRTOS/src/heap_2.c" path="FreeRTOS/src/heap_2.c" type="1"/>
+    <File name="syscalls/syscalls.c" path="syscalls/syscalls.c" type="1"/>
+    <File name="FreeRTOS/src/list.c" path="FreeRTOS/src/list.c" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_dma.h" path="stm_lib/inc/stm32f10x_dma.h" type="1"/>
+    <File name="FreeRTOS/src" path="" type="2"/>
+    <File name="Frames/FramePool.cpp" path="Frames/FramePool.cpp" type="1"/>
+    <File name="FreeRTOS/include/portmacro.h" path="FreeRTOS/include/portmacro.h" type="1"/>
+    <File name="stm_lib/src/stm32f10x_usart.c" path="stm_lib/src/stm32f10x_usart.c" type="1"/>
+    <File name="stm_lib/src/stm32f10x_gpio.c" path="stm_lib/src/stm32f10x_gpio.c" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_gpio.h" path="stm_lib/inc/stm32f10x_gpio.h" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_usart.h" path="stm_lib/inc/stm32f10x_usart.h" type="1"/>
+    <File name="FreeRTOS/include/mpu_wrappers.h" path="FreeRTOS/include/mpu_wrappers.h" type="1"/>
+    <File name="cmsis_boot/system_stm32f10x.c" path="cmsis_boot/system_stm32f10x.c" type="1"/>
+    <File name="stm_lib/inc/misc.h" path="stm_lib/inc/misc.h" type="1"/>
+    <File name="FreeRTOS/include/StackMacros.h" path="FreeRTOS/include/StackMacros.h" type="1"/>
+    <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
+    <File name="FreeRTOS/src/tasks.c" path="FreeRTOS/src/tasks.c" type="1"/>
+    <File name="FreeRTOS/include/task.h" path="FreeRTOS/include/task.h" type="1"/>
+    <File name="FreeRTOS/include/queue.h" path="FreeRTOS/include/queue.h" type="1"/>
+    <File name="cmsis/core_cm3.h" path="cmsis/core_cm3.h" type="1"/>
+    <File name="FreeRTOS/include/event_groups.h" path="FreeRTOS/include/event_groups.h" type="1"/>
+    <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
+    <File name="FreeRTOS/include/port.c" path="FreeRTOS/include/port.c" type="1"/>
+    <File name="FreeRTOS/include/croutine.h" path="FreeRTOS/include/croutine.h" type="1"/>
+    <File name="FreeRTOS/include/list.h" path="FreeRTOS/include/list.h" type="1"/>
+    <File name="FreeRTOS/include/projdefs.h" path="FreeRTOS/include/projdefs.h" type="1"/>
+    <File name="Frames/Buffer.h" path="Frames/Buffer.h" type="1"/>
+    <File name="FreeRTOS/include/portable.h" path="FreeRTOS/include/portable.h" type="1"/>
+    <File name="Frames/Buffer.cpp" path="Frames/Buffer.cpp" type="1"/>
+    <File name="FreeRTOS/include/timers.h" path="FreeRTOS/include/timers.h" type="1"/>
+    <File name="FreeRTOS/include" path="" type="2"/>
+    <File name="Frames/PoolNode.h" path="Frames/PoolNode.h" type="1"/>
+    <File name="FreeRTOS/src/croutine.c" path="FreeRTOS/src/croutine.c" type="1"/>
     <File name="stm_lib/src/stm32f10x_dma.c" path="stm_lib/src/stm32f10x_dma.c" type="1"/>
     <File name="stm_lib/src" path="" type="2"/>
+    <File name="cmsis" path="" type="2"/>
+    <File name="utils/Crc16.cpp" path="utils/Crc16.cpp" type="1"/>
+    <File name="utils/debug.c" path="utils/debug.c" type="1"/>
+    <File name="stm_lib" path="" type="2"/>
+    <File name="Frames/Frame.h" path="Frames/Frame.h" type="1"/>
+    <File name="FreeRTOS/include/FreeRTOS.h" path="FreeRTOS/include/FreeRTOS.h" type="1"/>
+    <File name="utils" path="" type="2"/>
+    <File name="main.cpp" path="main.cpp" type="1"/>
+    <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
+    <File name="utils/Crc16.h" path="utils/Crc16.h" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_rcc.h" path="stm_lib/inc/stm32f10x_rcc.h" type="1"/>
+    <File name="syscalls" path="" type="2"/>
+    <File name="stm_lib/inc" path="" type="2"/>
+    <File name="FreeRTOS" path="" type="2"/>
+    <File name="FreeRTOS/src/timers.c" path="FreeRTOS/src/timers.c" type="1"/>
   </Files>
 </Project>

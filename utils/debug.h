@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "stm32f10x.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define DEBUG
 #define DEBUG_ASSERT
 #define DEBUG_PRINTF
@@ -52,10 +57,11 @@
 #define pin7_off		GPIOB->BRR = GPIO_Pin_7
 
 
-	extern void assert_failed(uint8_t* file, uint32_t line);
-	void Debug_Init();
+extern void assert_failed(uint8_t* file, uint32_t line);
+void Debug_Init();
 
-
-
+#ifdef __cplusplus
+}
+#endif
 
 
