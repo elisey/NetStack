@@ -9,6 +9,7 @@ public:
 	PoolNode(size_t _bufferOffset);
 
 	void alloc();
+	bool allocFromIsr();
 	void free();
 	void clone(PoolNode &node);
 

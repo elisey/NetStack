@@ -12,6 +12,7 @@ class FramePool
 {
 public:
 	int takeFreeFrameIndex();
+	int takeFreeFrameIndexFromISR();
 	uint8_t* getMemoryPtrByMemoryIndex(int memoryIndex);
 	void releaseFrame(int memoryIndex);
 

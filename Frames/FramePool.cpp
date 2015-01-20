@@ -22,6 +22,17 @@ int FramePool::takeFreeFrameIndex()
 	return freeFrameIndex;
 }
 
+int FramePool::takeFreeFrameIndexFromISR()
+{
+	BaseType_t result;
+	int freeFrameIndex;
+	result = xQueueReceiveFromISR(freeFramesQueue, &freeFrameIndex, NULL);
+	if (result != pdPASS)	{
+		return (-1);
+	}
+	return freeFrameIndex;
+}
+
 uint8_t* FramePool::getMemoryPtrByMemoryIndex(int memoryIndex)
 {
 	if (memoryIndex < 0)	{
