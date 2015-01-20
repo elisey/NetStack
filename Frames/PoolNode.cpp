@@ -41,8 +41,11 @@ void PoolNode::clone(PoolNode &node)
 {
 	FramePool &pool = FramePool::instance();
 
+	size_t newLength = node.buffer.getLenght() + node.bufferOffset - bufferOffset;
+	buffer.setLenght(newLength);
+
 	memoryIndex = node.memoryIndex;
-	node.memoryIndex = 0;
+	node.memoryIndex = -1;
 	node.buffer.setDataPtr(NULL);
 
 	uint8_t *ptrData = pool.getMemoryPtrByMemoryIndex(memoryIndex);
