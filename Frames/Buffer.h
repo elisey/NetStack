@@ -29,6 +29,10 @@ public:
 	{
 		ptrData = _ptrData;
 	}
+	uint8_t* getDataPtr()
+	{
+		return ptrData;
+	}
 
 private:
 	uint8_t *ptrData;
