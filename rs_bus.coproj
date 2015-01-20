@@ -98,6 +98,7 @@
     <File name="cmsis_boot/startup/startup_stm32f10x_hd.c" path="cmsis_boot/startup/startup_stm32f10x_hd.c" type="1"/>
     <File name="stm_lib/src/misc.c" path="stm_lib/src/misc.c" type="1"/>
     <File name="cmsis_boot/stm32f10x.h" path="cmsis_boot/stm32f10x.h" type="1"/>
+    <File name="channel_UART.h" path="channel_UART.h" type="1"/>
     <File name="cmsis_boot/stm32f10x_conf.h" path="cmsis_boot/stm32f10x_conf.h" type="1"/>
     <File name="FreeRTOS/src/heap_2.c" path="FreeRTOS/src/heap_2.c" type="1"/>
     <File name="syscalls/syscalls.c" path="syscalls/syscalls.c" type="1"/>
@@ -110,23 +111,24 @@
     <File name="channel.cpp" path="channel.cpp" type="1"/>
     <File name="stm_lib/src/stm32f10x_gpio.c" path="stm_lib/src/stm32f10x_gpio.c" type="1"/>
     <File name="stm_lib/inc/stm32f10x_gpio.h" path="stm_lib/inc/stm32f10x_gpio.h" type="1"/>
-    <File name="stm_lib/inc/stm32f10x_usart.h" path="stm_lib/inc/stm32f10x_usart.h" type="1"/>
     <File name="FreeRTOS/include/mpu_wrappers.h" path="FreeRTOS/include/mpu_wrappers.h" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_usart.h" path="stm_lib/inc/stm32f10x_usart.h" type="1"/>
     <File name="cmsis_boot/system_stm32f10x.c" path="cmsis_boot/system_stm32f10x.c" type="1"/>
     <File name="stm_lib/inc/misc.h" path="stm_lib/inc/misc.h" type="1"/>
-    <File name="FreeRTOS/include/StackMacros.h" path="FreeRTOS/include/StackMacros.h" type="1"/>
     <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
+    <File name="FreeRTOS/include/StackMacros.h" path="FreeRTOS/include/StackMacros.h" type="1"/>
     <File name="FreeRTOS/src/tasks.c" path="FreeRTOS/src/tasks.c" type="1"/>
     <File name="FreeRTOS/include/task.h" path="FreeRTOS/include/task.h" type="1"/>
-    <File name="FreeRTOS/include/queue.h" path="FreeRTOS/include/queue.h" type="1"/>
     <File name="cmsis/core_cm3.h" path="cmsis/core_cm3.h" type="1"/>
+    <File name="FreeRTOS/include/queue.h" path="FreeRTOS/include/queue.h" type="1"/>
     <File name="FreeRTOS/include/event_groups.h" path="FreeRTOS/include/event_groups.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
-    <File name="FreeRTOS/include/port.c" path="FreeRTOS/include/port.c" type="1"/>
     <File name="FreeRTOS/include/croutine.h" path="FreeRTOS/include/croutine.h" type="1"/>
+    <File name="FreeRTOS/include/port.c" path="FreeRTOS/include/port.c" type="1"/>
     <File name="FreeRTOS/include/list.h" path="FreeRTOS/include/list.h" type="1"/>
     <File name="FreeRTOS/include/projdefs.h" path="FreeRTOS/include/projdefs.h" type="1"/>
     <File name="Frames/Buffer.h" path="Frames/Buffer.h" type="1"/>
+    <File name="channel_UART.cpp" path="channel_UART.cpp" type="1"/>
     <File name="FreeRTOS/include/portable.h" path="FreeRTOS/include/portable.h" type="1"/>
     <File name="FreeRTOS/include" path="" type="2"/>
     <File name="FreeRTOS/include/timers.h" path="FreeRTOS/include/timers.h" type="1"/>
@@ -147,8 +149,8 @@
     <File name="utils/Crc16.h" path="utils/Crc16.h" type="1"/>
     <File name="syscalls" path="" type="2"/>
     <File name="channel.h" path="channel.h" type="1"/>
-    <File name="FreeRTOS" path="" type="2"/>
     <File name="stm_lib/inc" path="" type="2"/>
+    <File name="FreeRTOS" path="" type="2"/>
     <File name="FreeRTOS/src/timers.c" path="FreeRTOS/src/timers.c" type="1"/>
   </Files>
 </Project>

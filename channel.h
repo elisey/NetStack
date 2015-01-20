@@ -22,6 +22,8 @@ protected:
 
 	void handleRxPacket(Frame *ptrFrame);
 
+	Frame rxFrame;
+
 private:
 	QueueHandle_t txQueue;
 	QueueHandle_t rxQueue;
