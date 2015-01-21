@@ -1,6 +1,6 @@
 #include "PoolNode.h"
 #include "FramePool.h"
-
+#include "debug.h"
 PoolNode::PoolNode(size_t _bufferOffset)
 	: memoryIndex(-1), bufferOffset(_bufferOffset)
 {
@@ -20,10 +20,12 @@ bool PoolNode::allocFromIsr()
 {
 	FramePool &pool = FramePool::instance();
 
-	memoryIndex = pool.takeFreeFrameIndexFromISR();
-	if (memoryIndex == (-1))	{
+	int tempMemoryIndex = pool.takeFreeFrameIndexFromISR();
+	if (tempMemoryIndex == (-1))	{
+		//pin2_on;
 		return false;
 	}
+	memoryIndex = tempMemoryIndex;
 	uint8_t *ptrData = pool.getMemoryPtrByMemoryIndex(memoryIndex);
 	buffer.setDataPtr(ptrData + bufferOffset);
 	return true;
