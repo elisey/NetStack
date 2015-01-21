@@ -12,13 +12,13 @@ public:
 	Channel();
 	void send(const Frame *ptrFrame);
 	bool receive(Frame *ptrFrame, unsigned int timeout);
+	virtual bool isTxBusy() = 0;
+	virtual void startRx() = 0;
+	virtual void stopRx() = 0;
 	void txTask();
 
 protected:
 	virtual void transfer(Frame *ptrFrame) = 0;
-	virtual bool isTxBusy() = 0;
-	virtual void startRx() = 0;
-	virtual void stopRx() = 0;
 
 	void handleRxPacket(Frame *ptrFrame);
 

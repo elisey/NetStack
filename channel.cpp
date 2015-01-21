@@ -55,7 +55,6 @@ void Channel::txTask()
 		while(isTxBusy() == true)	{
 			vTaskDelay(1 / portTICK_RATE_MS);
 		}
-		//frame.free();
 	}
 }
 
