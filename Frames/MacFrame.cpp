@@ -1,6 +1,6 @@
 #include "MacFrame.h"
 #include "Crc16.h"
-MacFrame::MacFrame()	:	PoolNode(3)
+MacFrame::MacFrame()	:	PoolNode(0)
 {
 }
 
