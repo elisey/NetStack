@@ -27,5 +27,6 @@ public:
 	uint16_t getCrc();
 	void setCrc(uint16_t newCrc);
 	uint16_t calculateCrc();
+	void calculateAndSetCrc();
 	bool checkCrc();
 };

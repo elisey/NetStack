@@ -43,6 +43,13 @@ uint16_t MacFrame::calculateCrc()
 	calculatedCrc = Crc16_Calculate(ptrBuffer, size);
 	return calculatedCrc;
 }
+
+void MacFrame::calculateAndSetCrc()
+{
+	uint16_t crc = calculateCrc();
+	setCrc(crc);
+}
+
 bool MacFrame::checkCrc()
 {
 	uint16_t crcFromPacket = getCrc();
