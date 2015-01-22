@@ -9,6 +9,8 @@
 #include "MacFrame.h"
 #include "channel.h"
 
+#define mac_layerRESEND_NUM		(3u)
+
 class MacLayer {
 public:
 	MacLayer(Channel *_ptrChannel);
@@ -19,13 +21,12 @@ public:
 	void send(MacFrame *ptrMacFrame);
 	bool receive(MacFrame *ptrMacFrame, unsigned int timeout);
 
-
-
 private:
 
 	void sendAck(uint8_t pid);
 	void ackReceived(uint8_t pid);
 	bool isAckReceived(uint8_t pid);
+	void clearQueueAck();
 	void handleRxPacket(MacFrame *ptrMacFrame);
 
 	Channel *ptrChannel;

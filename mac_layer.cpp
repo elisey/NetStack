@@ -5,23 +5,25 @@ static void MacLayer_RxTask(void *param);
 
 MacLayer::MacLayer(Channel* _ptrChannel)
 {
+	ptrChannel = _ptrChannel;
+
 	txQueue = xQueueCreate(10, sizeof(MacFrame));
 	rxQueue = xQueueCreate(10, sizeof(MacFrame));
-	ackQueue = xQueueCreate(1, sizeof(uint8_t));
+	ackQueue = xQueueCreate(3, sizeof(uint8_t));
 
 	xTaskCreate(
 			MacLayer_TxTask,
 			"MacLayer_TxTask",
-			200,
+			configMINIMAL_STACK_SIZE,
 			this,
 			tskIDLE_PRIORITY + 1,
 			NULL);
 	xTaskCreate(
 			MacLayer_RxTask,
 			"MacLayer_RxTask",
-			200,
+			configMINIMAL_STACK_SIZE,
 			this,
-			tskIDLE_PRIORITY + 1,
+			tskIDLE_PRIORITY + 2,
 			NULL);
 
 }
@@ -47,23 +49,18 @@ void MacLayer::txTask()
 		Frame frame;
 		frame.clone(macFrame);
 
-
+		clearQueueAck();
 		ptrChannel->send(&frame);
-		while(ptrChannel->isTxBusy() == true)	{
-			vTaskDelay(1 / portTICK_RATE_MS);
-		}
 
 		if (ackType == packetAckType_withAck)	{
 
 			unsigned int i;
-			for (i = 0; i < 3; ++i) {
+			for (i = 0; i < mac_layerRESEND_NUM - 1; ++i) {
 				if (isAckReceived(packetPid) == true)	{
 					break;
 				}
+				clearQueueAck();
 				ptrChannel->send(&frame);
-				while(ptrChannel->isTxBusy() == true)	{
-					vTaskDelay(1 / portTICK_RATE_MS);
-				}
 			}
 		}
 		frame.free();
@@ -93,23 +90,27 @@ void MacLayer::rxTask()
 
 		if (macFrame.checkCrc() == false)	{
 			macFrame.free();
-			return;
 		}
+		else	{
+			packetAckType_t ackType = macFrame.getPacketAckType();
+			switch(ackType)
+			{
+			case packetAckType_Ack:
+				ackReceived(macFrame.getPid());
+				macFrame.free();
+				break;
 
-		switch(macFrame.getPacketAckType())
-		{
-		case packetAckType_Ack:
-			ackReceived(macFrame.getPid());
-			macFrame.free();
-			break;
-
-		case packetAckType_noAck:
-			handleRxPacket(&macFrame);
-			break;
-		case packetAckType_withAck:
-			sendAck(macFrame.getPid());
-			handleRxPacket(&macFrame);
-			break;
+			case packetAckType_noAck:
+				handleRxPacket(&macFrame);
+				break;
+			case packetAckType_withAck:
+				sendAck(macFrame.getPid());
+				handleRxPacket(&macFrame);
+				break;
+			default:
+				macFrame.free();
+				break;
+			}
 		}
 	}
 }
@@ -134,7 +135,9 @@ bool MacLayer::receive(MacFrame* ptrMacFrame, unsigned int timeout)
 void MacLayer::sendAck(uint8_t pid)
 {
 	MacFrame macFrame;
-	macFrame.alloc();
+	if (macFrame.alloc(0) == false	)	{
+		return;
+	}
 	macFrame.getBuffer().setLenght(4);
 	macFrame.setPid(pid);
 	macFrame.setPacketAckType(packetAckType_Ack);
@@ -147,24 +150,35 @@ void MacLayer::sendAck(uint8_t pid)
 void MacLayer::ackReceived(uint8_t pid)
 {
 	BaseType_t result;
-	result = xQueueSend(ackQueue, &pid, (TickType_t)portMAX_DELAY);
-	assert(result == pdPASS);
+	result = xQueueSend(ackQueue, &pid, (TickType_t)1 / portTICK_RATE_MS);
+	//assert(result == pdPASS);
 }
 
 bool MacLayer::isAckReceived(uint8_t pid)
 {
 	uint8_t receivedPid;
 	BaseType_t result;
-	result = xQueueReceive(ackQueue, &receivedPid, 2 / portTICK_RATE_MS);
+	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)2 / portTICK_RATE_MS);
 	if (result == pdPASS)	{
 		return (receivedPid == pid);
 	}
 	return false;
 }
 
+void MacLayer::clearQueueAck()
+{
+	bool result = pdPASS;
+	uint8_t dummyPid = 0;
+
+	do	{
+		result = xQueueReceive(ackQueue, &dummyPid, (TickType_t)0);
+	} while(result == pdPASS);
+}
+
 void MacLayer::handleRxPacket(MacFrame *ptrMacFrame)
 {
-	BaseType_t result;
+/*	BaseType_t result;
 	result = xQueueSend(rxQueue, ptrMacFrame, (TickType_t)portMAX_DELAY);
-	assert(result == pdPASS);
+	assert(result == pdPASS);*/
+	ptrMacFrame->free();
 }
