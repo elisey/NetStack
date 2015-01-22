@@ -6,14 +6,18 @@ PoolNode::PoolNode(size_t _bufferOffset)
 {
 }
 
-void PoolNode::alloc()
+bool PoolNode::alloc(uint32_t timeout)
 {
 	FramePool &pool = FramePool::instance();
 
-	memoryIndex = pool.takeFreeFrameIndex();
-
+	int tempMemoryIndex = pool.takeFreeFrameIndex(timeout);
+	if (tempMemoryIndex == -1)	{
+		return false;
+	}
+	memoryIndex = tempMemoryIndex;
 	uint8_t *ptrData = pool.getMemoryPtrByMemoryIndex(memoryIndex);
 	buffer.setDataPtr(ptrData + bufferOffset);
+	return true;
 }
 
 bool PoolNode::allocFromIsr()

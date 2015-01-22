@@ -2,13 +2,14 @@
 
 #include "Buffer.h"
 #include <stdint.h>
+#include "FreeRTOS.h"
 
 class PoolNode
 {
 public:
 	PoolNode(size_t _bufferOffset);
 
-	void alloc();
+	bool alloc(uint32_t timeout = portMAX_DELAY);
 	bool allocFromIsr();
 	void free();
 	void clone(PoolNode &node);
