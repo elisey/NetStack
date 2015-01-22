@@ -3,7 +3,7 @@
 
 Channel::Channel()
 {
-	rxQueue = xQueueCreate(10, sizeof(Frame));
+	rxQueue = xQueueCreate(20, sizeof(Frame));
 }
 
 void Channel::send(Frame *ptrFrame)
