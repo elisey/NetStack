@@ -86,32 +86,48 @@ void MacLayer::rxTask()
 		MacFrame macFrame;
 		macFrame.clone(frame);
 
-		//Проверкаа на уникальность (только не АК)
+
 
 		if (macFrame.checkCrc() == false)	{
 			macFrame.free();
+			continue;
 		}
-		else	{
-			packetAckType_t ackType = macFrame.getPacketAckType();
-			switch(ackType)
-			{
-			case packetAckType_Ack:
-				ackReceived(macFrame.getPid());
-				macFrame.free();
-				break;
 
-			case packetAckType_noAck:
-				handleRxPacket(&macFrame);
-				break;
-			case packetAckType_withAck:
-				sendAck(macFrame.getPid());
-				handleRxPacket(&macFrame);
-				break;
-			default:
+		packetAckType_t ackType = macFrame.getPacketAckType();
+		uint8_t pid = macFrame.getPid();
+
+		// Для пакетов Ack не учитываем их уникальность, обрабатываем всегда.
+		// Остальные фильтруем
+		if (ackType != packetAckType_Ack)	{
+			if (uniqueFrame.isFrameUnique(pid) == false)	{
 				macFrame.free();
-				break;
+				continue;
+			}
+			else	{
+				uniqueFrame.putNewFrame(pid);
 			}
 		}
+
+
+		switch(ackType)
+		{
+		case packetAckType_Ack:
+			ackReceived(macFrame.getPid());
+			macFrame.free();
+			break;
+
+		case packetAckType_noAck:
+			handleRxPacket(&macFrame);
+			break;
+		case packetAckType_withAck:
+			sendAck(macFrame.getPid());
+			handleRxPacket(&macFrame);
+			break;
+		default:
+			macFrame.free();
+			break;
+		}
+
 	}
 }
 

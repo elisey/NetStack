@@ -8,6 +8,7 @@
 
 #include "MacFrame.h"
 #include "channel.h"
+#include "UniqueFrame.h"
 
 #define mac_layerRESEND_NUM		(3u)
 
@@ -30,7 +31,7 @@ private:
 	void handleRxPacket(MacFrame *ptrMacFrame);
 
 	Channel *ptrChannel;
-
+	UniqueFrame<uint8_t> uniqueFrame;
 	QueueHandle_t txQueue;
 	QueueHandle_t rxQueue;
 	QueueHandle_t ackQueue;
