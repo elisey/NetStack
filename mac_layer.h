@@ -19,16 +19,18 @@ public:
 	void txTask();
 	void rxTask();
 
-	void send(MacFrame *ptrMacFrame);
+	void send(MacFrame *ptrMacFrame, packetAckType_t packetAckType);
 	bool receive(MacFrame *ptrMacFrame, unsigned int timeout);
 
 private:
-
+	void transfer(MacFrame *ptrMacFrame);
 	void sendAck(uint8_t pid);
 	void ackReceived(uint8_t pid);
 	bool isAckReceived(uint8_t pid);
 	void clearQueueAck();
 	void handleRxPacket(MacFrame *ptrMacFrame);
+	uint8_t getUniquePid();
+
 
 	Channel *ptrChannel;
 	UniqueFrame<uint8_t> uniqueFrame;

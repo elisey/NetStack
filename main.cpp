@@ -18,17 +18,10 @@ void sender(void *param)
 	MacFrame myFrame;
     while(1)
     {
-    	static uint8_t pid = 0;
-
     	myFrame.alloc();
     	myFrame.getBuffer()[2] = 12;
     	myFrame.getBuffer().setLenght(20);
-
-    	myFrame.setPid(pid++);
-    	myFrame.setPacketAckType(packetAckType_withAck);
-    	myFrame.setCrc( myFrame.calculateCrc() );
-
-    	ptrMc->send(&myFrame);
+    	ptrMc->send(&myFrame, packetAckType_withAck);
 
     	vTaskDelay(15 / portTICK_RATE_MS);
     }
