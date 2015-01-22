@@ -1,5 +1,4 @@
 #include "channel_UART.h"
-#include "debug.h"
 
 ChannelUart ch1(uart_channel_1);
 ChannelUart ch2(uart_channel_2);
@@ -113,7 +112,7 @@ void ChannelUart::irqOnRxCompleate()
 		Frame tempFrame = rxFrame;
 
 		bool result = rxFrame.allocFromIsr();
-		if (result != (-1))	{
+		if (result == true)	{
 			Channel::handleRxPacket(&tempFrame);
 		}
 	}
@@ -243,7 +242,7 @@ void ChannelUart::initUartPins(GPIO_TypeDef* txGPIOx, uint16_t txPin, GPIO_TypeD
 	GPIO_Init(txGPIOx,&gpioStruct);
 
 	gpioStruct.GPIO_Pin = rxPin;
-	gpioStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+	gpioStruct.GPIO_Mode = GPIO_Mode_IPU;
 	gpioStruct.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(rxGPIOx,&gpioStruct);
 }
