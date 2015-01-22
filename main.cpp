@@ -1,23 +1,36 @@
 #include "Frame.h"
+#include "MacFrame.h"
+#include "mac_layer.h"
 #include "channel_UART.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
-void vApplicationMallocFailedHook(void);
+MacLayer mc1(&ch1);
+MacLayer mc2(&ch2);
+MacLayer mc3(&ch3);
+MacLayer mc4(&ch4);
 
 void sender(void *param)
 {
 
-	Channel *ptrCh = static_cast< Channel* >(param);
+	MacLayer *ptrMc = static_cast< MacLayer* >(param);
 
-	Frame myFrame;
+	MacFrame myFrame;
     while(1)
     {
+    	static uint8_t pid = 0;
+
     	myFrame.alloc();
-    	myFrame.getBuffer()[0] = 12;
+    	myFrame.getBuffer()[2] = 12;
     	myFrame.getBuffer().setLenght(20);
-    	ptrCh->send(&myFrame);
-    	myFrame.free();
+
+    	myFrame.setPid(pid++);
+    	myFrame.setPacketAckType(packetAckType_withAck);
+    	myFrame.setCrc( myFrame.calculateCrc() );
+
+    	ptrMc->send(&myFrame);
+
+    	vTaskDelay(15 / portTICK_RATE_MS);
     }
 }
 
@@ -30,14 +43,14 @@ int main(void)
 			sender,
 			"irReceiver",
 			configMINIMAL_STACK_SIZE,
-			&ch1,
+			&mc1,
 			tskIDLE_PRIORITY + 1,
 			NULL);
-	xTaskCreate(
+/*	xTaskCreate(
 			sender,
 			"irReceiver",
 			configMINIMAL_STACK_SIZE,
-			&ch2,
+			&mc2,
 			tskIDLE_PRIORITY + 1,
 			NULL);
 
@@ -45,7 +58,7 @@ int main(void)
 			sender,
 			"irReceiver",
 			configMINIMAL_STACK_SIZE,
-			&ch3,
+			&mc3,
 			tskIDLE_PRIORITY + 1,
 			NULL);
 
@@ -53,15 +66,19 @@ int main(void)
 			sender,
 			"irReceiver",
 			configMINIMAL_STACK_SIZE,
-			&ch4,
+			&mc4,
 			tskIDLE_PRIORITY + 1,
-			NULL);
+			NULL);*/
 
 	vTaskStartScheduler();
 
 
 }
+
+extern "C"{
 void vApplicationMallocFailedHook(void)
 {
 	while(1);
 }
+}
+
