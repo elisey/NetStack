@@ -6,12 +6,12 @@
 #include "queue.h"
 
 #define MAX_MTU				(512)
-#define NUM_OF_FRAMES		(10)
+#define NUM_OF_FRAMES		(20)
 
 class FramePool
 {
 public:
-	int takeFreeFrameIndex();
+	int takeFreeFrameIndex(uint32_t timeout);
 	int takeFreeFrameIndexFromISR();
 	uint8_t* getMemoryPtrByMemoryIndex(int memoryIndex);
 	void releaseFrame(int memoryIndex);
@@ -30,6 +30,3 @@ private:
 	FramePool(const FramePool& root);
 	FramePool& operator=(const FramePool&);
 };
-
-
-
