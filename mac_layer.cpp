@@ -25,7 +25,6 @@ MacLayer::MacLayer(Channel* _ptrChannel)
 			this,
 			tskIDLE_PRIORITY + 2,
 			NULL);
-
 }
 
 static void MacLayer_TxTask(void *param)
@@ -93,6 +92,9 @@ void MacLayer::rxTask()
 			continue;
 		}
 
+		//Убрать CRC из буфера.
+		macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() - mac_layerCRC_SIZE );
+
 		packetAckType_t ackType = macFrame.getPacketAckType();
 		uint8_t pid = macFrame.getPid();
 
@@ -107,7 +109,6 @@ void MacLayer::rxTask()
 				uniqueFrame.putNewFrame(pid);
 			}
 		}
-
 
 		switch(ackType)
 		{
@@ -137,6 +138,8 @@ void MacLayer::send(MacFrame *ptrMacFrame, packetAckType_t packetAckType)
 {
 	ptrMacFrame->setPacketAckType(packetAckType);
 	ptrMacFrame->setPid( getUniquePid() );
+	// добавить место для CRC в буфер
+	ptrMacFrame->getBuffer().setLenght( ptrMacFrame->getBuffer().getLenght() + mac_layerCRC_SIZE );
 	ptrMacFrame->calculateAndSetCrc();
 	transfer(ptrMacFrame);
 }

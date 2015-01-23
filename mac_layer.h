@@ -11,6 +11,7 @@
 #include "UniqueFrame.h"
 
 #define mac_layerRESEND_NUM		(3u)
+#define mac_layerCRC_SIZE		(2u)
 
 class MacLayer {
 public:
