@@ -58,4 +58,7 @@ void PoolNode::clone(PoolNode &node)
 	buffer.setDataPtr(ptrData + bufferOffset);
 }
 
-
+Buffer& PoolNode::getBuffer()
+{
+	return buffer;
+}

@@ -13,6 +13,7 @@ public:
 	bool allocFromIsr();
 	void free();
 	void clone(PoolNode &node);
+	Buffer& getBuffer();
 
 protected:
 	Buffer buffer;

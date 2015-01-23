@@ -9,11 +9,6 @@ public:
 	{
 	}
 
-	Buffer& getBuffer()
-	{
-		return buffer;
-	}
-
 
 private:
 

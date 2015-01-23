@@ -13,11 +13,6 @@ class MacFrame: public PoolNode
 public:
 	MacFrame();
 
-	Buffer& getBuffer()
-	{
-		return buffer;
-	}
-
 	uint8_t getPid();
 	void setPid(uint8_t newPid);
 
