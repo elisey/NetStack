@@ -1,23 +1,15 @@
 #include "mac_layer.h"
 
-static void MacLayer_TxTask(void *param);
 static void MacLayer_RxTask(void *param);
 
 MacLayer::MacLayer(Channel* _ptrChannel)
+	:	ptrChannel(_ptrChannel)
 {
-	ptrChannel = _ptrChannel;
+	//ptrChannel = _ptrChannel;
 
-	txQueue = xQueueCreate(10, sizeof(MacFrame));
 	rxQueue = xQueueCreate(10, sizeof(MacFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));
 
-	xTaskCreate(
-			MacLayer_TxTask,
-			"MacLayer_TxTask",
-			configMINIMAL_STACK_SIZE,
-			this,
-			tskIDLE_PRIORITY + 1,
-			NULL);
 	xTaskCreate(
 			MacLayer_RxTask,
 			"MacLayer_RxTask",
@@ -25,45 +17,6 @@ MacLayer::MacLayer(Channel* _ptrChannel)
 			this,
 			tskIDLE_PRIORITY + 2,
 			NULL);
-}
-
-static void MacLayer_TxTask(void *param)
-{
-	MacLayer *ptrObj = static_cast<MacLayer*>(param);
-	ptrObj->txTask();
-	while(1);
-}
-
-void MacLayer::txTask()
-{
-	while(1)
-	{
-		MacFrame macFrame;
-		BaseType_t result;
-		result = xQueueReceive(txQueue, &macFrame, portMAX_DELAY);
-		assert(result == pdTRUE);
-
-		packetAckType_t ackType = macFrame.getPacketAckType();
-		uint8_t packetPid = macFrame.getPid();
-		Frame frame;
-		frame.clone(macFrame);
-
-		clearQueueAck();
-		ptrChannel->send(&frame);
-
-		if (ackType == packetAckType_withAck)	{
-
-			unsigned int i;
-			for (i = 0; i < mac_layerRESEND_NUM - 1; ++i) {
-				if (isAckReceived(packetPid) == true)	{
-					break;
-				}
-				clearQueueAck();
-				ptrChannel->send(&frame);
-			}
-		}
-		frame.free();
-	}
 }
 
 static void MacLayer_RxTask(void *param)
@@ -84,8 +37,6 @@ void MacLayer::rxTask()
 
 		MacFrame macFrame;
 		macFrame.clone(frame);
-
-
 
 		if (macFrame.checkCrc() == false)	{
 			macFrame.free();
@@ -128,37 +79,55 @@ void MacLayer::rxTask()
 			macFrame.free();
 			break;
 		}
-
 	}
 }
 
-
-
-void MacLayer::send(MacFrame *ptrMacFrame, packetAckType_t packetAckType)
+bool MacLayer::send(MacFrame &macFrame, packetAckType_t packetAckType)
 {
-	ptrMacFrame->setPacketAckType(packetAckType);
-	ptrMacFrame->setPid( getUniquePid() );
+	macFrame.setPacketAckType(packetAckType);
+	macFrame.setPid( getUniquePid() );
 	// добавить место для CRC в буфер
-	ptrMacFrame->getBuffer().setLenght( ptrMacFrame->getBuffer().getLenght() + mac_layerCRC_SIZE );
-	ptrMacFrame->calculateAndSetCrc();
-	transfer(ptrMacFrame);
+	macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() + mac_layerCRC_SIZE );
+	macFrame.calculateAndSetCrc();
+	return transfer(macFrame);
 }
 
-bool MacLayer::receive(MacFrame* ptrMacFrame, unsigned int timeout)
+bool MacLayer::receive(MacFrame &macFrame, unsigned int timeout)
 {
 	BaseType_t result;
-	result = xQueueReceive(rxQueue, ptrMacFrame, timeout);
+	result = xQueueReceive(rxQueue, &macFrame, timeout);
 	if (result == pdPASS)	{
 		return true;
 	}
 	return false;
 }
 
-void MacLayer::transfer(MacFrame* ptrMacFrame)
+bool MacLayer::transfer(MacFrame &macFrame)
 {
-	BaseType_t result;
-	result = xQueueSend(txQueue, ptrMacFrame, (TickType_t)portMAX_DELAY);
-	assert(result == pdPASS);
+	packetAckType_t ackType = macFrame.getPacketAckType();
+	uint8_t packetPid = macFrame.getPid();
+	Frame frame;
+	frame.clone(macFrame);
+
+	clearQueueAck();
+
+	ptrChannel->send(&frame);
+	bool transferOk = false;
+	if (ackType == packetAckType_withAck)	{
+
+		unsigned int i;
+		for (i = 0; i < mac_layerRESEND_NUM - 1; ++i) {
+			if (isAckReceived(packetPid) == true)	{
+				transferOk = true;
+				break;
+			}
+			clearQueueAck();
+			ptrChannel->send(&frame);
+		}
+		transferOk = false;
+	}
+	frame.free();
+	return transferOk;
 }
 
 void MacLayer::sendAck(uint8_t pid)
@@ -172,7 +141,7 @@ void MacLayer::sendAck(uint8_t pid)
 	macFrame.setPacketAckType(packetAckType_Ack);
 	macFrame.calculateAndSetCrc();
 
-	transfer(&macFrame);
+	transfer(macFrame);
 }
 
 void MacLayer::ackReceived(uint8_t pid)
@@ -207,10 +176,10 @@ void MacLayer::clearQueueAck()
 
 void MacLayer::handleRxPacket(MacFrame *ptrMacFrame)
 {
-/*	BaseType_t result;
+	BaseType_t result;
 	result = xQueueSend(rxQueue, ptrMacFrame, (TickType_t)portMAX_DELAY);
-	assert(result == pdPASS);*/
-	ptrMacFrame->free();
+	assert(result == pdPASS);
+	//ptrMacFrame->free();
 }
 
 uint8_t MacLayer::getUniquePid()

@@ -16,15 +16,12 @@
 class MacLayer {
 public:
 	MacLayer(Channel *_ptrChannel);
-
-	void txTask();
 	void rxTask();
-
-	void send(MacFrame *ptrMacFrame, packetAckType_t packetAckType);
-	bool receive(MacFrame *ptrMacFrame, unsigned int timeout);
+	bool send(MacFrame &macFrame, packetAckType_t packetAckType);
+	bool receive(MacFrame &macFrame, unsigned int timeout);
 
 private:
-	void transfer(MacFrame *ptrMacFrame);
+	bool transfer(MacFrame &macFrame);
 	void sendAck(uint8_t pid);
 	void ackReceived(uint8_t pid);
 	bool isAckReceived(uint8_t pid);
@@ -32,10 +29,8 @@ private:
 	void handleRxPacket(MacFrame *ptrMacFrame);
 	uint8_t getUniquePid();
 
-
 	Channel *ptrChannel;
 	UniqueFrame<uint8_t> uniqueFrame;
-	QueueHandle_t txQueue;
 	QueueHandle_t rxQueue;
 	QueueHandle_t ackQueue;
 };
