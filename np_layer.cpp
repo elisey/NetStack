@@ -1,11 +1,18 @@
 #include "np_layer.h"
+#include "mac_layer.h"
+#include "NpFrame.h"
 #include "MacFrame.h"
-
+#include "Routing.h"
+#include "debug.h"
 static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
 
 NpLayer::NpLayer(MacLayer* _ptrMacLayer, uint16_t _maxMtu)
-	:	ptrMacLayer(_ptrMacLayer), maxMtu(_maxMtu)
+	:	ptrMacLayer(_ptrMacLayer),
+	 	maxMtu(_maxMtu),
+	 	rxNcmpQueue(NULL),
+	 	rxTpQueue(NULL),
+	 	rxTpaQueue(NULL)
 {
 	rxQueue = xQueueCreate(10, sizeof(MacFrame));
 
@@ -45,38 +52,46 @@ void NpLayer::rxTask()
 		NpFrame npFrame;
 		npFrame.clone(macFrame);
 
-		if (npFrame.getDstAddress() == selfAddress)	{
+		uint16_t dstAddress = npFrame.getDstAddress();
+
+		if ( (dstAddress == selfAddress) ||	( dstAddress == BROADCAST_ADDRESS ) )	{
 
 			//Нужно собирать пакет?
 				//отправить в сборочный класс
 				//continue;
 			NpFrame_ProtocolType_t protocolType;
 			protocolType = npFrame.getProtocolType();
-			if (protocolType != NpFrame_NCMP)	{
-				//Отправить NCMP подтверждение приема
-			}
+
 			switch (protocolType)
 			{
 			case NpFrame_NCMP:
-
+				putFrameToQueue(&npFrame, rxNcmpQueue);
 				break;
-			case NpFrame_TCP:
-
+			case NpFrame_TPA:
+				putFrameToQueue(&npFrame, rxTpaQueue);
 				break;
-			case MpFrame_UDP:
+			case NpFrame_TP:
+				putFrameToQueue(&npFrame, rxTpQueue);
+				break;
+			default:
 
 				break;
 			}
 		}
-		else	{
-
-			//resend
+		if ( (dstAddress != selfAddress) || ( dstAddress == BROADCAST_ADDRESS ) )	{
+			Routing::instance().handleFrame(&npFrame, inderfaceId);
 		}
-
-
-
-
 	}
+}
+
+void NpLayer::putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue)
+{
+	if (queue == NULL)	{
+		return;
+	}
+	BaseType_t result;
+	result = xQueueSend(queue, ptrNpFrame, portMAX_DELAY);
+	assert(result == pdPASS);
 }
 
 static void NpLayer_TxTask(void *param)
@@ -90,8 +105,38 @@ void NpLayer::txTask()
 {
 	while(1)
 	{
+		NpFrame npFrame;
+		BaseType_t result;
+		result = xQueueReceive(txQueue, &npFrame, portMAX_DELAY);
+		assert(result == pdPASS);
 
+		//Если MTU ниже размера пакета, то разбивка пакета
+
+		MacFrame macFrame;
+		macFrame.clone(npFrame);
+
+		bool transferResult = ptrMacLayer->send(macFrame, packetAckType_Ack);
 	}
 }
 
+void NpLayer::send(NpFrame *ptrNpFrame,
+		uint16_t dstAddess,
+		uint8_t ttl,
+		NpFrame_ProtocolType_t protocolType)
+{
+	ptrNpFrame->setSrcAddress( selfAddress);
+	ptrNpFrame->setDstAddress(dstAddess);
+	ptrNpFrame->setTtl(ttl);
+	ptrNpFrame->setProtocolType(protocolType);
 
+	BaseType_t result;
+	result = xQueueSend(txQueue, ptrNpFrame, portMAX_DELAY);
+	assert(result == pdPASS);
+}
+
+void NpLayer::forward(NpFrame *ptrNpFrame)
+{
+	BaseType_t result;
+	result = xQueueSend(txQueue, ptrNpFrame, portMAX_DELAY);
+	assert(result == pdPASS);
+}

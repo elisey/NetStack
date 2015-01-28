@@ -9,9 +9,11 @@
 
 typedef enum	{
 	NpFrame_NCMP = 0,	// net control message protocol
-	NpFrame_TCP = 1,	// transmission control protocol
-	MpFrame_UDP = 2,	// user data protocol
+	NpFrame_TPA = 1,	// transport protocol with acknowledgment
+	NpFrame_TP = 2,		// transport protocol (without acknowledgment)
 } NpFrame_ProtocolType_t;
+
+#define BROADCAST_ADDRESS	(0)
 
 class NpFrame : public PoolNode
 {

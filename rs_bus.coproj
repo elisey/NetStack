@@ -84,6 +84,7 @@
     <Component id="467" name="MISC" path="" type="2"/>
   </Components>
   <Files>
+    <File name="ncmp_layer.h" path="ncmp_layer.h" type="1"/>
     <File name="FreeRTOS/include/FreeRTOSConfig.h" path="FreeRTOS/include/FreeRTOSConfig.h" type="1"/>
     <File name="Frames/MacFrame.h" path="Frames/MacFrame.h" type="1"/>
     <File name="FreeRTOS/src/event_groups.c" path="FreeRTOS/src/event_groups.c" type="1"/>
@@ -107,9 +108,10 @@
     <File name="FreeRTOS/src/list.c" path="FreeRTOS/src/list.c" type="1"/>
     <File name="UniqueFrame.h" path="UniqueFrame.h" type="1"/>
     <File name="stm_lib/inc/stm32f10x_dma.h" path="stm_lib/inc/stm32f10x_dma.h" type="1"/>
-    <File name="FreeRTOS/src" path="" type="2"/>
     <File name="Frames/NpFrame.h" path="Frames/NpFrame.h" type="1"/>
+    <File name="FreeRTOS/src" path="" type="2"/>
     <File name="Frames/MacFrame.cpp" path="Frames/MacFrame.cpp" type="1"/>
+    <File name="ncmp_layer.cpp" path="ncmp_layer.cpp" type="1"/>
     <File name="Frames/FramePool.cpp" path="Frames/FramePool.cpp" type="1"/>
     <File name="FreeRTOS/include/portmacro.h" path="FreeRTOS/include/portmacro.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_usart.c" path="stm_lib/src/stm32f10x_usart.c" type="1"/>
@@ -130,31 +132,32 @@
     <File name="FreeRTOS/include/queue.h" path="FreeRTOS/include/queue.h" type="1"/>
     <File name="FreeRTOS/include/event_groups.h" path="FreeRTOS/include/event_groups.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
-    <File name="FreeRTOS/include/port.c" path="FreeRTOS/include/port.c" type="1"/>
     <File name="FreeRTOS/include/croutine.h" path="FreeRTOS/include/croutine.h" type="1"/>
+    <File name="FreeRTOS/include/port.c" path="FreeRTOS/include/port.c" type="1"/>
+    <File name="Frames/NcmpFrame.h" path="Frames/NcmpFrame.h" type="1"/>
     <File name="FreeRTOS/include/list.h" path="FreeRTOS/include/list.h" type="1"/>
     <File name="FreeRTOS/include/projdefs.h" path="FreeRTOS/include/projdefs.h" type="1"/>
-    <File name="channel_UART.cpp" path="channel_UART.cpp" type="1"/>
     <File name="Frames/Buffer.h" path="Frames/Buffer.h" type="1"/>
+    <File name="channel_UART.cpp" path="channel_UART.cpp" type="1"/>
     <File name="FreeRTOS/include/portable.h" path="FreeRTOS/include/portable.h" type="1"/>
     <File name="FreeRTOS/include" path="" type="2"/>
     <File name="FreeRTOS/include/timers.h" path="FreeRTOS/include/timers.h" type="1"/>
     <File name="Frames/PoolNode.h" path="Frames/PoolNode.h" type="1"/>
-    <File name="FreeRTOS/src/croutine.c" path="FreeRTOS/src/croutine.c" type="1"/>
     <File name="stm_lib/src/stm32f10x_dma.c" path="stm_lib/src/stm32f10x_dma.c" type="1"/>
-    <File name="np_layer.cpp" path="np_layer.cpp" type="1"/>
+    <File name="FreeRTOS/src/croutine.c" path="FreeRTOS/src/croutine.c" type="1"/>
     <File name="stm_lib/src" path="" type="2"/>
-    <File name="cmsis" path="" type="2"/>
+    <File name="np_layer.cpp" path="np_layer.cpp" type="1"/>
     <File name="utils/Crc16.cpp" path="utils/Crc16.cpp" type="1"/>
-    <File name="utils/debug.c" path="utils/debug.c" type="1"/>
+    <File name="cmsis" path="" type="2"/>
     <File name="stm_lib" path="" type="2"/>
+    <File name="utils/debug.c" path="utils/debug.c" type="1"/>
     <File name="Frames/Frame.h" path="Frames/Frame.h" type="1"/>
     <File name="FreeRTOS/include/FreeRTOS.h" path="FreeRTOS/include/FreeRTOS.h" type="1"/>
     <File name="utils" path="" type="2"/>
-    <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
     <File name="main.cpp" path="main.cpp" type="1"/>
-    <File name="stm_lib/inc/stm32f10x_rcc.h" path="stm_lib/inc/stm32f10x_rcc.h" type="1"/>
+    <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
     <File name="utils/Crc16.h" path="utils/Crc16.h" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_rcc.h" path="stm_lib/inc/stm32f10x_rcc.h" type="1"/>
     <File name="syscalls" path="" type="2"/>
     <File name="channel.h" path="channel.h" type="1"/>
     <File name="FreeRTOS" path="" type="2"/>
