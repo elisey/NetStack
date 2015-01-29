@@ -16,6 +16,12 @@ public:
 	{
 	}
 
+	void clear()
+	{
+		address = 0;
+		interfaceId = 0;
+		distance = 0;
+	}
 	uint16_t address;
 	uint8_t interfaceId;
 	uint8_t distance;
@@ -23,25 +29,16 @@ public:
 
 class RouterTable	{
 public:
-	RouterTableNode& operator[](int index)
-	{
-		return routerTableNodes[index];
-	}
+	RouterTableNode& operator[](int index);
+	uint8_t getInterfaceForDestinationAddress(uint16_t dstAddress);
+	void insertRoute(uint16_t dstAddress, uint8_t interfaceId, uint8_t distance);
+	void deleteRoute(uint16_t dstAddress);
 
-	uint8_t getRouteForDstAddress(uint16_t dstAddress)
-	{
-		uint8_t route = 0;
-		int i;
-		for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
-			if (routerTableNodes[i].address == dstAddress)	{
-				route = routerTableNodes[i].interfaceId;
-				return route;
-			}
-		}
-	}
 private:
-	RouterTableNode routerTableNodes[ROUTER_TABLE_SIZE];
+	uint8_t getFreeEntryIndex();
+	int getEntryIndexByDestinationAddress(uint16_t dstAddress);
 
+	RouterTableNode routerTableNodes[ROUTER_TABLE_SIZE];
 
 	//Singleton realisation
 public:
