@@ -11,28 +11,30 @@ public:
 	{
 	}
 
-	RouterTableNode(uint16_t _address, uint8_t _interfaceId, uint8_t _distance)
-	:	address(_address), interfaceId(_interfaceId), distance(_distance)
+	RouterTableNode(uint16_t _address, uint16_t _gate, uint8_t _interfaceId)
+	:	address(_address), gate(_gate), interfaceId(_interfaceId)
 	{
 	}
 
 	void clear()
 	{
 		address = 0;
+		gate = 0;
 		interfaceId = 0;
-		distance = 0;
 	}
 	uint16_t address;
+	uint16_t gate;
 	uint8_t interfaceId;
-	uint8_t distance;
 };
 
 class RouterTable	{
 public:
 	RouterTableNode& operator[](int index);
 	uint8_t getInterfaceForDestinationAddress(uint16_t dstAddress);
-	void insertRoute(uint16_t dstAddress, uint8_t interfaceId, uint8_t distance);
+	void insertRoute(uint16_t dstAddress, uint16_t gate, uint8_t interfaceId);
 	void deleteRoute(uint16_t dstAddress);
+
+	int getNextRouteToPing(int prevRoute, uint8_t interfaceId);
 
 private:
 	uint8_t getFreeEntryIndex();

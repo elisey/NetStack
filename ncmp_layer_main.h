@@ -2,7 +2,6 @@
 
 #include <stdint.h>
 #include "ncmp_layer_base.h"
-#include "NpFrame.h"
 
 class NcmpLayerMain :public NcmpLayerBase
 {

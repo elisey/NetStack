@@ -2,6 +2,9 @@
 #include "NpFrame.h"
 #include "NcmpFrame.h"
 
+#include "FreeRTOS.h"
+#include "task.h"
+
 #include <stdint.h>
 
 NcmpLayerMain::NcmpLayerMain(uint8_t _interfaceId , NpLayer *_ptrNpLayer)

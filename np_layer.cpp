@@ -115,7 +115,7 @@ void NpLayer::txTask()
 		MacFrame macFrame;
 		macFrame.clone(npFrame);
 
-		bool transferResult = ptrMacLayer->send(macFrame, packetAckType_Ack);
+		bool transferResult = ptrMacLayer->send(macFrame, packetAckType_Ack); //TODO отправка через гейт по умолчанию из таблицы роутов
 	}
 }
 

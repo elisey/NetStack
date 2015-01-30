@@ -17,17 +17,17 @@ uint8_t RouterTable::getInterfaceForDestinationAddress(uint16_t dstAddress)
 	return (routerTableNodes[entryIndex].interfaceId);
 }
 
-void RouterTable::insertRoute(uint16_t dstAddress, uint8_t interfaceId, uint8_t distance)
+void RouterTable::insertRoute(uint16_t dstAddress, uint16_t gate, uint8_t interfaceId)
 {
 	uint8_t freeEntryIndex;
-	freeEntryIndex = getInterfaceForDestinationAddress(dstAddress);		//попытка найти существующий марштур по нужному адресу
-	if (freeEntryIndex == 0)	{										//Если такого нет, то поиск свободной ячейки
+	freeEntryIndex = getEntryIndexByDestinationAddress(dstAddress);		//попытка найти существующий марштур по нужному адресу
+	if (freeEntryIndex == (-1))	{										//Если такого нет, то поиск свободной ячейки
 		freeEntryIndex = getFreeEntryIndex();
 	}
 
 	routerTableNodes[freeEntryIndex].address = dstAddress;
 	routerTableNodes[freeEntryIndex].interfaceId = interfaceId;
-	routerTableNodes[freeEntryIndex].distance = distance;
+	routerTableNodes[freeEntryIndex].gate = gate;
 }
 
 void RouterTable::deleteRoute(uint16_t dstAddress)
@@ -38,6 +38,27 @@ void RouterTable::deleteRoute(uint16_t dstAddress)
 	if ( entryIndex != (-1) )	{
 		routerTableNodes[entryIndex].clear();
 	}
+}
+
+int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
+{
+	if (prevRoute == -1)	{
+		prevRoute = 0;
+	}
+
+	int i;
+	for (i = 0; i < ROUTER_TABLE_SIZE + 1; ++i) {
+		if (++prevRoute >= ROUTER_TABLE_SIZE)	{
+			prevRoute = 0;
+		}
+
+		if (routerTableNodes[prevRoute].interfaceId == interfaceId)	{
+			if ( routerTableNodes[prevRoute].address == routerTableNodes[prevRoute].gate )	{
+				return prevRoute;
+			}
+		}
+	}
+	return (-1);
 }
 
 uint8_t RouterTable::getFreeEntryIndex()
@@ -53,6 +74,9 @@ uint8_t RouterTable::getFreeEntryIndex()
 
 int RouterTable::getEntryIndexByDestinationAddress(uint16_t dstAddress)
 {
+	if (dstAddress == 0)	{
+		return (-1);
+	}
 	int i;
 	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
 		if (routerTableNodes[i].address == dstAddress)	{
