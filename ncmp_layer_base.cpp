@@ -20,7 +20,7 @@ NcmpLayerBase::NcmpLayerBase(uint8_t _interfaceId, NpLayer *_ptrNpLayer)
 
 static void NcmpLayer_Task(void *param)
 {
-	NcmpLayer *ptrObj = static_cast<NcmpLayer*>(param);
+	NcmpLayerBase *ptrObj = static_cast<NcmpLayerBase*>(param);
 	ptrObj->task();
 	while(1);
 }

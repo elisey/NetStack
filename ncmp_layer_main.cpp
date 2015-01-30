@@ -1,16 +1,16 @@
-#include "ncmp_layer.h"
+#include "ncmp_layer_main.h"
 #include "NpFrame.h"
 #include "NcmpFrame.h"
 
 #include <stdint.h>
 
-NcmpLayer::NcmpLayer(uint8_t _interfaceId , NpLayer *_ptrNpLayer)
+NcmpLayerMain::NcmpLayerMain(uint8_t _interfaceId , NpLayer *_ptrNpLayer)
 	:	NcmpLayerBase(_interfaceId, _ptrNpLayer),
 	 	currentMaster(0)
 {
 }
 
-void NcmpLayer::task()
+void NcmpLayerMain::task()
 {
 	while(1)
 	{
@@ -34,7 +34,7 @@ void NcmpLayer::task()
 	}
 }
 
-uint16_t NcmpLayer::waitForMaster()
+uint16_t NcmpLayerMain::waitForMaster()
 {
 	uint32_t prevTick = xTaskGetTickCount();
 	NpFrame npFrame;
@@ -61,7 +61,7 @@ uint16_t NcmpLayer::waitForMaster()
 	return 0;
 }
 
-bool NcmpLayer::waitForPingAndReply()
+bool NcmpLayerMain::waitForPingAndReply()
 {
 	uint32_t prevTick = xTaskGetTickCount();
 	NpFrame npFrame;
@@ -92,7 +92,7 @@ bool NcmpLayer::waitForPingAndReply()
 	return false;
 }
 
-void NcmpLayer::sendPong(uint16_t dstAddress)
+void NcmpLayerMain::sendPong(uint16_t dstAddress)
 {
 	NcmpFrame ncmpFrame;
 	ncmpFrame.alloc();
@@ -104,12 +104,12 @@ void NcmpLayer::sendPong(uint16_t dstAddress)
 	ptrNpLayer->send(&npFrame, dstAddress, 1, NpFrame_NCMP);
 }
 
-void NcmpLayer::sendPongWithRoutes(uint16_t dstAddress)
+void NcmpLayerMain::sendPongWithRoutes(uint16_t dstAddress)
 {
 
 }
 
-void NcmpLayer::sendImHere()
+void NcmpLayerMain::sendImHere()
 {
 	NcmpFrame ncmpFrame;
 	ncmpFrame.alloc();
@@ -121,7 +121,7 @@ void NcmpLayer::sendImHere()
 	ptrNpLayer->send(&npFrame, BROADCAST_ADDRESS, 1, NpFrame_NCMP);
 }
 
-uint32_t NcmpLayer::getTimeDelta(uint32_t prevTime, uint32_t currentTime)
+uint32_t NcmpLayerMain::getTimeDelta(uint32_t prevTime, uint32_t currentTime)
 {
 	if (currentTime >= prevTime)	{
 		return (currentTime - prevTime);

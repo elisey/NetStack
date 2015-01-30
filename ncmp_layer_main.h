@@ -1,15 +1,13 @@
 #pragma once
 
 #include <stdint.h>
-
 #include "ncmp_layer_base.h"
-
 #include "NpFrame.h"
 
-class NcmpLayer :public NcmpLayerBase
+class NcmpLayerMain :public NcmpLayerBase
 {
 public:
-	NcmpLayer(uint8_t _interfaceId, NpLayer *_ptrNpLayer);
+	NcmpLayerMain(uint8_t _interfaceId, NpLayer *_ptrNpLayer);
 	void task();
 private:
 
@@ -21,7 +19,6 @@ private:
 	void sendPingWithRoutes(uint16_t dstAddress);
 	void sendPongWithRoutes(uint16_t dstAddress);
 	void sendImHere();
-
 
 	uint32_t getTimeDelta(uint32_t prevTime, uint32_t currentTime);
 
