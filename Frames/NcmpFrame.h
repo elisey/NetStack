@@ -4,11 +4,14 @@
 #include "PoolNode.h"
 
 typedef enum	{
-	ncmpPacket_ping = 0,
+	ncmpPacket_ImHere = 0,
+	ncmpPacket_ImMaster,
+	ncmpPacket_AddRoutes,
+	ncmpPacket_DeleteRoutes,
+	ncmpPacket_ping,
 	ncmpPacket_pong,
-	ncmpPacket_im_here,
-	ncmpPacket_giveRt,
-	ncmpPacket_Rt
+	ncmpPacket_pingWithRoutes,
+	ncmpPacket_pongWithRoutes,
 }ncmpPacket_t;
 
 class NcmpFrame	: public PoolNode

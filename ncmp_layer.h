@@ -2,29 +2,28 @@
 
 #include <stdint.h>
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "queue.h"
+#include "ncmp_layer_base.h"
 
 #include "NpFrame.h"
 
-class NcmpLayer
+class NcmpLayer :public NcmpLayerBase
 {
 public:
-	NcmpLayer(uint8_t _interfaceId);
+	NcmpLayer(uint8_t _interfaceId, NpLayer *_ptrNpLayer);
 	void task();
 private:
-	void taskMainInterface();
-	void taskSlaveInterface();
 
+	uint16_t waitForMaster();
+	bool waitForPingAndReply();
 
-
+	void sendPing(uint16_t dstAddress);
 	void sendPong(uint16_t dstAddress);
-	void sendPong(uint16_t dstAddress);
+	void sendPingWithRoutes(uint16_t dstAddress);
+	void sendPongWithRoutes(uint16_t dstAddress);
 	void sendImHere();
-	void sendRt(uint16_t dstAddress);
 
-	uint8_t interfaceId;
-	QueueHandle_t rxQueue;
-	NpLayer *ptrNpLayer;
+
+	uint32_t getTimeDelta(uint32_t prevTime, uint32_t currentTime);
+
+	uint16_t currentMaster;
 };

@@ -1,104 +1,95 @@
 #include "ncmp_layer.h"
 #include "NpFrame.h"
 #include "NcmpFrame.h"
-static void NcmpLayer_Task(void *param);
+
+#include <stdint.h>
 
 NcmpLayer::NcmpLayer(uint8_t _interfaceId , NpLayer *_ptrNpLayer)
-	:	interfaceId(_interfaceId),
-	 	ptrNpLayer(_ptrNpLayer)
+	:	NcmpLayerBase(_interfaceId, _ptrNpLayer),
+	 	currentMaster(0)
 {
-	rxQueue = xQueueCreate(10, sizeof(NpFrame));
-	ptrNpLayer->setRxNcmpQueue(rxQueue);
-
-	xTaskCreate(
-			NcmpLayer_Task,
-			"NcmpLayer_Task",
-			configMINIMAL_STACK_SIZE,
-			this,
-			tskIDLE_PRIORITY + 1,
-			NULL);
-}
-
-static void NcmpLayer_Task(void *param)
-{
-	NcmpLayer *ptrObj = static_cast<NcmpLayer*>(param);
-	ptrObj->task();
-	while(1);
 }
 
 void NcmpLayer::task()
 {
-	if (interfaceId == 0)	{
-		taskMainInterface();
-	}
-	else	{
-		taskSlaveInterface();
-	}
-}
-
-void NcmpLayer::taskMainInterface()
-{
 	while(1)
 	{
-		uint16_t currentMaster = 0;
-
 		if (currentMaster == 0)	{
 			sendImHere();
-
-			NpFrame npFrame;
-			BaseType_t result = xQueueReceive(rxQueue, &npFrame, 10);
-			if (result == pdPASS)	{
-				currentMaster = npFrame.getSrcAddress();
-
-				NcmpFrame ncmpFrame;
-				ncmpFrame.clone(npFrame);
-
-				if (ncmpFrame.getPacketType() == ncmpPacket_giveRt)	{
-					sendRt(currentMaster);
-					continue;
-				}
-
-				if (ncmpFrame.getPacketType() == ncmpPacket_ping)	{
-					sendPong(currentMaster);
-					continue;
-				}
-				currentMaster = 0;
+			uint16_t foundMaster = waitForMaster();
+			if (foundMaster != 0)	{
+				currentMaster = foundMaster;
+				sendRt(currentMaster);
 			}
 		}
 		else	{
-			NpFrame npFrame;
-			BaseType_t result = xQueueReceive(rxQueue, &npFrame, 10);
-			if (result == pdPASS)	{
-				if (npFrame.getSrcAddress() == currentMaster)	{
-					NcmpFrame ncmpFrame;
-					ncmpFrame.clone(npFrame);
-
-					if (ncmpFrame.getPacketType() == ncmpPacket_giveRt)	{
-						sendRt(currentMaster);
-						continue;
-					}
-
-					if (ncmpFrame.getPacketType() == ncmpPacket_ping)	{
-						sendPong(currentMaster);
-						continue;
-					}
+			int tryCounter = 0;
+			while(waitForPingAndReply() == false)	{
+				if(++tryCounter >= 3)	{
+					currentMaster = 0;
+					break;
 				}
 			}
-			currentMaster == 0;
 		}
 	}
 }
 
-void NcmpLayer::sendPing(uint16_t dstAddress)
+uint16_t NcmpLayer::waitForMaster()
 {
-	NcmpFrame ncmpFrame;
-	ncmpFrame.alloc();
-	ncmpFrame.getBuffer().setLenght(1);
-
-	ncmpFrame.setPacketType(ncmpPacket_ping);
+	uint32_t prevTick = xTaskGetTickCount();
 	NpFrame npFrame;
-	npFrame.clone(ncmpFrame);
-	ptrNpLayer->send(&npFrame, dstAddress, 1, NpFrame_NCMP);
+	uint32_t timeDelta;
+	do
+	{
+		timeDelta = getTimeDelta( prevTick, xTaskGetTickCount() );
+		BaseType_t result = xQueueReceive(rxQueue, &npFrame, 10 - timeDelta);
+		if (result == pdFAIL)	{
+			return 0;
+		}
+		uint16_t srcAddress = npFrame.getSrcAddress();
+
+		NcmpFrame ncmpFrame;
+		ncmpFrame.clone(npFrame);
+
+		if (ncmpFrame.getPacketType() == ncmpPacket_ImMaster)	{
+			return srcAddress;
+		}
+		else	{
+			//парсинг остальных пакетов (остальный пакетов нет)
+		}
+	} while(timeDelta < 10);
+	return 0;
+}
+
+bool NcmpLayer::waitForPingAndReply()
+{
+	uint32_t prevTick = xTaskGetTickCount();
+	NpFrame npFrame;
+	uint32_t timeDelta;
+	do
+	{
+		timeDelta = getTimeDelta( prevTick, xTaskGetTickCount() );
+		BaseType_t result = xQueueReceive(rxQueue, &npFrame, 10 - timeDelta);
+		if (result == pdFAIL)	{
+			return 0;
+		}
+		uint16_t srcAddress = npFrame.getSrcAddress();
+
+		NcmpFrame ncmpFrame;
+		ncmpFrame.clone(npFrame);
+
+		if (srcAddress == currentMaster)	{
+			if (ncmpFrame.getPacketType() == ncmpPacket_ping)	{
+				sendPong(srcAddress);
+				return true;
+			}
+			else if (ncmpFrame.getPacketType() == ncmpPacket_pingWithRoutes)	{
+				sendPongWithRoutes(srcAddress);
+				return true;
+			}
+		}
+	} while(timeDelta < 10);
+	return false;
 }
 
 void NcmpLayer::sendPong(uint16_t dstAddress)
@@ -113,44 +104,29 @@ void NcmpLayer::sendPong(uint16_t dstAddress)
 	ptrNpLayer->send(&npFrame, dstAddress, 1, NpFrame_NCMP);
 }
 
+void NcmpLayer::sendPongWithRoutes(uint16_t dstAddress)
+{
+
+}
+
 void NcmpLayer::sendImHere()
 {
 	NcmpFrame ncmpFrame;
 	ncmpFrame.alloc();
 	ncmpFrame.getBuffer().setLenght(1);
 
-	ncmpFrame.setPacketType(ncmpPacket_im_here);
+	ncmpFrame.setPacketType(ncmpPacket_ImHere);
 	NpFrame npFrame;
 	npFrame.clone(ncmpFrame);
 	ptrNpLayer->send(&npFrame, BROADCAST_ADDRESS, 1, NpFrame_NCMP);
 }
 
-void NcmpLayer::sendRt(uint16_t dstAddress)		//TODO Добавить отправку таблицы
+uint32_t NcmpLayer::getTimeDelta(uint32_t prevTime, uint32_t currentTime)
 {
-
-}
-
-
-
-void NcmpLayer::taskSlaveInterface()
-{
-	while(1)
-	{
-		// Взять из таблицы следующий слейв для текущего интерфейса
-		// PingSend();
-
-		// В течении времени ждать входящего сообщения:
-		// Если входящее сообщение Pong:
-		// 		continue
-
-		// Если входящее сообщение Im here:
-			// send giveRT;
-
-		// Если входящее сообщение RT:
-		// 		Добавить в таблицу  новые пути (Отправить RT выше)
-
-		// Неудача. Сделать еще несколько попыток.
+	if (currentTime >= prevTime)	{
+		return (currentTime - prevTime);
+	}
+	else	{
+		return ( 0xffffffff - prevTime) + currentTime;
 	}
 }
-
-
