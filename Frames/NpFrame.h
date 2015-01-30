@@ -13,7 +13,8 @@ typedef enum	{
 	NpFrame_TP = 2,		// transport protocol (without acknowledgment)
 } NpFrame_ProtocolType_t;
 
-#define BROADCAST_ADDRESS	(0)
+#define BROADCAST_ADDRESS			(0)
+#define TOP_REDIRECTION_ADDRESS		(0xFFFF)
 
 class NpFrame : public PoolNode
 {

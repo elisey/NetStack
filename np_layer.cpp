@@ -54,7 +54,7 @@ void NpLayer::rxTask()
 
 		uint16_t dstAddress = npFrame.getDstAddress();
 
-		if ( (dstAddress == selfAddress) ||	( dstAddress == BROADCAST_ADDRESS ) )	{
+		if ( (dstAddress == selfAddress) ||	( dstAddress == BROADCAST_ADDRESS ) ||	( dstAddress == TOP_REDIRECTION_ADDRESS ))	{
 
 			//Нужно собирать пакет?
 				//отправить в сборочный класс
@@ -78,7 +78,7 @@ void NpLayer::rxTask()
 				break;
 			}
 		}
-		if ( (dstAddress != selfAddress) || ( dstAddress == BROADCAST_ADDRESS ) )	{
+		if (dstAddress != selfAddress)	{
 			Routing::instance().handleFrame(&npFrame, inderfaceId);
 		}
 	}
