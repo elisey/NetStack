@@ -35,4 +35,5 @@ private:
 	QueueHandle_t rxQueue;
 	QueueHandle_t ackQueue;
 	SemaphoreHandle_t txMutex;
+	uint8_t nextPid;
 };

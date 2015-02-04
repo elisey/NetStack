@@ -3,15 +3,11 @@
 static void MacLayer_RxTask(void *param);
 
 MacLayer::MacLayer(Channel* _ptrChannel)
-	:	ptrChannel(_ptrChannel)
+	:	ptrChannel(_ptrChannel), nextPid(0)
 {
-	//ptrChannel = _ptrChannel;
-
 	rxQueue = xQueueCreate(10, sizeof(MacFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));
 	txMutex = xSemaphoreCreateMutex();
-	// Реализовать класс LC , который будет параллельно принимать и отправлять пинги.
-	// На мак уровне должно быть уже известно тип интерфейса: мастер или слейв
 
 	xTaskCreate(
 			MacLayer_RxTask,
@@ -156,8 +152,6 @@ void MacLayer::sendAck(uint8_t pid)
 		transfer(macFrame);
 		xSemaphoreGive(txMutex);
 	}
-
-
 }
 
 void MacLayer::ackReceived(uint8_t pid)
@@ -200,6 +194,5 @@ void MacLayer::handleRxPacket(MacFrame *ptrMacFrame)
 
 uint8_t MacLayer::getUniquePid()
 {
-	static uint8_t pid = 0;
-	return pid++;
+	return nextPid++;
 }
