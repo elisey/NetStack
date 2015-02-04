@@ -8,7 +8,7 @@
 #include "queue.h"
 
 #define selfAddress 0x33
-
+#define MAX_TTL		2
 class NpLayer
 {
 public:
@@ -17,9 +17,18 @@ public:
 	void txTask();
 	void rxTask();
 
-	void setRxNcmpQueue(QueueHandle_t _rxNcmpQueue);
-	void setRxTpQueue(QueueHandle_t _rxTpQueue);
-	void setRxTpaQueue(QueueHandle_t _rxTpaQueue);
+	void setRxNcmpQueue(QueueHandle_t _rxNcmpQueue)
+	{
+		rxNcmpQueue = _rxNcmpQueue;
+	}
+	void setRxTpQueue(QueueHandle_t _rxTpQueue)
+	{
+		rxTpQueue = _rxTpQueue;
+	}
+	void setRxTpaQueue(QueueHandle_t _rxTpaQueue)
+	{
+		rxTpaQueue = _rxTpaQueue;
+	}
 
 	void send(NpFrame *ptrNpFrame,
 			uint16_t dstAddess,

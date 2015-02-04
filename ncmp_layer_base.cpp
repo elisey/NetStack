@@ -2,9 +2,10 @@
 
 static void NcmpLayer_Task(void *param);
 
-NcmpLayerBase::NcmpLayerBase(uint8_t _interfaceId, NpLayer *_ptrNpLayer)
+NcmpLayerBase::NcmpLayerBase(uint8_t _interfaceId, NpLayer *_ptrNpLayer, interfaceType_t _interfaceType)
 :	interfaceId(_interfaceId),
- 	ptrNpLayer(_ptrNpLayer)
+ 	ptrNpLayer(_ptrNpLayer),
+ 	interfaceType(_interfaceType)
 {
 	rxQueue = xQueueCreate(10, sizeof(NpFrame));
 	ptrNpLayer->setRxNcmpQueue(rxQueue);

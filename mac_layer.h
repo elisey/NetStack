@@ -5,6 +5,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "semphr.h"
 
 #include "MacFrame.h"
 #include "channel.h"
@@ -33,4 +34,5 @@ private:
 	UniqueFrame<uint8_t> uniqueFrame;
 	QueueHandle_t rxQueue;
 	QueueHandle_t ackQueue;
+	SemaphoreHandle_t txMutex;
 };

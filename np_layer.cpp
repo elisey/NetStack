@@ -7,14 +7,16 @@
 static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
 
-NpLayer::NpLayer(MacLayer* _ptrMacLayer, uint16_t _maxMtu)
+NpLayer::NpLayer(MacLayer* _ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId)
 	:	ptrMacLayer(_ptrMacLayer),
 	 	maxMtu(_maxMtu),
+	 	inderfaceId(_inderfaceId),
 	 	rxNcmpQueue(NULL),
 	 	rxTpQueue(NULL),
 	 	rxTpaQueue(NULL)
+
 {
-	rxQueue = xQueueCreate(10, sizeof(MacFrame));
+	txQueue = xQueueCreate(10, sizeof(MacFrame));
 
 	xTaskCreate(
 			NpLayer_TxTask,
@@ -68,18 +70,23 @@ void NpLayer::rxTask()
 				putFrameToQueue(&npFrame, rxNcmpQueue);
 				break;
 			case NpFrame_TPA:
-				putFrameToQueue(&npFrame, rxTpaQueue);
+				npFrame.free();
+				//putFrameToQueue(&npFrame, rxTpaQueue);
 				break;
 			case NpFrame_TP:
-				putFrameToQueue(&npFrame, rxTpQueue);
+				npFrame.free();
+				//putFrameToQueue(&npFrame, rxTpQueue);
 				break;
 			default:
-
+				npFrame.free();
 				break;
 			}
 		}
+		else	{
+			npFrame.free();
+		}
 		if (dstAddress != selfAddress)	{
-			Routing::instance().handleFrame(&npFrame, inderfaceId);
+			//Routing::instance().handleFrame(&npFrame, inderfaceId);
 		}
 	}
 }
@@ -87,6 +94,7 @@ void NpLayer::rxTask()
 void NpLayer::putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue)
 {
 	if (queue == NULL)	{
+		ptrNpFrame->free();
 		return;
 	}
 	BaseType_t result;
@@ -115,7 +123,7 @@ void NpLayer::txTask()
 		MacFrame macFrame;
 		macFrame.clone(npFrame);
 
-		bool transferResult = ptrMacLayer->send(macFrame, packetAckType_Ack); //TODO отправка через гейт по умолчанию из таблицы роутов
+		bool transferResult = ptrMacLayer->send(macFrame, packetAckType_withAck);
 	}
 }
 

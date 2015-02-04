@@ -9,6 +9,9 @@ MacLayer::MacLayer(Channel* _ptrChannel)
 
 	rxQueue = xQueueCreate(10, sizeof(MacFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));
+	txMutex = xSemaphoreCreateMutex();
+	// Реализовать класс LC , который будет параллельно принимать и отправлять пинги.
+	// На мак уровне должно быть уже известно тип интерфейса: мастер или слейв
 
 	xTaskCreate(
 			MacLayer_RxTask,
@@ -89,7 +92,14 @@ bool MacLayer::send(MacFrame &macFrame, packetAckType_t packetAckType)
 	// добавить место для CRC в буфер
 	macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() + mac_layerCRC_SIZE );
 	macFrame.calculateAndSetCrc();
-	return transfer(macFrame);
+
+	bool result;
+
+	xSemaphoreTake(txMutex, portMAX_DELAY);
+	result = transfer(macFrame);
+	xSemaphoreGive(txMutex);
+
+	return result;
 }
 
 bool MacLayer::receive(MacFrame &macFrame, unsigned int timeout)
@@ -141,7 +151,13 @@ void MacLayer::sendAck(uint8_t pid)
 	macFrame.setPacketAckType(packetAckType_Ack);
 	macFrame.calculateAndSetCrc();
 
-	transfer(macFrame);
+	BaseType_t result = xSemaphoreTake(txMutex, 3);
+	if (result == pdPASS)	{
+		transfer(macFrame);
+		xSemaphoreGive(txMutex);
+	}
+
+
 }
 
 void MacLayer::ackReceived(uint8_t pid)
@@ -157,7 +173,7 @@ bool MacLayer::isAckReceived(uint8_t pid)
 {
 	uint8_t receivedPid;
 	BaseType_t result;
-	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)2 / portTICK_RATE_MS);
+	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)1 / portTICK_RATE_MS);
 	if (result == pdPASS)	{
 		return (receivedPid == pid);
 	}

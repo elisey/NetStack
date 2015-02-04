@@ -1,6 +1,10 @@
 #include "routeTable.h"
 #include "debug.h"
 
+RouterTable::RouterTable()
+{
+}
+
 RouterTableNode& RouterTable::operator[](int index)
 {
 	return routerTableNodes[index];
@@ -17,9 +21,9 @@ uint8_t RouterTable::getInterfaceForDestinationAddress(uint16_t dstAddress)
 	return (routerTableNodes[entryIndex].interfaceId);
 }
 
-void RouterTable::insertRoute(uint16_t dstAddress, uint16_t gate, uint8_t interfaceId)
+void RouterTable::insertRoute(uint16_t dstAddress, uint8_t interfaceId, bool isNeighbor)
 {
-	uint8_t freeEntryIndex;
+	int freeEntryIndex;
 	freeEntryIndex = getEntryIndexByDestinationAddress(dstAddress);		//попытка найти существующий марштур по нужному адресу
 	if (freeEntryIndex == (-1))	{										//Если такого нет, то поиск свободной ячейки
 		freeEntryIndex = getFreeEntryIndex();
@@ -27,17 +31,28 @@ void RouterTable::insertRoute(uint16_t dstAddress, uint16_t gate, uint8_t interf
 
 	routerTableNodes[freeEntryIndex].address = dstAddress;
 	routerTableNodes[freeEntryIndex].interfaceId = interfaceId;
-	routerTableNodes[freeEntryIndex].gate = gate;
+	routerTableNodes[freeEntryIndex].isNeighbor = isNeighbor;
 }
 
 void RouterTable::deleteRoute(uint16_t dstAddress)
 {
-	uint8_t entryIndex;
+	int entryIndex;
 	entryIndex = getEntryIndexByDestinationAddress(dstAddress);
 
 	if ( entryIndex != (-1) )	{
 		routerTableNodes[entryIndex].clear();
 	}
+}
+
+uint16_t RouterTable::findRouteForInterface(uint8_t interfaceId)
+{
+	int i;
+	for (i = 0; i < ROUTER_TABLE_SIZE + 1; ++i)	{
+		if (routerTableNodes[i].interfaceId == interfaceId)	{
+			return routerTableNodes[i].address;
+		}
+	}
+	return 0;
 }
 
 int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
@@ -53,7 +68,7 @@ int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
 		}
 
 		if (routerTableNodes[prevRoute].interfaceId == interfaceId)	{
-			if ( routerTableNodes[prevRoute].address == routerTableNodes[prevRoute].gate )	{
+			if ( routerTableNodes[prevRoute].isNeighbor == true )	{
 				return prevRoute;
 			}
 		}
@@ -70,6 +85,7 @@ uint8_t RouterTable::getFreeEntryIndex()
 		}
 	}
 	assert(0);											//TODO обработка ошибки
+	return (-1);
 }
 
 int RouterTable::getEntryIndexByDestinationAddress(uint16_t dstAddress)

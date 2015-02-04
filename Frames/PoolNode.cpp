@@ -40,6 +40,7 @@ void PoolNode::free()
 	FramePool &pool = FramePool::instance();
 
 	pool.releaseFrame(memoryIndex);
+	memoryIndex = -1;
 	buffer.setDataPtr(NULL);
 }
 

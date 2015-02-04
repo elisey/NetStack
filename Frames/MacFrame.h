@@ -3,9 +3,9 @@
 #include "PoolNode.h"
 
 typedef enum	{
-	packetAckType_withAck = 0,
-	packetAckType_noAck,
-	packetAckType_Ack
+	packetAckType_withAck = 1,
+	packetAckType_noAck = 2,
+	packetAckType_Ack = 3
 } packetAckType_t;
 
 class MacFrame: public PoolNode

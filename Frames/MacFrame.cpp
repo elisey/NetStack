@@ -15,7 +15,9 @@ void MacFrame::setPid(uint8_t newPid)
 
 packetAckType_t MacFrame::getPacketAckType()
 {
-	return static_cast< packetAckType_t >(buffer[1]);
+	packetAckType_t result;
+	result = static_cast< packetAckType_t >(buffer[1]);
+	return result;
 }
 void MacFrame::setPacketAckType(packetAckType_t packetAckType)
 {
