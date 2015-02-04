@@ -61,13 +61,13 @@ const unsigned char crctablA005lo[256] = {
 uint16_t Crc16_Calculate( void* buffer, size_t size)
 {
 	uint8_t *data = static_cast<uint8_t*>(buffer);
-	unsigned char CRChi = 0xFF;
-	unsigned char CRClo = 0xFF;
+	uint8_t CRChi = 0xFF;
+	uint8_t CRClo = 0xFF;
 	int iIndex;
 	while (size--) {
 		iIndex = CRClo ^ *(data++);
 		CRClo = CRChi ^ crctablA005hi[iIndex];
 		CRChi = crctablA005lo[iIndex];
 	}
-	return ((CRChi << 8) | CRClo);
+	return (((uint16_t)CRChi << 8) | CRClo);
 }

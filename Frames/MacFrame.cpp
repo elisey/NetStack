@@ -33,15 +33,15 @@ uint16_t MacFrame::getCrc()
 void MacFrame::setCrc(uint16_t newCrc)
 {
 	size_t length = buffer.getLenght();
-	buffer[length - 2] = (uint8_t)newCrc >> 8;
-	buffer[length - 1] = (uint8_t)newCrc & 0xFF;
+	buffer[length - 2] = (uint8_t)(newCrc >> 8);
+	buffer[length - 1] = (uint8_t)(newCrc & 0xFF);
 }
 uint16_t MacFrame::calculateCrc()
 {
 	uint8_t *ptrBuffer = buffer.getDataPtr();
 	size_t size = buffer.getLenght() - 2;
 
-	uint8_t calculatedCrc;
+	uint16_t calculatedCrc;
 	calculatedCrc = Crc16_Calculate(ptrBuffer, size);
 	return calculatedCrc;
 }
