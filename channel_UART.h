@@ -3,7 +3,11 @@
 #include "channel.h"
 #include "stm32f10x.h"
 
-#define MAX_PACKET_SIZE		(512)
+#include "FreeRTOS.h"
+#include "semphr.h"
+
+#define MAX_PACKET_SIZE		(256)	//TODO единый размер пакета
+#define MIN_PACKET_SIZE		(4)
 
 typedef enum	{
 	uart_channel_1,
@@ -19,7 +23,7 @@ public:
 	ChannelUart(uart_channel_t ch_uart);
 
 	void transfer(Frame *ptrFrame);
-	bool isTxBusy();
+	void waitForTransferCompleate();
 	void startRx();
 	void stopRx();
 	void irqOnTxCompleate();
@@ -27,7 +31,8 @@ public:
 private:
 	void dmaTxInit();
 	void dmaTxStart(uint8_t *ptrBuffer, size_t blockSize);
-	bool isTxBusyFlag;
+	void clearTxSemaphore();
+	SemaphoreHandle_t  txSemaphore;
 	DMA_Channel_TypeDef *dmaTx;
 
 public:

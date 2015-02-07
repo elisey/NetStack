@@ -18,7 +18,7 @@ public:
 
 protected:
 	virtual void transfer(Frame *ptrFrame) = 0;
-	virtual bool isTxBusy() = 0;
+	virtual void waitForTransferCompleate() = 0;
 	void handleRxPacket(Frame *ptrFrame);
 
 	Frame rxFrame;

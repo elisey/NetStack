@@ -6,7 +6,7 @@ ChannelUart ch3(uart_channel_3);
 ChannelUart ch4(uart_channel_4);
 
 ChannelUart::ChannelUart(uart_channel_t ch_uart)
-	: isTxBusyFlag(false), uart_channel(ch_uart)
+	: uart_channel(ch_uart)
 {
 	if (ch_uart == uart_channel_1)	{
 		dmaTx = DMA1_Channel4;
@@ -29,6 +29,8 @@ ChannelUart::ChannelUart(uart_channel_t ch_uart)
 		uart = UART4;
 	}
 
+	txSemaphore = xSemaphoreCreateBinary();
+
 	rxFrame.alloc();
 
 	ChannelUart::dmaTxInit();
@@ -39,8 +41,7 @@ ChannelUart::ChannelUart(uart_channel_t ch_uart)
 
 void ChannelUart::transfer(Frame *frame)
 {
-	isTxBusyFlag = true;
-
+	clearTxSemaphore();
 	SET_BIT(uart->CR1, USART_CR1_TE);	// Включение передатчика. При включении автомататически
 										// посылается последовательность IDLE, которая нужна
 										// для отделения пакетов друг от друга.
@@ -50,15 +51,17 @@ void ChannelUart::transfer(Frame *frame)
 	dmaTxStart(buffer, size);
 }
 
-bool ChannelUart::isTxBusy()
+void ChannelUart::waitForTransferCompleate()
 {
-	return isTxBusyFlag;
+	BaseType_t result;
+	result = xSemaphoreTake(txSemaphore, 50 / portTICK_RATE_MS); //TODO время, обработка и прочее.
+	assert(result == pdPASS);
 }
 
 void ChannelUart::irqOnTxCompleate()
 {
 	DMA_Cmd(dmaTx, DISABLE);
-	isTxBusyFlag = false;
+	xSemaphoreGiveFromISR(txSemaphore, NULL);
 }
 
 void ChannelUart::dmaTxInit()
@@ -78,16 +81,44 @@ void ChannelUart::dmaTxInit()
 	dmaInitStructure.DMA_Priority = DMA_Priority_High;
 	dmaInitStructure.DMA_M2M = DMA_M2M_Disable;
 	DMA_Init(dmaTx, &dmaInitStructure);
+
+	DMA_ITConfig(dmaTx, DMA_IT_TC, ENABLE);
+
+	if (dmaTx == DMA1_Channel4)	{
+		NVIC_SetPriority(DMA1_Channel4_IRQn, 14);
+		NVIC_EnableIRQ(DMA1_Channel4_IRQn);
+	}
+	else if (dmaTx == DMA1_Channel7)	{
+		NVIC_SetPriority(DMA1_Channel7_IRQn, 14);
+		NVIC_EnableIRQ(DMA1_Channel7_IRQn);
+	}
+	else if (dmaTx == DMA1_Channel2)	{
+		NVIC_SetPriority(DMA1_Channel2_IRQn, 14);
+		NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+	}
+	else if (dmaTx == DMA2_Channel5)	{
+		NVIC_SetPriority(DMA2_Channel4_5_IRQn, 14);
+		NVIC_EnableIRQ(DMA2_Channel4_5_IRQn);
+	}
 }
 
 void ChannelUart::dmaTxStart(uint8_t *ptrBuffer, size_t blockSize)
 {
 	assert(blockSize <= MAX_PACKET_SIZE);
+	assert(blockSize >= MIN_PACKET_SIZE);
 
 	dmaTx->CMAR = (uint32_t)ptrBuffer;
 	DMA_Cmd(dmaTx, DISABLE);
 	dmaTx->CNDTR = blockSize;
 	DMA_Cmd(dmaTx, ENABLE);
+}
+
+void ChannelUart::clearTxSemaphore()
+{
+	BaseType_t result;
+	do {
+		result = xSemaphoreTake(txSemaphore, 0);
+	} while ( result == pdPASS );
 }
 
 /*	Приемник*/
@@ -107,7 +138,7 @@ void ChannelUart::irqOnRxCompleate()
 	dmaRxStop();
 	size_t rxFrameSize = calculateRxFrameSize();
 
-	if ( (rxFrameSize >= 4) && (rxFrameSize <= MAX_PACKET_SIZE))	{
+	if ( (rxFrameSize >= MIN_PACKET_SIZE) && (rxFrameSize <= MAX_PACKET_SIZE))	{
 		rxFrame.getBuffer().setLenght(rxFrameSize);
 		Frame tempFrame = rxFrame;
 
@@ -218,7 +249,7 @@ void ChannelUart::initUartRegisters(USART_TypeDef * USARTx)
 {
 	USART_InitTypeDef usartStruct;
 
-	usartStruct.USART_BaudRate = 2250000;
+	usartStruct.USART_BaudRate = 1000000;
 	usartStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	usartStruct.USART_Mode = USART_Mode_Rx;
 	usartStruct.USART_Parity = USART_Parity_No;
@@ -227,7 +258,7 @@ void ChannelUart::initUartRegisters(USART_TypeDef * USARTx)
 	USART_Init(USARTx, &usartStruct);
 	USART_DMACmd(USARTx, USART_DMAReq_Tx, ENABLE);
 	USART_DMACmd(USARTx, USART_DMAReq_Rx, ENABLE);
-	USART_ITConfig(USARTx, USART_IT_TC, ENABLE);
+	//USART_ITConfig(USARTx, USART_IT_TC, ENABLE);
 	USART_ITConfig(USARTx, USART_IT_IDLE, ENABLE);
 	USART_Cmd(USARTx, ENABLE);
 }
@@ -247,11 +278,11 @@ void ChannelUart::initUartPins(GPIO_TypeDef* txGPIOx, uint16_t txPin, GPIO_TypeD
 	GPIO_Init(rxGPIOx,&gpioStruct);
 }
 
+//TODO убрать ненужные прерывания, ИЛИ добавить использование прерываний UART TC
 extern "C"	{
 
 void USART1_IRQHandler()
 {
-
 	if (USART_GetITStatus(USART1, USART_IT_TC) == SET)	{
 		USART_ClearITPendingBit(USART1, USART_IT_TC);
 		CLEAR_BIT(USART1->CR1, USART_CR1_TE);
@@ -260,11 +291,8 @@ void USART1_IRQHandler()
 	else if (USART_GetITStatus(USART1, USART_IT_IDLE) == SET)	{
 		USART_ClearITPendingBit(USART1, USART_IT_IDLE);
 		USART1->DR;
-		pin0_on;
 		ch1.irqOnRxCompleate();
-		pin0_off;
 	}
-
 }
 
 void USART2_IRQHandler()
@@ -277,9 +305,7 @@ void USART2_IRQHandler()
 	else if (USART_GetITStatus(USART2, USART_IT_IDLE) == SET)	{
 		USART_ClearITPendingBit(USART2, USART_IT_IDLE);
 		USART2->DR;
-		pin1_on;
 		ch2.irqOnRxCompleate();
-		pin1_off;
 	}
 }
 
@@ -293,9 +319,7 @@ void USART3_IRQHandler()
 	else if (USART_GetITStatus(USART3, USART_IT_IDLE) == SET)	{
 		USART_ClearITPendingBit(USART3, USART_IT_IDLE);
 		USART3->DR;
-		pin3_on;
 		ch3.irqOnRxCompleate();
-		pin3_off;
 	}
 }
 
@@ -312,4 +336,38 @@ void UART4_IRQHandler()
 		ch4.irqOnRxCompleate();
 	}
 }
+
+void DMA1_Channel4_IRQHandler()
+{
+	if (DMA_GetITStatus(DMA1_IT_TC4) == SET )	{
+		DMA_ClearITPendingBit(DMA1_IT_TC4);
+		ch1.irqOnTxCompleate();
+	}
+}
+
+void DMA1_Channel7_IRQHandler()
+{
+	if (DMA_GetITStatus(DMA1_IT_TC7) == SET )	{
+		DMA_ClearITPendingBit(DMA1_IT_TC7);
+		ch2.irqOnTxCompleate();
+	}
+}
+
+void DMA1_Channel2_IRQHandler()
+{
+	if (DMA_GetITStatus(DMA1_IT_TC2) == SET )	{
+		DMA_ClearITPendingBit(DMA1_IT_TC2);
+		ch3.irqOnTxCompleate();
+	}
+}
+
+void DMA2_Channel4_5_IRQHandler()
+{
+	if (DMA_GetITStatus(DMA2_IT_TC5) == SET )	{
+		DMA_ClearITPendingBit(DMA2_IT_TC5);
+		ch4.irqOnTxCompleate();
+	}
+}
+
+
 }

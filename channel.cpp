@@ -9,10 +9,7 @@ Channel::Channel()
 void Channel::send(Frame *ptrFrame)
 {
 	transfer(ptrFrame);
-
-	while(isTxBusy() == true)	{
-		vTaskDelay(1 / portTICK_RATE_MS);
-	}
+	waitForTransferCompleate();
 }
 
 bool Channel::receive(Frame *ptrFrame, unsigned int timeout)
@@ -30,7 +27,7 @@ void Channel::handleRxPacket(Frame *ptrFrame)
 	BaseType_t higherPriorityTaskWoken;
 	BaseType_t result;
 	result = xQueueSendFromISR(rxQueue, ptrFrame, &higherPriorityTaskWoken);
-	assert(result == pdPASS);
+	assert(result == pdPASS);		//TODO Drop if full
 	if (higherPriorityTaskWoken == pdTRUE)	{
 		taskYIELD();
 	}
