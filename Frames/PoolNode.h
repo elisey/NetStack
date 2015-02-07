@@ -9,10 +9,11 @@ class PoolNode
 public:
 	PoolNode(size_t _bufferOffset);
 
-	bool alloc(uint32_t timeout = portMAX_DELAY);
+	bool alloc(uint32_t timeout = 50/*portMAX_DELAY*/);
 	bool allocFromIsr();
 	void free();
 	void clone(PoolNode &node);
+	void copy(PoolNode &node);
 	Buffer& getBuffer();
 
 protected:
