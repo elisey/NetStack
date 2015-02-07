@@ -35,6 +35,7 @@ public:
 	void deleteRoute(uint16_t dstAddress);
 	uint16_t findRouteForInterface(uint8_t interfaceId);
 	int getNextRouteToPing(int prevRoute, uint8_t interfaceId);
+	bool isNeighborExist(uint8_t interfaceId);
 
 private:
 	uint8_t getFreeEntryIndex();

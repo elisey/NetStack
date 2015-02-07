@@ -57,9 +57,9 @@ uint16_t RouterTable::findRouteForInterface(uint8_t interfaceId)
 
 int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
 {
-	if (prevRoute == -1)	{
+/*	if (prevRoute == -1)	{
 		prevRoute = 0;
-	}
+	}*/
 
 	int i;
 	for (i = 0; i < ROUTER_TABLE_SIZE + 1; ++i) {
@@ -74,6 +74,19 @@ int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
 		}
 	}
 	return (-1);
+}
+
+bool RouterTable::isNeighborExist(uint8_t interfaceId)
+{
+	int i;
+	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
+		if (routerTableNodes[i].interfaceId == interfaceId)	{
+			if ( routerTableNodes[i].isNeighbor == true )	{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 uint8_t RouterTable::getFreeEntryIndex()
