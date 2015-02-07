@@ -48,12 +48,12 @@ public:
 	{
 		int numOfEntries = buffer[1];
 
-		buffer[2 + numOfEntries] = (uint8_t)( (address >> 8) & 0xff );
-		buffer[2 + numOfEntries + 1] = (uint8_t)( address & 0xff );
+		buffer[2 + (numOfEntries * 2)] = (uint8_t)( (address >> 8) & 0xff );
+		buffer[2 + (numOfEntries * 2) + 1] = (uint8_t)( address & 0xff );
 
-		buffer[1]++;
-
-		buffer.setLenght(2 + (buffer[1]*2));
+		numOfEntries++;
+		buffer.setLenght(2 + (numOfEntries * 2));
+		buffer[1] = numOfEntries;
 	}
 
 	int getNumOfEntriesInRouterPacket()
