@@ -27,12 +27,8 @@ void NcmpLayerSlave::task()
 			}
 		}
 		else	{
-			int tryCounter = 0;
 			while(waitForPingAndReply() == false)	{
-				if(++tryCounter >= 3)	{
-					currentMaster = 0;
-					break;
-				}
+				currentMaster = 0;
 			}
 		}
 	}
@@ -75,7 +71,7 @@ bool NcmpLayerSlave::waitForPingAndReply()
 	do
 	{
 		timeDelta = getTimeDelta( prevTick, xTaskGetTickCount() );
-		BaseType_t result = xQueueReceive(rxQueue, &npFrame, 20 - timeDelta);
+		BaseType_t result = xQueueReceive(rxQueue, &npFrame, 50 - timeDelta);
 		if (result == pdFAIL)	{
 			return 0;
 		}
@@ -97,7 +93,7 @@ bool NcmpLayerSlave::waitForPingAndReply()
 			}
 		}
 		ncmpFrame.free();
-	} while(timeDelta < 20);
+	} while(timeDelta < 50);
 	return false;
 }
 

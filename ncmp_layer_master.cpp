@@ -19,6 +19,7 @@ void NcmpLayerMaster::task()
 	while(1)
 	{
 		uint16_t targetAddress = 0;
+		uint32_t prevTick = xTaskGetTickCount();
 
 		prevRouteIndex = RouterTable::instance().getNextRouteToPing(prevRouteIndex, interfaceId);
 		if (prevRouteIndex != (-1))	{
@@ -26,49 +27,41 @@ void NcmpLayerMaster::task()
 			sendPing(targetAddress);
 			if (waitForPingAnswer(targetAddress) == false)	{
 
-						uint16_t routeToDelete;
-						NcmpFrame ncmpFrame;
-						ncmpFrame.alloc();
-						ncmpFrame.createDeleteRoutesPacket();
-
-						if (interfaceType == interfaceType_Star)	{
-							routeToDelete = targetAddress;
-
-							RouterTable::instance().deleteRoute(routeToDelete);
-							ncmpFrame.insertEntryToRoutesPacket(routeToDelete);
-
-						}
-						else	{
-							routeToDelete = RouterTable::instance().findRouteForInterface(interfaceId);
-
-							while(routeToDelete != (0))	{
-								RouterTable::instance().deleteRoute(routeToDelete);
-								ncmpFrame.insertEntryToRoutesPacket(routeToDelete);
-
-								routeToDelete = RouterTable::instance().findRouteForInterface(interfaceId);
-							}
-						}
-
-						NpFrame npFrame;
-						npFrame.clone(ncmpFrame);
-						npFrame.setDstAddress(TOP_REDIRECTION_ADDRESS);
-						npFrame.setSrcAddress(selfAddress);
-						npFrame.setProtocolType(NpFrame_NCMP);
-						npFrame.setTtl(MAX_TTL);
-
-						Routing::instance().handleFrame(&npFrame, interfaceId);
-					}
-		}
-		else	{
-			NpFrame npFrame;
-			BaseType_t result = xQueueReceive(rxQueue, &npFrame, 5);
-			if (result == pdPASS)	{
-				uint16_t srcAddress = npFrame.getSrcAddress();
+				uint16_t routeToDelete;
 				NcmpFrame ncmpFrame;
-				ncmpFrame.clone(npFrame);
-				parsePacket(&ncmpFrame, srcAddress);
+				ncmpFrame.alloc();
+				ncmpFrame.createDeleteRoutesPacket();
+
+				if (interfaceType == interfaceType_Star)	{
+					routeToDelete = targetAddress;
+
+					RouterTable::instance().deleteRoute(routeToDelete);
+					ncmpFrame.insertEntryToRoutesPacket(routeToDelete);
+
+				}
+				else	{
+					routeToDelete = RouterTable::instance().findRouteForInterface(interfaceId);
+
+					while(routeToDelete != (0))	{
+						RouterTable::instance().deleteRoute(routeToDelete);
+						ncmpFrame.insertEntryToRoutesPacket(routeToDelete);
+
+						routeToDelete = RouterTable::instance().findRouteForInterface(interfaceId);
+					}
+				}
+
+				NpFrame npFrame;
+				npFrame.clone(ncmpFrame);
+				npFrame.setDstAddress(TOP_REDIRECTION_ADDRESS);
+				npFrame.setSrcAddress(selfAddress);
+				npFrame.setProtocolType(NpFrame_NCMP);
+				npFrame.setTtl(MAX_TTL);
+
+				Routing::instance().handleFrame(&npFrame, interfaceId);
+				npFrame.free();
 			}
 		}
+		waitForAnyPackets(prevTick);
 	}
 }
 
@@ -117,6 +110,30 @@ bool NcmpLayerMaster::waitForPingAnswer(uint16_t targetAddress)
 	return false;
 }
 
+void NcmpLayerMaster::waitForAnyPackets(uint32_t prevTick)
+{
+	NpFrame npFrame;
+	uint32_t timeDelta;
+	do
+	{
+		timeDelta = getTimeDelta( prevTick, xTaskGetTickCount() );
+		BaseType_t result = xQueueReceive(rxQueue, &npFrame, 20 - timeDelta);
+		if (result == pdFAIL)	{
+			return;
+		}
+		uint16_t srcAddress = npFrame.getSrcAddress();
+
+		NcmpFrame ncmpFrame;
+		ncmpFrame.clone(npFrame);
+
+		if (ncmpFrame.getPacketType() == ncmpPacket_AddRoutes)	{
+			parsePacket(&ncmpFrame, srcAddress);
+			return;
+		}
+		parsePacket(&ncmpFrame, srcAddress);
+	} while(timeDelta < 20);
+}
+
 void NcmpLayerMaster::parsePacket(NcmpFrame *packet, uint16_t srcAddress)
 {
 	switch (packet->getPacketType())
@@ -158,8 +175,14 @@ void NcmpLayerMaster::sendImMaster(uint16_t dstAddress)
 void NcmpLayerMaster::parseAddRoutesPacket(NcmpFrame *packet)
 {
 	uint16_t addressToAdd = 0;
-	bool firstEntry = true;
 
+	bool firstEntry;
+	if (interfaceType == interfaceType_PointToPoint)	{
+		firstEntry = !(RouterTable::instance().isNeighborExist(interfaceId));
+	}
+	else	{
+		firstEntry = true;
+	}
 	int numOfEntries = packet->getNumOfEntriesInRouterPacket();
 
 	for (int i = 0; i < numOfEntries; ++i) {

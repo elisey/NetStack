@@ -14,6 +14,7 @@ public:
 
 private:
 	bool waitForPingAnswer(uint16_t targetAddress);
+	void waitForAnyPackets(uint32_t prevTick);
 	void parsePacket(NcmpFrame *packet, uint16_t srcAddress);
 	void sendImMaster(uint16_t dstAddress);
 	void parseAddRoutesPacket(NcmpFrame *packet);
