@@ -147,6 +147,9 @@ void NcmpLayerMaster::parsePacket(NcmpFrame *packet, uint16_t srcAddress)
 	case ncmpPacket_DeleteRoutes:
 		parseDeleteRoutesPacket(packet);
 		break;
+	case ncmpPacket_MyRoute:
+		parseMyRoutePacket(packet);
+		break;
 	case ncmpPacket_pong:
 
 		break;
@@ -175,20 +178,11 @@ void NcmpLayerMaster::sendImMaster(uint16_t dstAddress)
 void NcmpLayerMaster::parseAddRoutesPacket(NcmpFrame *packet)
 {
 	uint16_t addressToAdd = 0;
-
-	bool firstEntry;
-	if (interfaceType == interfaceType_PointToPoint)	{
-		firstEntry = !(RouterTable::instance().isNeighborExist(interfaceId));
-	}
-	else	{
-		firstEntry = true;
-	}
 	int numOfEntries = packet->getNumOfEntriesInRouterPacket();
 
 	for (int i = 0; i < numOfEntries; ++i) {
 		addressToAdd = packet->getEntryFromRoutesPacketByIndex(i);
-		RouterTable::instance().insertRoute(addressToAdd, interfaceId, firstEntry);
-		firstEntry = false;
+		RouterTable::instance().insertRoute(addressToAdd, interfaceId, false);
 	}
 }
 
@@ -201,6 +195,13 @@ void NcmpLayerMaster::parseDeleteRoutesPacket(NcmpFrame *packet)
 		addressToDelete = packet->getEntryFromRoutesPacketByIndex(i);
 		RouterTable::instance().deleteRoute(addressToDelete);
 	}
+}
+
+void NcmpLayerMaster::parseMyRoutePacket(NcmpFrame *packet)
+{
+	uint16_t addressToAdd = 0;
+	addressToAdd = packet->getEntryFromRoutesPacketByIndex(0);
+	RouterTable::instance().insertRoute(addressToAdd, interfaceId, true);
 }
 
 uint32_t getTimeDelta(uint32_t prevTime, uint32_t currentTime)

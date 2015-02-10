@@ -23,11 +23,12 @@ void NcmpLayerSlave::task()
 			uint16_t foundMaster = waitForMaster();
 			if (foundMaster != 0)	{
 				currentMaster = foundMaster;
+				sendMyRoute(currentMaster);
 				sendRoutes();
 			}
 		}
 		else	{
-			while(waitForPingAndReply() == false)	{
+			if (waitForPingAndReply() == false)	{
 				currentMaster = 0;
 			}
 		}
@@ -73,7 +74,7 @@ bool NcmpLayerSlave::waitForPingAndReply()
 		timeDelta = getTimeDelta( prevTick, xTaskGetTickCount() );
 		BaseType_t result = xQueueReceive(rxQueue, &npFrame, 50 - timeDelta);
 		if (result == pdFAIL)	{
-			return 0;
+			return false;
 		}
 		uint16_t srcAddress = npFrame.getSrcAddress();
 
@@ -95,6 +96,19 @@ bool NcmpLayerSlave::waitForPingAndReply()
 		ncmpFrame.free();
 	} while(timeDelta < 50);
 	return false;
+}
+
+void NcmpLayerSlave::sendMyRoute(uint16_t dstAddress)
+{
+	NcmpFrame ncmpFrame;
+	ncmpFrame.alloc();
+	ncmpFrame.createMyRoutePacket();
+
+	ncmpFrame.insertEntryToRoutesPacket( selfAddress );
+
+	NpFrame npFrame;
+	npFrame.clone(ncmpFrame);
+	ptrNpLayer->send(&npFrame, dstAddress, 1, NpFrame_NCMP);
 }
 
 void NcmpLayerSlave::sendRoutes()

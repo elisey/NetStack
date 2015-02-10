@@ -19,5 +19,5 @@ private:
 	void sendImMaster(uint16_t dstAddress);
 	void parseAddRoutesPacket(NcmpFrame *packet);
 	void parseDeleteRoutesPacket(NcmpFrame *packet);
-
+	void parseMyRoutePacket(NcmpFrame *packet);
 };

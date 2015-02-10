@@ -8,6 +8,7 @@ typedef enum	{
 	ncmpPacket_ImMaster,
 	ncmpPacket_AddRoutes,
 	ncmpPacket_DeleteRoutes,
+	ncmpPacket_MyRoute,
 	ncmpPacket_ping,
 	ncmpPacket_pong,
 	ncmpPacket_pingWithRoutes,
@@ -40,6 +41,13 @@ public:
 	void createAddRoutesPacket()
 	{
 		buffer[0] = ncmpPacket_AddRoutes;
+		buffer[1] = 0;
+		buffer.setLenght(2);
+	}
+
+	void createMyRoutePacket()
+	{
+		buffer[0] = ncmpPacket_MyRoute;
 		buffer[1] = 0;
 		buffer.setLenght(2);
 	}

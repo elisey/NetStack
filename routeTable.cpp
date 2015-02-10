@@ -26,12 +26,23 @@ void RouterTable::insertRoute(uint16_t dstAddress, uint8_t interfaceId, bool isN
 	int freeEntryIndex;
 	freeEntryIndex = getEntryIndexByDestinationAddress(dstAddress);		//попытка найти существующий марштур по нужному адресу
 	if (freeEntryIndex == (-1))	{										//Если такого нет, то поиск свободной ячейки
-		freeEntryIndex = getFreeEntryIndex();
+		freeEntryIndex = getFreeEntryIndex();							//И полное копирование записи
+		routerTableNodes[freeEntryIndex].address = dstAddress;
+		routerTableNodes[freeEntryIndex].interfaceId = interfaceId;
+		routerTableNodes[freeEntryIndex].isNeighbor = isNeighbor;
+		return;
 	}
+	if (interfaceId != routerTableNodes[freeEntryIndex].interfaceId)	{//Если существует ячейка с таким же адресом, но другим
+		routerTableNodes[freeEntryIndex].address = dstAddress;			//Интерфейсом, то полная замена ячейки
+		routerTableNodes[freeEntryIndex].interfaceId = interfaceId;
+		routerTableNodes[freeEntryIndex].isNeighbor = isNeighbor;
+		return;
+	}
+	if ( (routerTableNodes[freeEntryIndex].isNeighbor == false)	&& (isNeighbor == true))	{
+		routerTableNodes[freeEntryIndex].isNeighbor = true;				//Если ячейка с тами же адресом и интерфейсом,
+	}																	//и если в таблице она не соседская, то обновление ее на
+																		//соседскую
 
-	routerTableNodes[freeEntryIndex].address = dstAddress;
-	routerTableNodes[freeEntryIndex].interfaceId = interfaceId;
-	routerTableNodes[freeEntryIndex].isNeighbor = isNeighbor;
 }
 
 void RouterTable::deleteRoute(uint16_t dstAddress)
@@ -74,19 +85,6 @@ int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
 		}
 	}
 	return (-1);
-}
-
-bool RouterTable::isNeighborExist(uint8_t interfaceId)
-{
-	int i;
-	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
-		if (routerTableNodes[i].interfaceId == interfaceId)	{
-			if ( routerTableNodes[i].isNeighbor == true )	{
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 uint8_t RouterTable::getFreeEntryIndex()

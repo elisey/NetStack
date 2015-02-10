@@ -13,6 +13,7 @@ private:
 	uint16_t waitForMaster();
 	bool waitForPingAndReply();
 
+	void sendMyRoute(uint16_t dstAddress);
 	void sendRoutes();
 	void sendPong(uint16_t dstAddress);
 	void sendPongWithRoutes(uint16_t dstAddress);
