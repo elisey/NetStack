@@ -52,6 +52,13 @@ public:
 		buffer.setLenght(2);
 	}
 
+	void createPongWithRoutesPacket()
+	{
+		buffer[0] = ncmpPacket_pongWithRoutes;
+		buffer[1] = 0;
+		buffer.setLenght(2);
+	}
+
 	void insertEntryToRoutesPacket(uint16_t address)
 	{
 		int numOfEntries = buffer[1];
@@ -72,8 +79,8 @@ public:
 	uint16_t getEntryFromRoutesPacketByIndex(int entryIndex)
 	{
 		uint16_t address = 0;
-		address = (uint16_t)(buffer[2 + entryIndex] << 8);
-		address |= (uint16_t)(buffer[2 + entryIndex + 1]);
+		address = (uint16_t)(buffer[2 + entryIndex*2] << 8);
+		address |= (uint16_t)(buffer[2 + entryIndex*2 + 1]);
 		return address;
 	}
 
@@ -84,8 +91,8 @@ public:
 		if (numOfEntries != 0)	{
 			numOfEntries--;
 
-			address = (uint16_t)(buffer[2 + numOfEntries] << 8);
-			address |= (uint16_t)(buffer[2 + numOfEntries + 1]);
+			address = (uint16_t)(buffer[2 + numOfEntries*2] << 8);
+			address |= (uint16_t)(buffer[2 + numOfEntries*2 + 1]);
 			buffer[1] = numOfEntries;
 		}
 		return address;

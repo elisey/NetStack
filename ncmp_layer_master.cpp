@@ -154,7 +154,7 @@ void NcmpLayerMaster::parsePacket(NcmpFrame *packet, uint16_t srcAddress)
 
 		break;
 	case ncmpPacket_pongWithRoutes:
-		//распарсить и перезаписать роуты
+		parsePongWithRoutesPacket(packet);
 		break;
 	default:
 
@@ -202,6 +202,25 @@ void NcmpLayerMaster::parseMyRoutePacket(NcmpFrame *packet)
 	uint16_t addressToAdd = 0;
 	addressToAdd = packet->getEntryFromRoutesPacketByIndex(0);
 	RouterTable::instance().insertRoute(addressToAdd, interfaceId, true);
+}
+
+void NcmpLayerMaster::parsePongWithRoutesPacket(NcmpFrame *packet)
+{
+	int i;
+	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
+		if ( ( RouterTable::instance()[i].interfaceId == interfaceId) &&
+			( RouterTable::instance()[i].isNeighbor == false  ))	{
+			RouterTable::instance()[i].clear();
+		}
+	}
+
+	uint16_t addressToAdd = 0;
+	int numOfEntries = packet->getNumOfEntriesInRouterPacket();
+
+	for (int i = 0; i < numOfEntries; ++i) {
+		addressToAdd = packet->getEntryFromRoutesPacketByIndex(i);
+		RouterTable::instance().insertRoute(addressToAdd, interfaceId, false);
+	}
 }
 
 uint32_t getTimeDelta(uint32_t prevTime, uint32_t currentTime)

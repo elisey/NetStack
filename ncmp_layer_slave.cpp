@@ -8,9 +8,11 @@
 #include "routeTable.h"
 #include <stdint.h>
 
+#include "debug.h"
 NcmpLayerSlave::NcmpLayerSlave(uint8_t _interfaceId , NpLayer *_ptrNpLayer, interfaceType_t _interfaceType)
 	:	NcmpLayerBase(_interfaceId, _ptrNpLayer, _interfaceType),
-	 	currentMaster(0)
+	 	currentMaster(0),
+	 	pongCounter(0)
 {
 }
 
@@ -83,12 +85,7 @@ bool NcmpLayerSlave::waitForPingAndReply()
 
 		if (srcAddress == currentMaster)	{
 			if (ncmpFrame.getPacketType() == ncmpPacket_ping)	{
-				sendPong(srcAddress);
-				ncmpFrame.free();
-				return true;
-			}
-			else if (ncmpFrame.getPacketType() == ncmpPacket_pingWithRoutes)	{
-				sendPongWithRoutes(srcAddress);
+				pingReplay(srcAddress);
 				ncmpFrame.free();
 				return true;
 			}
@@ -130,6 +127,25 @@ void NcmpLayerSlave::sendRoutes()
 	ptrNpLayer->send(&npFrame, TOP_REDIRECTION_ADDRESS, MAX_TTL, NpFrame_NCMP);
 }
 
+void NcmpLayerSlave::pingReplay(uint16_t dstAddress)
+{
+	if (interfaceType == interfaceType_PointToPoint)	{
+		pongCounter++;
+		if (pongCounter >= 50)	{
+			pongCounter = 0;
+			pin0_on;
+			sendPongWithRoutes(dstAddress);
+			pin0_off;
+		}
+		else {
+			sendPong(dstAddress);
+		}
+	}
+	else if(interfaceType == interfaceType_Star)	{
+		sendPong(dstAddress);
+	}
+}
+
 void NcmpLayerSlave::sendPong(uint16_t dstAddress)
 {
 	NcmpFrame ncmpFrame;
@@ -144,7 +160,21 @@ void NcmpLayerSlave::sendPong(uint16_t dstAddress)
 
 void NcmpLayerSlave::sendPongWithRoutes(uint16_t dstAddress)
 {
+	NcmpFrame ncmpFrame;
+	ncmpFrame.alloc();
+	ncmpFrame.createPongWithRoutesPacket();
 
+	ncmpFrame.insertEntryToRoutesPacket( selfAddress );
+	int i;
+	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
+		uint16_t address = RouterTable::instance()[i].address;
+		if (address != 0)	{
+			ncmpFrame.insertEntryToRoutesPacket( RouterTable::instance()[i].address );
+		}
+	}
+	NpFrame npFrame;
+	npFrame.clone(ncmpFrame);
+	ptrNpLayer->send(&npFrame, dstAddress, 1, NpFrame_NCMP);
 }
 
 void NcmpLayerSlave::sendImSlave()

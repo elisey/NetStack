@@ -20,4 +20,5 @@ private:
 	void parseAddRoutesPacket(NcmpFrame *packet);
 	void parseDeleteRoutesPacket(NcmpFrame *packet);
 	void parseMyRoutePacket(NcmpFrame *packet);
+	void parsePongWithRoutesPacket(NcmpFrame *packet);
 };
