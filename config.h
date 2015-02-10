@@ -7,8 +7,7 @@
 #include "ncmp_layer_slave.h"
 #include "ncmp_layer_master.h"
 
-
-#define NUM_OF_INTERFACES	2
+#define NUM_OF_INTERFACES	4
 
 extern NpLayer *interfaces[NUM_OF_INTERFACES];
 

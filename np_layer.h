@@ -7,8 +7,9 @@
 #include "task.h"
 #include "queue.h"
 
-#define selfAddress 0x33
-#define MAX_TTL		2
+//#define selfAddress 0x33
+extern uint16_t selfAddress;
+#define MAX_TTL		32
 class NpLayer
 {
 public:
@@ -38,7 +39,7 @@ public:
 
 private:
 
-	void putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue);
+	bool putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue);
 
 	MacLayer *ptrMacLayer;
 	uint16_t maxMtu;

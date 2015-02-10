@@ -5,8 +5,8 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-#define MAX_MTU				(512)
-#define NUM_OF_FRAMES		(20)
+#define MAX_MTU				(256)
+#define NUM_OF_FRAMES		(60)
 
 class FramePool
 {

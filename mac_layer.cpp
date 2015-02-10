@@ -90,8 +90,10 @@ bool MacLayer::send(MacFrame &macFrame, packetAckType_t packetAckType)
 	macFrame.calculateAndSetCrc();
 
 	bool result;
+	BaseType_t mutexTakeResult;
 
-	xSemaphoreTake(txMutex, portMAX_DELAY);
+	mutexTakeResult = xSemaphoreTake(txMutex, portMAX_DELAY);
+	assert(mutexTakeResult == pdPASS);
 	result = transfer(macFrame);
 	xSemaphoreGive(txMutex);
 
@@ -132,6 +134,9 @@ bool MacLayer::transfer(MacFrame &macFrame)
 		}
 		transferOk = false;
 	}
+	else {
+		transferOk = true;
+	}
 	frame.free();
 	return transferOk;
 }
@@ -141,16 +146,20 @@ void MacLayer::sendAck(uint8_t pid)
 	MacFrame macFrame;
 	if (macFrame.alloc(0) == false	)	{
 		return;
+
 	}
 	macFrame.getBuffer().setLenght(4);
 	macFrame.setPid(pid);
 	macFrame.setPacketAckType(packetAckType_Ack);
 	macFrame.calculateAndSetCrc();
 
-	BaseType_t result = xSemaphoreTake(txMutex, 3);
+	BaseType_t result = xSemaphoreTake(txMutex, 50);
 	if (result == pdPASS)	{
 		transfer(macFrame);
 		xSemaphoreGive(txMutex);
+	}
+	else	{
+		macFrame.free();
 	}
 }
 
@@ -167,7 +176,7 @@ bool MacLayer::isAckReceived(uint8_t pid)
 {
 	uint8_t receivedPid;
 	BaseType_t result;
-	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)1 / portTICK_RATE_MS);
+	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)2 / portTICK_RATE_MS);
 	if (result == pdPASS)	{
 		return (receivedPid == pid);
 	}

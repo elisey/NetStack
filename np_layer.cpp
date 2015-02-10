@@ -7,6 +7,8 @@
 static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
 
+uint16_t selfAddress = 0;
+
 NpLayer::NpLayer(MacLayer* _ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId)
 	:	ptrMacLayer(_ptrMacLayer),
 	 	maxMtu(_maxMtu),
@@ -56,6 +58,10 @@ void NpLayer::rxTask()
 
 		uint16_t dstAddress = npFrame.getDstAddress();
 
+		if (dstAddress != selfAddress)	{
+			Routing::instance().handleFrame(&npFrame, inderfaceId);
+		}
+
 		if ( (dstAddress == selfAddress) ||	( dstAddress == BROADCAST_ADDRESS ) ||	( dstAddress == TOP_REDIRECTION_ADDRESS ))	{
 
 			//Нужно собирать пакет?
@@ -67,7 +73,9 @@ void NpLayer::rxTask()
 			switch (protocolType)
 			{
 			case NpFrame_NCMP:
-				putFrameToQueue(&npFrame, rxNcmpQueue);
+				if (putFrameToQueue(&npFrame, rxNcmpQueue) == false)	{
+					npFrame.free();
+				}
 				break;
 			case NpFrame_TPA:
 				npFrame.free();
@@ -85,21 +93,19 @@ void NpLayer::rxTask()
 		else	{
 			npFrame.free();
 		}
-		if (dstAddress != selfAddress)	{
-			//Routing::instance().handleFrame(&npFrame, inderfaceId);
-		}
+
 	}
 }
 
-void NpLayer::putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue)
+bool NpLayer::putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue)
 {
 	if (queue == NULL)	{
-		ptrNpFrame->free();
-		return;
+		return false;
 	}
 	BaseType_t result;
 	result = xQueueSend(queue, ptrNpFrame, portMAX_DELAY);
 	assert(result == pdPASS);
+	return true;
 }
 
 static void NpLayer_TxTask(void *param)

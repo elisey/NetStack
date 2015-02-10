@@ -33,6 +33,19 @@ void sender(void *param)
 
 int main(void)
 {
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB ,ENABLE);
+
+	GPIO_InitTypeDef gpio;
+	gpio.GPIO_Mode = GPIO_Mode_IPU;
+	gpio.GPIO_Speed = GPIO_Speed_50MHz;
+	gpio.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
+	GPIO_Init(GPIOB, &gpio);
+
+	uint16_t value = GPIO_ReadInputData(GPIOB);
+	value &= 0b11;
+	selfAddress = value + 30;
+
+
 	__enable_irq();
 	Debug_Init();
 

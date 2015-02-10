@@ -110,9 +110,9 @@
     <File name="ncmp_layer_slave.h" path="ncmp_layer_slave.h" type="1"/>
     <File name="FreeRTOS/src/list.c" path="FreeRTOS/src/list.c" type="1"/>
     <File name="UniqueFrame.h" path="UniqueFrame.h" type="1"/>
+    <File name="stm_lib/inc/stm32f10x_dma.h" path="stm_lib/inc/stm32f10x_dma.h" type="1"/>
     <File name="ncmp_layer_base.h" path="ncmp_layer_base.h" type="1"/>
     <File name="Routing.cpp" path="Routing.cpp" type="1"/>
-    <File name="stm_lib/inc/stm32f10x_dma.h" path="stm_lib/inc/stm32f10x_dma.h" type="1"/>
     <File name="FreeRTOS/src" path="" type="2"/>
     <File name="Frames/NpFrame.h" path="Frames/NpFrame.h" type="1"/>
     <File name="Frames/MacFrame.cpp" path="Frames/MacFrame.cpp" type="1"/>
@@ -141,9 +141,9 @@
     <File name="FreeRTOS/include/queue.h" path="FreeRTOS/include/queue.h" type="1"/>
     <File name="FreeRTOS/include/event_groups.h" path="FreeRTOS/include/event_groups.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
+    <File name="FreeRTOS/include/croutine.h" path="FreeRTOS/include/croutine.h" type="1"/>
     <File name="FreeRTOS/include/port.c" path="FreeRTOS/include/port.c" type="1"/>
     <File name="Frames/NcmpFrame.h" path="Frames/NcmpFrame.h" type="1"/>
-    <File name="FreeRTOS/include/croutine.h" path="FreeRTOS/include/croutine.h" type="1"/>
     <File name="FreeRTOS/include/list.h" path="FreeRTOS/include/list.h" type="1"/>
     <File name="FreeRTOS/include/projdefs.h" path="FreeRTOS/include/projdefs.h" type="1"/>
     <File name="Frames/Buffer.h" path="Frames/Buffer.h" type="1"/>
@@ -170,8 +170,8 @@
     <File name="syscalls" path="" type="2"/>
     <File name="Routing.h" path="Routing.h" type="1"/>
     <File name="channel.h" path="channel.h" type="1"/>
-    <File name="FreeRTOS" path="" type="2"/>
     <File name="stm_lib/inc" path="" type="2"/>
+    <File name="FreeRTOS" path="" type="2"/>
     <File name="FreeRTOS/src/timers.c" path="FreeRTOS/src/timers.c" type="1"/>
   </Files>
 </Project>
