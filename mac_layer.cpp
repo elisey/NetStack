@@ -81,9 +81,9 @@ void MacLayer::rxTask()
 	}
 }
 
-bool MacLayer::send(MacFrame &macFrame, packetAckType_t packetAckType)
+bool MacLayer::send(MacFrame &macFrame, uint16_t dstAddress)
 {
-	macFrame.setPacketAckType(packetAckType);
+	macFrame.setPacketAckType(packetAckType_withAck);
 	macFrame.setPid( getUniquePid() );
 	// добавить место для CRC в буфер
 	macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() + mac_layerCRC_SIZE );

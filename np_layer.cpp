@@ -1,10 +1,8 @@
 #include "np_layer.h"
-#include "mac_layer.h"
-#include "NpFrame.h"
-#include "MacFrame.h"
 #include "Routing.h"
 #include "debug.h"
-#include "TpFrame.h"
+#include "TpFrame.h"	//TODO инклуд уберется после выделения ТП слоя
+
 static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
 
@@ -141,12 +139,14 @@ void NpLayer::txTask()
 		result = xQueueReceive(txQueue, &npFrame, portMAX_DELAY);
 		assert(result == pdPASS);
 
+		uint16_t dstAddress = npFrame.getDstAddress();
+
 		//Если MTU ниже размера пакета, то разбивка пакета
 
 		MacFrame macFrame;
 		macFrame.clone(npFrame);
 
-		bool transferResult = ptrMacLayer->send(macFrame, packetAckType_withAck);
+		bool transferResult = ptrMacLayer->send(macFrame, dstAddress);
 	}
 }
 

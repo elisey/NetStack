@@ -1,8 +1,5 @@
 #include "ncmp_layer_master.h"
 
-#include "FreeRTOS.h"
-#include "task.h"
-
 #include "routeTable.h"
 #include "Routing.h"
 
@@ -50,15 +47,9 @@ void NcmpLayerMaster::task()
 					}
 				}
 
-				NpFrame npFrame;
+				NpFrame npFrame;		//TODO перенести в существующую функциональность
 				npFrame.clone(ncmpFrame);
-				npFrame.setDstAddress(TOP_REDIRECTION_ADDRESS);
-				npFrame.setSrcAddress(selfAddress);
-				npFrame.setProtocolType(NpFrame_NCMP);
-				npFrame.setTtl(MAX_TTL);
-
-				Routing::instance().handleFrame(&npFrame, interfaceId);
-				npFrame.free();
+				Routing::instance().send(&npFrame, TOP_REDIRECTION_ADDRESS, MAX_TTL, NpFrame_NCMP);
 			}
 		}
 		waitForAnyPackets(prevTick);

@@ -6,9 +6,9 @@
 #include "task.h"
 
 #include "routeTable.h"
-#include <stdint.h>
 
 #include "debug.h"
+
 NcmpLayerSlave::NcmpLayerSlave(uint8_t _interfaceId , NpLayer *_ptrNpLayer, interfaceType_t _interfaceType)
 	:	NcmpLayerBase(_interfaceId, _ptrNpLayer, _interfaceType),
 	 	currentMaster(0),

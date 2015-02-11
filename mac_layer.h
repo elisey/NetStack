@@ -18,7 +18,7 @@ class MacLayer {
 public:
 	MacLayer(Channel *_ptrChannel);
 	void rxTask();
-	bool send(MacFrame &macFrame, packetAckType_t packetAckType);
+	bool send(MacFrame &macFrame, uint16_t dstAddress);
 	bool receive(MacFrame &macFrame, unsigned int timeout);
 
 private:
