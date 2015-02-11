@@ -90,6 +90,9 @@ bool NcmpLayerSlave::waitForPingAndReply()
 				return true;
 			}
 		}
+		else	{
+			//логирование
+		}
 		ncmpFrame.free();
 	} while(timeDelta < 50);
 	return false;
@@ -133,9 +136,7 @@ void NcmpLayerSlave::pingReplay(uint16_t dstAddress)
 		pongCounter++;
 		if (pongCounter >= 50)	{
 			pongCounter = 0;
-			pin0_on;
 			sendPongWithRoutes(dstAddress);
-			pin0_off;
 		}
 		else {
 			sendPong(dstAddress);

@@ -4,6 +4,7 @@
 #include "MacFrame.h"
 #include "Routing.h"
 #include "debug.h"
+#include "TpFrame.h"
 static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
 
@@ -52,10 +53,8 @@ void NpLayer::rxTask()
 
 		bool result = ptrMacLayer->receive(macFrame, portMAX_DELAY);
 		assert(result == true);
-
 		NpFrame npFrame;
 		npFrame.clone(macFrame);
-
 		uint16_t dstAddress = npFrame.getDstAddress();
 
 		if (dstAddress != selfAddress)	{
@@ -82,7 +81,8 @@ void NpLayer::rxTask()
 				//putFrameToQueue(&npFrame, rxTpaQueue);
 				break;
 			case NpFrame_TP:
-				npFrame.free();
+				processTp(&npFrame);
+				//npFrame.free();
 				//putFrameToQueue(&npFrame, rxTpQueue);
 				break;
 			default:
@@ -97,13 +97,30 @@ void NpLayer::rxTask()
 	}
 }
 
+#include "Led.h"
+
+Led greenLed(GPIOC, GPIO_Pin_6, true);
+
+void NpLayer::processTp(NpFrame *npFrame)
+{
+	TpFrame tpFrame;
+	tpFrame.clone(*npFrame);
+	if (tpFrame.getBuffer()[0] == 0)	{
+		greenLed.setState(false);
+	}
+	else	{
+		greenLed.setState(true);
+	}
+	tpFrame.free();
+}
+
 bool NpLayer::putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue)
 {
 	if (queue == NULL)	{
 		return false;
 	}
 	BaseType_t result;
-	result = xQueueSend(queue, ptrNpFrame, portMAX_DELAY);
+	result = xQueueSend(queue, ptrNpFrame, 50);
 	assert(result == pdPASS);
 	return true;
 }

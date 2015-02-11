@@ -196,7 +196,7 @@ void MacLayer::clearQueueAck()
 void MacLayer::handleRxPacket(MacFrame *ptrMacFrame)
 {
 	BaseType_t result;
-	result = xQueueSend(rxQueue, ptrMacFrame, (TickType_t)portMAX_DELAY);
+	result = xQueueSend(rxQueue, ptrMacFrame, (TickType_t)50);
 	assert(result == pdPASS);
 	//ptrMacFrame->free();
 }

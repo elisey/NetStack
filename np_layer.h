@@ -39,6 +39,8 @@ public:
 
 private:
 
+	void processTp(NpFrame *npFrame);
+
 	bool putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue);
 
 	MacLayer *ptrMacLayer;

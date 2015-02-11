@@ -8,28 +8,40 @@
 #include "channel_UART.h"
 #include "FreeRTOS.h"
 #include "task.h"
-
+#include "TpFrame.h"
 #include "config.h"
-
+#include "Routing.h"
 void sender(void *param)
 {
-	MacLayer *ptrMc = static_cast< MacLayer* >(param);
-
+	uint16_t *address = static_cast<uint16_t*>(param);
     while(1)
     {
+    	vTaskDelay(80 / portTICK_RATE_MS);
+    	static uint8_t state = 0;
+    	TpFrame tpFrame;
+    	tpFrame.alloc();
+    	tpFrame.getBuffer()[0] = state;
+    	tpFrame.getBuffer().setLenght(1);
+
+    	if (state == 0)	{
+    		state = 1;
+    	}
+    	else {
+			state = 0;
+		}
+
     	NpFrame npFrame;
+    	npFrame.clone(tpFrame);
+    	Routing::instance().send(&npFrame, *address, MAX_TTL, NpFrame_TP);
+    	//interfaces[1]->send(&npFrame, *address, MAX_TTL, NpFrame_TP);
 
-    	npFrame.alloc();
-    	npFrame.getBuffer()[0] = 12;
-    	npFrame.getBuffer().setLenght(20);
 
-    	MacFrame macFrame;
-    	macFrame.clone(npFrame);
-    	ptrMc->send(macFrame, packetAckType_withAck);
-
-    	vTaskDelay(15 / portTICK_RATE_MS);
     }
 }
+
+uint16_t addr1 = 30;
+uint16_t addr2 = 31;
+uint16_t addr3 = 32;
 
 int main(void)
 {
@@ -45,40 +57,32 @@ int main(void)
 	value &= 0b11;
 	selfAddress = value + 30;
 
-
 	__enable_irq();
 	Debug_Init();
 
-/*	xTaskCreate(
-			sender,
-			"irReceiver",
-			configMINIMAL_STACK_SIZE,
-			&mc1,
-			tskIDLE_PRIORITY + 1,
-			NULL);*/
-/*	xTaskCreate(
-			sender,
-			"irReceiver",
-			configMINIMAL_STACK_SIZE,
-			&mc2,
-			tskIDLE_PRIORITY + 1,
-			NULL);
-
-	xTaskCreate(
-			sender,
-			"irReceiver",
-			configMINIMAL_STACK_SIZE,
-			&mc3,
-			tskIDLE_PRIORITY + 1,
-			NULL);
-
-	xTaskCreate(
-			sender,
-			"irReceiver",
-			configMINIMAL_STACK_SIZE,
-			&mc4,
-			tskIDLE_PRIORITY + 1,
-			NULL);*/
+	if (selfAddress == 33)	{
+		xTaskCreate(
+					sender,
+					"irReceiver",
+					configMINIMAL_STACK_SIZE,
+					&addr1,
+					tskIDLE_PRIORITY + 1,
+					NULL);
+		xTaskCreate(
+					sender,
+					"irReceiver",
+					configMINIMAL_STACK_SIZE,
+					&addr2,
+					tskIDLE_PRIORITY + 1,
+					NULL);
+		xTaskCreate(
+					sender,
+					"irReceiver",
+					configMINIMAL_STACK_SIZE,
+					&addr3,
+					tskIDLE_PRIORITY + 1,
+					NULL);
+	}
 
 	vTaskStartScheduler();
 }
