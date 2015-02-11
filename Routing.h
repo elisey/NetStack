@@ -5,6 +5,7 @@
 class Routing	{
 public:
 	void handleFrame(NpFrame *ptrNpFrame, uint8_t srcInterfaceId);
+	void send(NpFrame *ptrNpFrame, uint16_t dstAddess, uint8_t ttl, NpFrame_ProtocolType_t protocolType);
 private:
 
 

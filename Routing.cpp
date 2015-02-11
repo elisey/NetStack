@@ -39,7 +39,16 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 	else	{
 		uint8_t targetInterfaceId = RouterTable::instance().getInterfaceForDestinationAddress(dstAddress);
 		if (targetInterfaceId != srcInterfaceId)	{
-			interfaces[targetInterfaceId]->forward(ptrNpFrame);
+			NpFrame newFrame;			//TODO по возможности избавиться от копрования
+			newFrame.alloc();
+			newFrame.copy(*ptrNpFrame);
+			interfaces[targetInterfaceId]->forward(&newFrame);
 		}
 	}
+}
+
+void Routing::send(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t ttl, NpFrame_ProtocolType_t protocolType)
+{
+	uint8_t targetInterfaceId = RouterTable::instance().getInterfaceForDestinationAddress(dstAddress);
+	interfaces[targetInterfaceId]->send(ptrNpFrame, dstAddress, ttl, protocolType);
 }
