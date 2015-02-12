@@ -1,7 +1,7 @@
 #include "routeTable.h"
 #include "debug.h"
 
-RouterTable::RouterTable()
+RouterTable::RouterTable()	: defaultGate(0)
 {
 }
 
@@ -85,6 +85,16 @@ int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
 		}
 	}
 	return (-1);
+}
+
+void RouterTable::setDefaultGate(uint16_t gate)
+{
+	defaultGate = gate;
+}
+
+uint16_t RouterTable::getDefaultGate()
+{
+	return defaultGate;
 }
 
 uint8_t RouterTable::getFreeEntryIndex()

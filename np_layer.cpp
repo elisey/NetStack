@@ -139,12 +139,21 @@ void NpLayer::txTask()
 		result = xQueueReceive(txQueue, &npFrame, portMAX_DELAY);
 		assert(result == pdPASS);
 
-		uint16_t dstAddress = npFrame.getDstAddress();
+		uint16_t dstAddress;
+
+		if (inderfaceId == 0)	{
+			dstAddress = RouterTable::instance().getDefaultGate();
+		}
+		else	{
+			dstAddress = npFrame.getDstAddress();
+		}
 
 		//Если MTU ниже размера пакета, то разбивка пакета
 
 		MacFrame macFrame;
 		macFrame.clone(npFrame);
+
+		// определение адреса следующего хопа через таблицу роутов, как defaultgate
 
 		bool transferResult = ptrMacLayer->send(macFrame, dstAddress);
 	}

@@ -35,13 +35,15 @@ public:
 	void deleteRoute(uint16_t dstAddress);
 	uint16_t findRouteForInterface(uint8_t interfaceId);
 	int getNextRouteToPing(int prevRoute, uint8_t interfaceId);
+	void setDefaultGate(uint16_t gate);
+	uint16_t getDefaultGate();
 
 private:
 	uint8_t getFreeEntryIndex();
 	int getEntryIndexByDestinationAddress(uint16_t dstAddress);
 
 	RouterTableNode routerTableNodes[ROUTER_TABLE_SIZE];
-
+	uint16_t defaultGate;
 	//Singleton realisation
 public:
 	static RouterTable& instance()

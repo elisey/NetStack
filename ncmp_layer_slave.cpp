@@ -27,11 +27,13 @@ void NcmpLayerSlave::task()
 				currentMaster = foundMaster;
 				sendMyRoute(currentMaster);
 				sendRoutes();
+				RouterTable::instance().setDefaultGate(foundMaster);
 			}
 		}
 		else	{
 			if (waitForPingAndReply() == false)	{
 				currentMaster = 0;
+				RouterTable::instance().setDefaultGate(0);
 			}
 		}
 	}
