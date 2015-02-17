@@ -16,7 +16,7 @@ void sender(void *param)
 	uint16_t *address = static_cast<uint16_t*>(param);
     while(1)
     {
-    	vTaskDelay(80 / portTICK_RATE_MS);
+    	vTaskDelay(200 / portTICK_RATE_MS);
     	static uint8_t state = 0;
     	TpFrame tpFrame;
     	tpFrame.alloc();
@@ -39,6 +39,24 @@ void sender(void *param)
     }
 }
 
+void sender2(void *param)
+{
+
+    while(1)
+    {
+    	vTaskDelay(500 / portTICK_RATE_MS);
+
+    	MacFrame macFrame;
+    	macFrame.alloc();
+    	macFrame.getBuffer().setLenght(4);
+    	macFrame.getBuffer()[0] = 1;
+    	macFrame.getBuffer()[1] = 10;
+
+    	//rml.send(macFrame, 32);
+
+    }
+}
+
 uint16_t addr1 = 30;
 uint16_t addr2 = 31;
 uint16_t addr3 = 32;
@@ -55,7 +73,10 @@ int main(void)
 
 	uint16_t value = GPIO_ReadInputData(GPIOB);
 	value &= 0b11;
-	selfAddress = value + 30;
+	value += 30;
+	//selfAddress = value + 30;
+
+	Interfaces_Init(value);
 
 	__enable_irq();
 	Debug_Init();
@@ -82,7 +103,18 @@ int main(void)
 					&addr3,
 					tskIDLE_PRIORITY + 1,
 					NULL);
+
+
 	}
+/*	if (selfAddress == 30)	{
+		xTaskCreate(
+			sender2,
+			"irReceiver",
+			configMINIMAL_STACK_SIZE,
+			NULL,
+			tskIDLE_PRIORITY + 1,
+			NULL);
+	}*/
 
 	vTaskStartScheduler();
 }

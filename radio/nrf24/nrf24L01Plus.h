@@ -55,14 +55,18 @@ extern "C" {
 
 #include <stdbool.h>
 #include "nrf24L01Plus_HAL.h"
-//#include "delay.h"	//for delay_us
 
 
+typedef enum	{
+	sendingState_inProcess = 0,
+	sendingState_Fail = 1,
+	sendingState_Ok = 2
+} sendingState_t;
 
 //#define NORDIC_EXCHANGE_SPI(byte)	spi_transfer(byte)
 #define NORDIC_LOCK_SPI()
 #define NORDIC_UNLOCK_SPI()
-#define NORDIC_DELAY_US(us)         //delay_us(us)
+#define NORDIC_DELAY_US(us)
 //#define NORDIC_CS_ENABLE()          nrf24_csn_digitalWrite(0)
 //#define NORDIC_CS_DISABLE()         nrf24_csn_digitalWrite(1)
 //#define NORDIC_CE_HIGH()            nrf24_ce_digitalWrite(1)
@@ -77,7 +81,13 @@ extern "C" {
 /// @param mhz       The channel number from 2402-2525
 /// @param bitrate_kbps   Can only be 250, 1000, or 2000
 /// @post Rx interrupt is reflected on interrupt signal, but not Tx
-void nordic_init(unsigned char payload, unsigned short mhz, unsigned short bitrate_kbps);
+void nordic_init(
+		uint8_t* selfAddress,
+		uint8_t* broadcastAddress,
+		uint8_t payload,
+		unsigned short mhz,
+		unsigned short bitrate_kbps,
+		unsigned short _address_width);
 
 /// @returns TRUE if the nordic finds that the air is free to send data over the wireless medium
 /// @warning This hasn't been fully tested.
@@ -137,12 +147,15 @@ void nordic_clear_all_intr_flags();
 /// @param length	The length of the data
 /// @note In Tx Mode-2 data is sent automatically.
 ///       In Tx Mode-1 you must use nordic_mode1_send_single_packet()
-void nordic_queue_tx_fifo(char *data, unsigned short length);
+void nordic_queue_tx_fifo(uint8_t *data, unsigned short length);
 
 /// Sends the data in the Tx FIFO.
 /// @post	Returns back to Standby-1 after sending the data.
-void nordic_mode1_send_single_packet(char *data, unsigned short length);
+bool nordic_mode1_send_single_packet(uint8_t *data, unsigned short length);
 
+bool nordic_is_sending();
+
+sendingState_t getSendingStateAndClearFlag();
 /// @return			True if a TX Packet was sent.
 bool nordic_is_packet_sent();
 
@@ -175,7 +188,7 @@ void nordic_clear_packet_available_flag();
 /// @param data		The char array data pointer
 /// @param length	The length of the data
 /// @return			The data pipe data was received on (0-5)
-char nordic_read_rx_fifo(char *data, unsigned short length);
+uint8_t nordic_read_rx_fifo(uint8_t *data, unsigned short length);
 
 /// Flushes(clears) the RX FIFO Data
 void nordic_flush_rx_fifo();
@@ -196,11 +209,11 @@ void nordic_flush_rx_fifo();
 void nordic_set_intr_signals(bool rx, bool tx, bool maxTransmissions);
 
 /// @returns the interrupt status register (not the interrupt signal).
-char nordic_get_intr_reg_status(void);
+uint8_t nordic_get_intr_reg_status(void);
 
 /// Sets the length of the CRC of over-the-air packets
 /// @param length		Must be 0, 1, or 2.  Use 0 to disable CRC checking
-void nordic_set_crc(unsigned char length);
+void nordic_set_crc(uint8_t length);
 
 /// Powers up the Nordic Chip
 void nordic_power_up();
@@ -223,7 +236,7 @@ void nordic_set_air_data_rate(unsigned short kbps);
 
 /// Sets the power level of the chip
 /// @param powerLevel	Must be 0-3 with 3 being the highest
-void nordic_set_power_level(unsigned char powerLevel);
+void nordic_set_power_level(uint8_t powerLevel);
 
 
 
@@ -236,17 +249,17 @@ void nordic_set_power_level(unsigned char powerLevel);
 /// Sets the Enhanced Shockburst auto-transmit options
 /// @param txDelayUs	The delay in uS from 250 - 4000 for retransmission
 /// @param retries		The number of retries 1-15
-void nordic_set_auto_transmit_options(unsigned short txDelayUs, unsigned char retries);
+void nordic_set_auto_transmit_options(unsigned short txDelayUs, uint8_t retries);
 
 /// Gets the total number of lost packets.
 /// @param clear	If true, clears the count
 /// @return			The total lost packets 0-15
-char nordic_get_lost_packet_cnt(bool clear);
+uint8_t nordic_get_lost_packet_cnt(bool clear);
 
 /// Gets the total number of retransmissions.
 /// @param clear	If true, clears the count
 /// @note			The count is cleared when new transmission starts.
-char nordic_get_retransmit_count();
+uint8_t nordic_get_retransmit_count();
 
 
 
@@ -258,7 +271,7 @@ char nordic_get_retransmit_count();
 /// Sets the payload for the pipes.
 /// @param pipeNumber	The pipe number from 0-5
 /// @param payload		The payload 0-32 (0 means pipe not used)
-void nordic_set_payload_for_pipe(unsigned char pipeNumber, unsigned char payload);
+void nordic_set_payload_for_pipe(uint8_t pipeNumber, uint8_t payload);
 
 /// Sets the width of the address.
 /// @param width	The address width, must be 3-5
@@ -268,26 +281,26 @@ void nordic_set_addr_width(unsigned short width);
 /// Sets the address of the transmitter.
 /// @param address	The char array of address.
 /// @length			The length of address, must be same as what was set at nordic_setAddressWidth()
-void nordic_set_tx_address(char* address, unsigned short length);
+void nordic_set_tx_address(uint8_t* address, unsigned short length);
 
 /// Sets the reciver's Pipe 0 Address.
 /// @param address	The char array of address.
 /// @length			The length of address, must be same as what was set at nordic_setAddressWidth()
-void nordic_set_rx_pipe0_addr(char* address, unsigned short length);
+void nordic_set_rx_pipe0_addr(uint8_t* address, unsigned short length);
 
 /// Sets the reciver's Pipe 1 Address.
 /// @param address	The char array of address.
 /// @length			The length of address, must be same as what was set at nordic_setAddressWidth()
-void nordic_set_rx_pipe1_addr(char* address, unsigned short length);
+void nordic_set_rx_pipe1_addr(uint8_t* address, unsigned short length);
 
 /// Sets the last byte of the address of Pipe2-Pipe5
 /// @note	The top bytes are the same as Pipe1's address.
 /// @param 	address	The last byte of this pipe's address.
 //@{
-void nordic_set_rx_pipe2_lsb_addr(char address);
-void nordic_set_rx_pipe3_lsb_addr(char address);
-void nordic_set_rx_pipe4_lsb_addr(char address);
-void nordic_set_rx_pipe5_lsb_addr(char address);
+void nordic_set_rx_pipe2_lsb_addr(uint8_t address);
+void nordic_set_rx_pipe3_lsb_addr(uint8_t address);
+void nordic_set_rx_pipe4_lsb_addr(uint8_t address);
+void nordic_set_rx_pipe5_lsb_addr(uint8_t address);
 //@}
 
 /// Sets the auto-ack (enhanced shockburst for the pipes)
@@ -298,9 +311,14 @@ void nordic_set_auto_ack_for_pipes(bool pipe0, bool pipe1, bool pipe2, bool pipe
 /// @param pipe0, pipe1, pipe2, pipe3, pipe4, pipe5		Set to true, to enable the pipe.
 void nordic_enable_pipes(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pipe4, bool pipe5);
 
-
-
-
+void nordic_toggle_feature();
+uint8_t nordic_get_rx_payload_width();
+void nordic_queue_tx_fifo_no_ack(uint8_t *data, unsigned short length);
+void nordic_set_features(
+		bool enableDinamicPayloadLength,
+		bool enablePayloadWithAck,
+		bool enableTxPayloadNoAckCommand);
+void nordic_enable_dynamic_payload_length(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pipe4, bool pipe5);
 
 #ifdef __cplusplus
 }

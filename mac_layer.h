@@ -11,15 +11,18 @@
 #include "channel.h"
 #include "UniqueFrame.h"
 
+#include "mac_layer_base.h"
+
 #define mac_layerRESEND_NUM		(3u)
 #define mac_layerCRC_SIZE		(2u)
 
-class MacLayer {
+class MacLayer :	public MacLayerBase
+{
 public:
 	MacLayer(Channel *_ptrChannel);
 	void rxTask();
-	bool send(MacFrame &macFrame, uint16_t dstAddress);
-	bool receive(MacFrame &macFrame, unsigned int timeout);
+	bool send(PoolNode *ptrPoolNode, uint16_t dstAddress);
+	bool receive(PoolNode *ptrPoolNode, unsigned int timeout);
 
 private:
 	bool transfer(MacFrame &macFrame);

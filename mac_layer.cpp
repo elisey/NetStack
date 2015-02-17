@@ -81,8 +81,11 @@ void MacLayer::rxTask()
 	}
 }
 
-bool MacLayer::send(MacFrame &macFrame, uint16_t dstAddress)
+bool MacLayer::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 {
+	MacFrame macFrame;
+	macFrame.clone(*ptrPoolNode);
+
 	macFrame.setPacketAckType(packetAckType_withAck);
 	macFrame.setPid( getUniquePid() );
 	// добавить место для CRC в буфер
@@ -100,10 +103,13 @@ bool MacLayer::send(MacFrame &macFrame, uint16_t dstAddress)
 	return result;
 }
 
-bool MacLayer::receive(MacFrame &macFrame, unsigned int timeout)
+bool MacLayer::receive(PoolNode *ptrPoolNode, unsigned int timeout)
 {
+/*	MacFrame macFrame;
+	macFrame.clone(*ptrPoolNode);*/
+
 	BaseType_t result;
-	result = xQueueReceive(rxQueue, &macFrame, timeout);
+	result = xQueueReceive(rxQueue, ptrPoolNode, timeout);
 	if (result == pdPASS)	{
 		return true;
 	}

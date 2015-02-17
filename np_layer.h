@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include "NpFrame.h"
-#include "mac_layer.h"
+#include "mac_layer_base.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -14,7 +14,7 @@ extern uint16_t selfAddress;
 class NpLayer
 {
 public:
-	NpLayer(MacLayer *_ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId);
+	NpLayer(MacLayerBase *_ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId);
 
 	void txTask();
 	void rxTask();
@@ -44,7 +44,7 @@ private:
 
 	bool putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue);
 
-	MacLayer *ptrMacLayer;
+	MacLayerBase *ptrMacLayer;
 	uint16_t maxMtu;
 	uint8_t inderfaceId;
 

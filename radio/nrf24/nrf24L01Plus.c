@@ -18,16 +18,22 @@
 #include "nrf24L01Plus.h"
 #include "nrf24L01Plus_HAL.h"
 
+#define commandACTIVATE					(0x50)
+#define commandR_RX_PL_WID				(0x60)
+#define commandW_TX_PAYLOAD_NO_ACK		(0xB0)
+
+#define registerFEATURE					(0x1D)
+#define registerDYNPD					(0x1C)
 
 // LOW LEVEL NORDIC IO FUNCTION:
-static char nordic_transfer(char command, char* data, unsigned short length, bool copy)
+static uint8_t nordic_transfer(uint8_t command, uint8_t* data, unsigned short length, bool copy)
 {
 	int i = 0;
 
 	NORDIC_LOCK_SPI();
 	nordic_HAL_ChipSelect();
 
-	char status = nordic_HAL_SpiTransfer(command);
+	uint8_t status = nordic_HAL_SpiTransfer(command);
 	if(copy) {
 		for( i = 0; i < length; i++) {
 			data[i] = nordic_HAL_SpiTransfer(data[i]);
@@ -50,35 +56,45 @@ static char nordic_transfer(char command, char* data, unsigned short length, boo
 #define nordic_outputData(command, data, length)	\
 			nordic_transfer(command, data, length, false)
 
-static char nordic_readRegister(char reg)
+static uint8_t nordic_readRegister(uint8_t reg)
 {
-	char data = 0;
-	char opcode = (reg & 0x1F) | 0x00;
+	uint8_t data = 0;
+	uint8_t opcode = (reg & 0x1F) | 0x00;
 
 	nordic_exchangeData(opcode, &data, 1);
 	return data;
 }
 
-static void nordic_writeRegister(char reg, char data)
+static void nordic_writeRegister(uint8_t reg, uint8_t data)
 {
-	char opcode = (reg & 0x1F) | 0x20;
+	uint8_t opcode = (reg & 0x1F) | 0x20;
 	nordic_outputData(opcode, &data, 1);
 }
 
-static char nordic_readStatusRegister()
+static uint8_t nordic_readStatusRegister()
 {
 	return nordic_exchangeData(0xFF, 0, 0);
 }
 
-void nordic_init(unsigned char payload, unsigned short mhz, unsigned short bitrate_kbps)
+void nordic_init(
+		uint8_t* selfAddress,
+		uint8_t* broadcastAddress,
+		uint8_t payload,
+		unsigned short mhz,
+		unsigned short bitrate_kbps,
+		unsigned short address_width)
 {
 	nordic_HAL_Init();
+	nordic_toggle_feature();
+	nordic_set_features(true, false, false);
+	nordic_enable_dynamic_payload_length(true, true, false, false, false, false);
+
 	nordic_flush_rx_fifo();
 	nordic_flush_tx_fifo();
 
 	nordic_HAL_ChipEnableLow();
 	nordic_power_down();
-	nordic_set_intr_signals(true, false, false);
+	nordic_set_intr_signals(false, false, false);
 	nordic_clear_all_intr_flags();
 	nordic_set_crc(2);
 
@@ -86,25 +102,23 @@ void nordic_init(unsigned char payload, unsigned short mhz, unsigned short bitra
 	nordic_set_air_data_rate(bitrate_kbps);
 	nordic_set_power_level(3);
 
-	nordic_enable_pipes       (1, 1, 0, 0, 0, 0);
-	nordic_set_auto_ack_for_pipes(0, 0, 0, 0, 0, 0);
-	//nordic_set_auto_transmit_options(500, 3);
-	nordic_set_auto_transmit_options(500, 0);
+	nordic_enable_pipes(true, true, false, false, false, false);
+	nordic_set_auto_ack_for_pipes(true, false, false, false, false, false);
 
-	nordic_set_payload_for_pipe(0, payload);
-	nordic_set_payload_for_pipe(1, 0);
-	nordic_set_payload_for_pipe(2, 0);
-	nordic_set_payload_for_pipe(3, 0);
-	nordic_set_payload_for_pipe(4, 0);
-	nordic_set_payload_for_pipe(5, 0);
+	nordic_set_auto_transmit_options(500, 3);
 
-	char address[] = { 0xE7, 0xDE, 0xAD, 0xE7, 0xE7 }; // Any random value
-	const unsigned short addressWidth = 5;
-	nordic_set_addr_width   (         addressWidth);
-	nordic_set_tx_address   (address, addressWidth);
-	nordic_set_rx_pipe0_addr(address, addressWidth);
+	nordic_set_addr_width(address_width);
+
+	nordic_set_rx_pipe0_addr(selfAddress, address_width);
+	nordic_set_rx_pipe1_addr(broadcastAddress, address_width);
+	nordic_set_tx_address(selfAddress, address_width);
 
 	nordic_power_up();
+
+	volatile unsigned int i;
+	for (i = 0; i < 900000; ++i) {
+
+	}
 	NORDIC_DELAY_US(2000);
 }
 
@@ -133,40 +147,46 @@ void nordic_clear_all_intr_flags()
 {
 	nordic_writeRegister(7, 0x70);
 }
-void nordic_queue_tx_fifo(char *data, unsigned short length)
+void nordic_queue_tx_fifo(uint8_t *data, unsigned short length)
 {
 	nordic_outputData(0xA0, data, length);
 }
 
 
-void nordic_mode1_send_single_packet(char *data, unsigned short length)
+
+#include "debug.h"
+
+bool nordic_mode1_send_single_packet(uint8_t *data, unsigned short length)
 {
+	pin1_on;
     nordic_flush_tx_fifo();
     nordic_queue_tx_fifo(data, length);
     nordic_HAL_ChipEnableHigh();
+    pin1_off;
+    pin2_on;
+    int timeout = 0;
 
-    // Tx Queue will turn empty when packet is sent.
-    // Timeout of 16-bit counter should provide at least 5ms of timeout
-    // even if the CPU is as fast as 100Mhz assuming 100ns per loop
-    volatile uint16_t i = 0;
-    while (++i != 0 && !nordic_is_tx_fifo_empty()) {		//TODO проверка и журналирование ошибки таймата
-        ;
-    }
-    if (i == 0)	{
+    sendingState_t sendingState;
 
-    }
+    do {
+    	if (++timeout >= 1000)	{
+    		break;
+    	}
+
+    	//TODO блокирующее ожидание. Ввести блокировку задачи и периодическую проверку.
+		sendingState = getSendingStateAndClearFlag();
+	} while (sendingState == sendingState_inProcess );
+
+    pin2_off;
+
     nordic_HAL_ChipEnableLow();
     nordic_flush_tx_fifo();
-}
 
-void nordic_check_regs()
-{
-	int i;
-	volatile static uint8_t regs[17];
-
-	for (i = 0; i < 17; ++i) {
-		regs[i] = nordic_readRegister(i);
-	}
+    pin4_on;
+    if (sendingState == sendingState_Ok)	{
+    	return true;
+    }
+    return false;
 }
 
 void nordic_standby1_to_tx_mode1()
@@ -191,7 +211,7 @@ void nordic_standby1_to_rx()
 
 
 // TO DO:
-void nordic_finishTxMode2_transitionToStandby1(char* data, unsigned short length)
+void nordic_finishTxMode2_transitionToStandby1(uint8_t* data, unsigned short length)
 {
 	// Wait until any previous Tx Packets are sent such that Nordic will be in Standby-1 mode.
 	while(!nordic_is_tx_fifo_empty());	//TODO проверка и журналирование ошибки таймата
@@ -214,6 +234,36 @@ void nordic_tx_mode2_to_standby1_through_power_down()
 	nordic_power_up();
 }
 
+
+bool nordic_is_sending()
+{
+
+    /* if sending successful (TX_DS) or max retries exceded (MAX_RT). */
+    if((nordic_readStatusRegister()&((1 << 4)|(1 << 5))))
+    {
+        return false; /* false */
+    }
+
+    return true; /* true */
+
+}
+
+sendingState_t getSendingStateAndClearFlag()
+{
+	uint8_t status = nordic_readStatusRegister();
+
+	bool packetSent = !!(status & (1 << 5));
+	if (packetSent == true)	{
+		nordic_clear_packet_sent_flag();
+		return sendingState_Ok;
+	}
+	bool packetFail = !!(status & (1 << 4));
+	if (packetFail == true)	{
+		nordic_clear_max_retries_flag();
+		return sendingState_Fail;
+	}
+	return sendingState_inProcess;
+}
 
 bool nordic_is_packet_sent()
 {
@@ -251,7 +301,7 @@ void nordic_clear_packet_available_flag()
 {
 	nordic_writeRegister(7, (1<<6));
 }
-char nordic_read_rx_fifo(char *data, unsigned short length)
+uint8_t nordic_read_rx_fifo(uint8_t *data, unsigned short length)
 {
 	return ((nordic_exchangeData(0x61, data, length) & 0x0E) >> 1);
 }
@@ -270,7 +320,7 @@ void nordic_flush_rx_fifo()
 // CONFIGURATION FUNCTIONS:
 void nordic_set_intr_signals(bool rx, bool tx, bool maxTransmissions)
 {
-	char configRegister = nordic_readRegister(0);
+	uint8_t configRegister = nordic_readRegister(0);
 
 	configRegister =               rx ? (configRegister & ~(1<<6)) : (configRegister | (1<<6));
 	configRegister =               tx ? (configRegister & ~(1<<5)) : (configRegister | (1<<5));
@@ -279,14 +329,14 @@ void nordic_set_intr_signals(bool rx, bool tx, bool maxTransmissions)
 	nordic_writeRegister(0, configRegister);
 }
 
-char nordic_get_intr_reg_status(void)
+uint8_t nordic_get_intr_reg_status(void)
 {
 	return nordic_readRegister(7);
 }
 
-void nordic_set_crc(unsigned char length)
+void nordic_set_crc(uint8_t length)
 {
-	char configRegister = nordic_readRegister(0);
+	uint8_t configRegister = nordic_readRegister(0);
 
 	configRegister |= (1<<3);						// Enable CRC for now
 	if(0 == length) configRegister &= ~(1<<3);		// Disable CRC if length is 0
@@ -310,7 +360,7 @@ void nordic_set_channel(unsigned short MHz)
 	else if(MHz < 2400)    MHz = 2402;
 
 	MHz -= 2400;
-	nordic_writeRegister(5, (char)MHz);
+	nordic_writeRegister(5, (uint8_t)MHz);
 }
 void nordic_set_continous_carrier_transmit(bool enable)
 {
@@ -321,7 +371,7 @@ void nordic_set_continous_carrier_transmit(bool enable)
 }
 void nordic_set_air_data_rate(unsigned short kbps)
 {
-	char currentRegData = nordic_readRegister(6);
+	uint8_t currentRegData = nordic_readRegister(6);
 
 	currentRegData &= ~((1<<5) | (1<<3));	// Set configuration to 1Mbps for now.
 	if(250  == kbps)      currentRegData |= (1<<5);
@@ -329,9 +379,9 @@ void nordic_set_air_data_rate(unsigned short kbps)
 
 	nordic_writeRegister(6, currentRegData);
 }
-void nordic_set_power_level(unsigned char powerLevel)
+void nordic_set_power_level(uint8_t powerLevel)
 {
-	char currentRegData = 0;
+	uint8_t currentRegData = 0;
 	if(powerLevel > 3) powerLevel = 3;
 
 	currentRegData  = nordic_readRegister(6) & ~(0x06);
@@ -347,26 +397,26 @@ void nordic_set_power_level(unsigned char powerLevel)
 
 
 // Nordic Enhanced shockburst Options
-void nordic_set_auto_transmit_options(unsigned short txDelayUs, unsigned char retries)
+void nordic_set_auto_transmit_options(unsigned short txDelayUs, uint8_t retries)
 {
 	if(txDelayUs < 250)  txDelayUs = 250;
 	if(txDelayUs > 4000) txDelayUs = 4000;
 	if(retries > 15)     retries = 15;
 
-	char waitDelay = (txDelayUs / 250) - 1;
+	uint8_t waitDelay = (txDelayUs / 250) - 1;
 
-	char controlReg = (waitDelay << 4) | retries;
+	uint8_t controlReg = (waitDelay << 4) | retries;
 	nordic_writeRegister(4, controlReg);
 }
-char nordic_get_lost_packet_cnt(bool clear)
+uint8_t nordic_get_lost_packet_cnt(bool clear)
 {
-	char count = nordic_readRegister(8) >> 4;
+	uint8_t count = nordic_readRegister(8) >> 4;
 	if(clear) {
 		nordic_writeRegister(5, nordic_readRegister(5));
 	}
 	return count;
 }
-char nordic_get_retransmit_count()
+uint8_t nordic_get_retransmit_count()
 {
 	return (nordic_readRegister(8) & 0x0F);
 }
@@ -377,10 +427,10 @@ char nordic_get_retransmit_count()
 
 
 // Nordic Address & PIPE Configuration
-void nordic_set_payload_for_pipe(unsigned char pipeNumber, unsigned char payload)
+void nordic_set_payload_for_pipe(uint8_t pipeNumber, uint8_t payload)
 {
-	const unsigned char pipeAddressBase = 0x11;
-	unsigned char pipeAddress = pipeNumber + pipeAddressBase;
+	const uint8_t pipeAddressBase = 0x11;
+	uint8_t pipeAddress = pipeNumber + pipeAddressBase;
 
 	if(pipeAddress > 0x16)
 		return; // Invalid Pipe #
@@ -392,45 +442,45 @@ void nordic_set_payload_for_pipe(unsigned char pipeNumber, unsigned char payload
 }
 void nordic_set_addr_width(unsigned short width)
 {
-	char controlReg = 3; // 5-byte
+	uint8_t controlReg = 3; // 5-byte
 
 	if(3 == width) controlReg = 1;
 	if(4 == width) controlReg = 2;
 
 	nordic_writeRegister(3, controlReg);
 }
-void nordic_set_tx_address(char* address, unsigned short length)
+void nordic_set_tx_address(uint8_t* address, unsigned short length)
 {
 	nordic_outputData( (0x10 | 0x20), address, length);
 }
-void nordic_set_rx_pipe0_addr(char* address, unsigned short length)
+void nordic_set_rx_pipe0_addr(uint8_t* address, unsigned short length)
 {
 	nordic_outputData( (0x0A | 0x20), address, length);
 }
-void nordic_set_rx_pipe1_addr(char* address, unsigned short length)
+void nordic_set_rx_pipe1_addr(uint8_t* address, unsigned short length)
 {
 	nordic_outputData( (0x0B | 0x20), address, length);
 }
-void nordic_set_rx_pipe2_lsb_addr(char address)
+void nordic_set_rx_pipe2_lsb_addr(uint8_t address)
 {
 	nordic_writeRegister(0x0C, address);
 }
-void nordic_set_rx_pipe3_lsb_addr(char address)
+void nordic_set_rx_pipe3_lsb_addr(uint8_t address)
 {
 	nordic_writeRegister(0x0D, address);
 }
-void nordic_set_rx_pipe4_lsb_addr(char address)
+void nordic_set_rx_pipe4_lsb_addr(uint8_t address)
 {
 	nordic_writeRegister(0x0E, address);
 }
-void nordic_set_rx_pipe5_lsb_addr(char address)
+void nordic_set_rx_pipe5_lsb_addr(uint8_t address)
 {
 	nordic_writeRegister(0x0F, address);
 }
 
 void nordic_set_auto_ack_for_pipes(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pipe4, bool pipe5)
 {
-	char controlReg = 0;
+	uint8_t controlReg = 0;
 
 	if(pipe0) controlReg |= 0x01;
 	if(pipe1) controlReg |= 0x02;
@@ -443,7 +493,7 @@ void nordic_set_auto_ack_for_pipes(bool pipe0, bool pipe1, bool pipe2, bool pipe
 }
 void nordic_enable_pipes(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pipe4, bool pipe5)
 {
-	char controlReg = 0;
+	uint8_t controlReg = 0;
 
 	if(pipe0) controlReg |= 0x01;
 	if(pipe1) controlReg |= 0x02;
@@ -456,3 +506,55 @@ void nordic_enable_pipes(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pi
 }
 
 
+void nordic_toggle_feature()
+{
+	uint8_t data = 0x73;
+	nordic_outputData(commandACTIVATE, &data, 1);
+}
+
+uint8_t nordic_get_rx_payload_width()
+{
+	uint8_t data = 0;
+	uint8_t opcode = commandR_RX_PL_WID;
+
+	nordic_exchangeData(opcode, &data, 1);
+	return data;
+}
+
+void nordic_queue_tx_fifo_no_ack(uint8_t *data, unsigned short length)
+{
+	nordic_outputData(commandW_TX_PAYLOAD_NO_ACK, data, length);
+}
+
+void nordic_set_features(
+		bool enableDinamicPayloadLength,
+		bool enablePayloadWithAck,
+		bool enableTxPayloadNoAckCommand)
+{
+	uint8_t data = 0;
+
+	if (enableTxPayloadNoAckCommand)	{
+		data |= 0x01;
+	}
+	if (enablePayloadWithAck)	{
+		data |= 0x02;
+	}
+	if (enableDinamicPayloadLength)	{
+		data |= 0x04;
+	}
+	nordic_writeRegister(registerFEATURE, data);
+}
+
+void nordic_enable_dynamic_payload_length(bool pipe0, bool pipe1, bool pipe2, bool pipe3, bool pipe4, bool pipe5)
+{
+	uint8_t controlReg = 0;
+
+	if(pipe0) controlReg |= 0x01;
+	if(pipe1) controlReg |= 0x02;
+	if(pipe2) controlReg |= 0x04;
+	if(pipe3) controlReg |= 0x08;
+	if(pipe4) controlReg |= 0x10;
+	if(pipe5) controlReg |= 0x20;
+
+	nordic_writeRegister(registerDYNPD, controlReg);
+}

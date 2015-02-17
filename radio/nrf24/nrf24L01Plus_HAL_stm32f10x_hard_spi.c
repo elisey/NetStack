@@ -44,7 +44,10 @@ void nordic_HAL_Init()
 
 	nordic_HAL_ChipDeselect();
 	nordic_HAL_ChipEnableLow();
-
+	/*
+	 * Максимальная допустимая частота SPI для NRF24 - 8 MHz при условии низкой емкости линии (5 pF).
+	 * Наиболее подходящий предделитель - 16. Рабочая частота SPI - 4.5 MHz.
+	 */
 	SpiDriver_Init(ptrSpiDriver, spi_clock_mode_idle_low_1_edge, spi_first_bit_msb, spi_prescaler_16);
 	prv_externalInterruptInit();
 }
@@ -97,8 +100,11 @@ static void prv_externalInterruptInit()
     EXTI->IMR |= EXTI_IMR_MR4;					//Вклчюание прерывания по выбраннйо линии
 }
 
+
+#include "debug.h"
 void EXTI4_IRQHandler()
 {
+	pin5_on;
 	EXTI->PR = EXTI_PR_PR4;
 	//nordic_HAL_OnIrqLow();
 }

@@ -2,13 +2,14 @@
 #include "Routing.h"
 #include "debug.h"
 #include "TpFrame.h"	//TODO инклуд уберется после выделения ТП слоя
-
+#include "routeTable.h"
+#include "MacFrame.h"
 static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
 
 uint16_t selfAddress = 0;
 
-NpLayer::NpLayer(MacLayer* _ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId)
+NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId)
 	:	ptrMacLayer(_ptrMacLayer),
 	 	maxMtu(_maxMtu),
 	 	inderfaceId(_inderfaceId),
@@ -17,7 +18,7 @@ NpLayer::NpLayer(MacLayer* _ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId)
 	 	rxTpaQueue(NULL)
 
 {
-	txQueue = xQueueCreate(10, sizeof(MacFrame));
+	txQueue = xQueueCreate(10, sizeof(NpFrame));
 
 	xTaskCreate(
 			NpLayer_TxTask,
@@ -47,12 +48,12 @@ void NpLayer::rxTask()
 {
 	while(1)
 	{
-		MacFrame macFrame;
-
-		bool result = ptrMacLayer->receive(macFrame, portMAX_DELAY);
-		assert(result == true);
 		NpFrame npFrame;
-		npFrame.clone(macFrame);
+
+		bool result = ptrMacLayer->receive(&npFrame, portMAX_DELAY);
+		assert(result == true);
+
+
 		uint16_t dstAddress = npFrame.getDstAddress();
 
 		if (dstAddress != selfAddress)	{
@@ -150,12 +151,9 @@ void NpLayer::txTask()
 
 		//Если MTU ниже размера пакета, то разбивка пакета
 
-		MacFrame macFrame;
-		macFrame.clone(npFrame);
-
 		// определение адреса следующего хопа через таблицу роутов, как defaultgate
 
-		bool transferResult = ptrMacLayer->send(macFrame, dstAddress);
+		bool transferResult = ptrMacLayer->send(&npFrame, dstAddress);
 	}
 }
 
