@@ -182,7 +182,7 @@ bool MacLayer::isAckReceived(uint8_t pid)
 {
 	uint8_t receivedPid;
 	BaseType_t result;
-	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)2 / portTICK_RATE_MS);
+	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)mac_layerWAIT_ACK_TIMEOUT / portTICK_RATE_MS);
 	if (result == pdPASS)	{
 		return (receivedPid == pid);
 	}

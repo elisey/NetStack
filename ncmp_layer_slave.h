@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include "ncmp_layer_base.h"
 
+#define IM_SLAVE_PACKET_PERIOD	(15)
+#define WAIT_FOR_PING_PERIOD	(50)
+
 class NcmpLayerSlave :public NcmpLayerBase
 {
 public:
@@ -10,8 +13,8 @@ public:
 	void task();
 private:
 
-	uint16_t waitForMaster();
-	bool waitForPingAndReply();
+	uint16_t waitForMaster(unsigned int timeout);
+	bool waitForPingAndReply(unsigned int timeout);
 
 	void sendMyRoute(uint16_t dstAddress);
 	void sendRoutes();

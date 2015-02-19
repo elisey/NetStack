@@ -4,7 +4,9 @@
 #include "ncmp_layer_base.h"
 #include "NcmpFrame.h"
 
-#define NUM_OF_PING_TRY		(3)
+#define NUM_OF_PING_TRY			(3)
+#define WAIT_FOR_PONG_TIMEOUT	(10)
+#define PING_PERIOD				(20)
 
 class NcmpLayerMaster : public NcmpLayerBase
 {
@@ -15,8 +17,9 @@ public:
 	void sendPing(uint16_t dstAddress);
 
 private:
-	bool waitForPingAnswer(uint16_t targetAddress);
-	void waitForAnyPackets(uint32_t prevTick);
+	bool waitForPingAnswer(uint16_t targetAddress, unsigned int timeout);
+	void waitForAnyPackets(uint32_t prevTick, unsigned int timeout);
+	void deleteSlave(uint16_t slaveAddress);
 	void parsePacket(NcmpFrame *packet, uint16_t srcAddress);
 	void sendImMaster(uint16_t dstAddress);
 	void parseAddRoutesPacket(NcmpFrame *packet);

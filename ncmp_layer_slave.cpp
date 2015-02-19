@@ -22,7 +22,7 @@ void NcmpLayerSlave::task()
 	{
 		if (currentMaster == 0)	{
 			sendImSlave();
-			uint16_t foundMaster = waitForMaster();
+			uint16_t foundMaster = waitForMaster(IM_SLAVE_PACKET_PERIOD);
 			if (foundMaster != 0)	{
 				currentMaster = foundMaster;
 				sendMyRoute(currentMaster);
@@ -31,7 +31,7 @@ void NcmpLayerSlave::task()
 			}
 		}
 		else	{
-			if (waitForPingAndReply() == false)	{
+			if (waitForPingAndReply(WAIT_FOR_PING_PERIOD) == false)	{
 				currentMaster = 0;
 				RouterTable::instance().setDefaultGate(0);
 			}
@@ -39,7 +39,7 @@ void NcmpLayerSlave::task()
 	}
 }
 
-uint16_t NcmpLayerSlave::waitForMaster()
+uint16_t NcmpLayerSlave::waitForMaster(unsigned int timeout)
 {
 	uint32_t prevTick = xTaskGetTickCount();
 	NpFrame npFrame;
@@ -47,7 +47,7 @@ uint16_t NcmpLayerSlave::waitForMaster()
 	do
 	{
 		timeDelta = getTimeDelta( prevTick, xTaskGetTickCount() );
-		BaseType_t result = xQueueReceive(rxQueue, &npFrame, 10 - timeDelta);
+		BaseType_t result = xQueueReceive(rxQueue, &npFrame, timeout - timeDelta);
 		if (result == pdFAIL)	{
 			return 0;
 		}
@@ -64,11 +64,11 @@ uint16_t NcmpLayerSlave::waitForMaster()
 			//парсинг остальных пакетов (остальный пакетов нет)
 			ncmpFrame.free();
 		}
-	} while(timeDelta < 10);
+	} while(timeDelta < timeout);
 	return 0;
 }
 
-bool NcmpLayerSlave::waitForPingAndReply()
+bool NcmpLayerSlave::waitForPingAndReply(unsigned int timeout)
 {
 	uint32_t prevTick = xTaskGetTickCount();
 	NpFrame npFrame;
@@ -76,7 +76,7 @@ bool NcmpLayerSlave::waitForPingAndReply()
 	do
 	{
 		timeDelta = getTimeDelta( prevTick, xTaskGetTickCount() );
-		BaseType_t result = xQueueReceive(rxQueue, &npFrame, 50 - timeDelta);
+		BaseType_t result = xQueueReceive(rxQueue, &npFrame, timeout - timeDelta);
 		if (result == pdFAIL)	{
 			return false;
 		}
@@ -96,7 +96,7 @@ bool NcmpLayerSlave::waitForPingAndReply()
 			//логирование
 		}
 		ncmpFrame.free();
-	} while(timeDelta < 50);
+	} while(timeDelta < timeout);
 	return false;
 }
 

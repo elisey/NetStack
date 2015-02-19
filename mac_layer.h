@@ -13,8 +13,9 @@
 
 #include "mac_layer_base.h"
 
-#define mac_layerRESEND_NUM		(3u)
-#define mac_layerCRC_SIZE		(2u)
+#define mac_layerRESEND_NUM			(3u)
+#define mac_layerCRC_SIZE			(2u)
+#define mac_layerWAIT_ACK_TIMEOUT	(2u)
 
 class MacLayer :	public MacLayerBase
 {
