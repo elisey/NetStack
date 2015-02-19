@@ -21,8 +21,18 @@ void NcmpLayerMaster::task()
 		prevRouteIndex = RouterTable::instance().getNextRouteToPing(prevRouteIndex, interfaceId);
 		if (prevRouteIndex != (-1))	{
 			targetAddress = (RouterTable::instance())[prevRouteIndex].address;
-			sendPing(targetAddress);
-			if (waitForPingAnswer(targetAddress) == false)	{
+
+			bool pingResult;
+			int i;
+			for (i = 0; i < NUM_OF_PING_TRY; ++i) {
+				sendPing(targetAddress);
+				pingResult = waitForPingAnswer(targetAddress);
+				if (pingResult == true)	{
+					break;
+				}
+			}
+
+			if (pingResult == false)	{
 
 				uint16_t routeToDelete;
 				NcmpFrame ncmpFrame;

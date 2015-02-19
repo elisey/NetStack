@@ -4,6 +4,8 @@
 #include "ncmp_layer_base.h"
 #include "NcmpFrame.h"
 
+#define NUM_OF_PING_TRY		(3)
+
 class NcmpLayerMaster : public NcmpLayerBase
 {
 public:
