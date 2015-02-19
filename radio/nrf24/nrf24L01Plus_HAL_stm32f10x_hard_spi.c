@@ -104,7 +104,8 @@ static void prv_externalInterruptInit()
 #include "debug.h"
 void EXTI4_IRQHandler()
 {
-	pin5_on;
+	pin1_on;
 	EXTI->PR = EXTI_PR_PR4;
-	//nordic_HAL_OnIrqLow();
+	nordic_HAL_OnIrqLow();
+	pin1_off;
 }

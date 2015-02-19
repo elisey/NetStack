@@ -153,9 +153,12 @@ void nordic_queue_tx_fifo(uint8_t *data, unsigned short length);
 /// @post	Returns back to Standby-1 after sending the data.
 bool nordic_mode1_send_single_packet(uint8_t *data, unsigned short length);
 
+void nordic_mode1_start_send_single_packet(uint8_t *data, unsigned short length);
+void nordic_mode1_finish_send_single_packet();
+
 bool nordic_is_sending();
 
-sendingState_t getSendingStateAndClearFlag();
+sendingState_t nordic_get_sending_state_and_clear_flag();
 /// @return			True if a TX Packet was sent.
 bool nordic_is_packet_sent();
 

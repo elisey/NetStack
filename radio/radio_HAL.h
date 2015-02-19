@@ -19,13 +19,14 @@ public:
 	bool send( PoolNode *ptrPoolNode, uint16_t dstAddress);
 	bool receive(PoolNode *ptrPoolNode, unsigned int timeout);
 	void init(uint16_t selfAddress);
+
 private:
-
-
 	bool transfer(uint8_t *buffer, uint8_t size, uint16_t dstAddress);
 	bool transferBroadcast(uint8_t *buffer, uint8_t size);
+	bool queuePacketAndWait(uint8_t* buffer, uint8_t size);
 	void wordToBuffer(uint16_t inputData, uint8_t *buffer);
+	void nrfLock();
+	void nrfUnlock();
 
 	QueueHandle_t rxQueue;
-	SemaphoreHandle_t nrfMutex;
 };

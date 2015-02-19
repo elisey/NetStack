@@ -94,7 +94,7 @@ void nordic_init(
 
 	nordic_HAL_ChipEnableLow();
 	nordic_power_down();
-	nordic_set_intr_signals(false, false, false);
+	nordic_set_intr_signals(false, true, true);
 	nordic_clear_all_intr_flags();
 	nordic_set_crc(2);
 
@@ -152,41 +152,40 @@ void nordic_queue_tx_fifo(uint8_t *data, unsigned short length)
 	nordic_outputData(0xA0, data, length);
 }
 
-
-
-#include "debug.h"
-
 bool nordic_mode1_send_single_packet(uint8_t *data, unsigned short length)
 {
-	pin1_on;
     nordic_flush_tx_fifo();
     nordic_queue_tx_fifo(data, length);
     nordic_HAL_ChipEnableHigh();
-    pin1_off;
-    pin2_on;
     int timeout = 0;
-
     sendingState_t sendingState;
-
     do {
     	if (++timeout >= 1000)	{
     		break;
     	}
-
-    	//TODO блокирующее ожидание. Ввести блокировку задачи и периодическую проверку.
 		sendingState = getSendingStateAndClearFlag();
 	} while (sendingState == sendingState_inProcess );
-
-    pin2_off;
 
     nordic_HAL_ChipEnableLow();
     nordic_flush_tx_fifo();
 
-    pin4_on;
     if (sendingState == sendingState_Ok)	{
     	return true;
     }
     return false;
+}
+
+void nordic_mode1_start_send_single_packet(uint8_t *data, unsigned short length)
+{
+    nordic_flush_tx_fifo();
+    nordic_queue_tx_fifo(data, length);
+    nordic_HAL_ChipEnableHigh();
+}
+
+void nordic_mode1_finish_send_single_packet()
+{
+    nordic_HAL_ChipEnableLow();
+    nordic_flush_tx_fifo();
 }
 
 void nordic_standby1_to_tx_mode1()
@@ -248,7 +247,7 @@ bool nordic_is_sending()
 
 }
 
-sendingState_t getSendingStateAndClearFlag()
+sendingState_t nordic_get_sending_state_and_clear_flag()
 {
 	uint8_t status = nordic_readStatusRegister();
 

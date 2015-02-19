@@ -63,8 +63,10 @@ uint16_t addr3 = 32;
 
 int main(void)
 {
+	Debug_Init();
+	pin1_on;
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB ,ENABLE);
-
+	pin1_off;
 	GPIO_InitTypeDef gpio;
 	gpio.GPIO_Mode = GPIO_Mode_IPU;
 	gpio.GPIO_Speed = GPIO_Speed_50MHz;
@@ -74,21 +76,20 @@ int main(void)
 	uint16_t value = GPIO_ReadInputData(GPIOB);
 	value &= 0b11;
 	value += 30;
-	//selfAddress = value + 30;
-
+	//value = 33;
 	Interfaces_Init(value);
 
 	__enable_irq();
-	Debug_Init();
 
-	if (selfAddress == 33)	{
-		xTaskCreate(
+
+	if (value == 33)	{
+/*		xTaskCreate(
 					sender,
 					"irReceiver",
 					configMINIMAL_STACK_SIZE,
 					&addr1,
 					tskIDLE_PRIORITY + 1,
-					NULL);
+					NULL);*/
 		xTaskCreate(
 					sender,
 					"irReceiver",
@@ -96,13 +97,13 @@ int main(void)
 					&addr2,
 					tskIDLE_PRIORITY + 1,
 					NULL);
-		xTaskCreate(
+/*		xTaskCreate(
 					sender,
 					"irReceiver",
 					configMINIMAL_STACK_SIZE,
 					&addr3,
 					tskIDLE_PRIORITY + 1,
-					NULL);
+					NULL);*/
 
 
 	}
