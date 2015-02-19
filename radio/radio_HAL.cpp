@@ -61,7 +61,7 @@ void RadioHAL::rxTask()
 			}
 		}
 		xSemaphoreGive(nrfMutex);
-		vTaskDelay(2 / portTICK_RATE_MS);
+		vTaskDelay(1 / portTICK_RATE_MS);
 	}
 
 	//TODO добавить семафор от прерывания
@@ -147,7 +147,7 @@ bool RadioHAL::transferBroadcast(uint8_t* buffer, uint8_t size)
 	bool result;
 	result = nordic_mode1_send_single_packet(buffer, size);
 	nordic_set_auto_ack_for_pipes(true, false, false, false, false, false);
-    nordic_set_auto_transmit_options(500, 3);
+    nordic_set_auto_transmit_options(750, 3);
 	nordic_standby1_to_rx();
 	return result;
 }
