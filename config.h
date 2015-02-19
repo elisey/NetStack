@@ -9,11 +9,16 @@
 #include "ncmp_layer_slave.h"
 #include "ncmp_layer_master.h"
 #include "radio_HAL.h"
+
+#define MASTER
+
+#ifdef MASTER
+#define NUM_OF_INTERFACES	3
+#else
 #define NUM_OF_INTERFACES	1
+#endif
 
 extern NpLayer *interfaces[NUM_OF_INTERFACES];
-
-//extern RadioMacLayer rml;
 
 void Interfaces_Init(uint16_t address);
 
