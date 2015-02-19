@@ -258,7 +258,6 @@ void ChannelUart::initUartRegisters(USART_TypeDef * USARTx)
 	USART_Init(USARTx, &usartStruct);
 	USART_DMACmd(USARTx, USART_DMAReq_Tx, ENABLE);
 	USART_DMACmd(USARTx, USART_DMAReq_Rx, ENABLE);
-	//USART_ITConfig(USARTx, USART_IT_TC, ENABLE);
 	USART_ITConfig(USARTx, USART_IT_IDLE, ENABLE);
 	USART_Cmd(USARTx, ENABLE);
 }
@@ -278,17 +277,11 @@ void ChannelUart::initUartPins(GPIO_TypeDef* txGPIOx, uint16_t txPin, GPIO_TypeD
 	GPIO_Init(rxGPIOx,&gpioStruct);
 }
 
-//TODO убрать ненужные прерывания, ИЛИ добавить использование прерываний UART TC
 extern "C"	{
 
 void USART1_IRQHandler()
 {
-	if (USART_GetITStatus(USART1, USART_IT_TC) == SET)	{
-		USART_ClearITPendingBit(USART1, USART_IT_TC);
-		CLEAR_BIT(USART1->CR1, USART_CR1_TE);
-		ch1.irqOnTxCompleate();
-	}
-	else if (USART_GetITStatus(USART1, USART_IT_IDLE) == SET)	{
+	if (USART_GetITStatus(USART1, USART_IT_IDLE) == SET)	{
 		USART_ClearITPendingBit(USART1, USART_IT_IDLE);
 		USART1->DR;
 		ch1.irqOnRxCompleate();
@@ -297,12 +290,7 @@ void USART1_IRQHandler()
 
 void USART2_IRQHandler()
 {
-	if (USART_GetITStatus(USART2, USART_IT_TC) == SET)	{
-		USART_ClearITPendingBit(USART2, USART_IT_TC);
-		CLEAR_BIT(USART2->CR1, USART_CR1_TE);
-		ch2.irqOnTxCompleate();
-	}
-	else if (USART_GetITStatus(USART2, USART_IT_IDLE) == SET)	{
+	if (USART_GetITStatus(USART2, USART_IT_IDLE) == SET)	{
 		USART_ClearITPendingBit(USART2, USART_IT_IDLE);
 		USART2->DR;
 		ch2.irqOnRxCompleate();
@@ -311,12 +299,7 @@ void USART2_IRQHandler()
 
 void USART3_IRQHandler()
 {
-	if (USART_GetITStatus(USART3, USART_IT_TC) == SET)	{
-		USART_ClearITPendingBit(USART3, USART_IT_TC);
-		CLEAR_BIT(USART3->CR1, USART_CR1_TE);
-		ch3.irqOnTxCompleate();
-	}
-	else if (USART_GetITStatus(USART3, USART_IT_IDLE) == SET)	{
+	if (USART_GetITStatus(USART3, USART_IT_IDLE) == SET)	{
 		USART_ClearITPendingBit(USART3, USART_IT_IDLE);
 		USART3->DR;
 		ch3.irqOnRxCompleate();
@@ -325,12 +308,7 @@ void USART3_IRQHandler()
 
 void UART4_IRQHandler()
 {
-	if (USART_GetITStatus(UART4, USART_IT_TC) == SET)	{
-		USART_ClearITPendingBit(UART4, USART_IT_TC);
-		CLEAR_BIT(UART4->CR1, USART_CR1_TE);
-		ch4.irqOnTxCompleate();
-	}
-	else if (USART_GetITStatus(UART4, USART_IT_IDLE) == SET)	{
+	if (USART_GetITStatus(UART4, USART_IT_IDLE) == SET)	{
 		USART_ClearITPendingBit(UART4, USART_IT_IDLE);
 		UART4->DR;
 		ch4.irqOnRxCompleate();
@@ -368,6 +346,4 @@ void DMA2_Channel4_5_IRQHandler()
 		ch4.irqOnTxCompleate();
 	}
 }
-
-
 }
