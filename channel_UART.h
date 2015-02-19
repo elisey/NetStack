@@ -56,7 +56,6 @@ private:
 	void uart4Init();
 	void initUartRegisters(USART_TypeDef * USARTx);
 	void initUartPins(GPIO_TypeDef* txGPIOx, uint16_t txPin, GPIO_TypeDef* rxGPIOx, uint16_t rxPin);
-
 };
 
 extern ChannelUart ch1, ch2, ch3, ch4;

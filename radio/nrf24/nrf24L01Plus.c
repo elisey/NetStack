@@ -163,7 +163,7 @@ bool nordic_mode1_send_single_packet(uint8_t *data, unsigned short length)
     	if (++timeout >= 1000)	{
     		break;
     	}
-		sendingState = getSendingStateAndClearFlag();
+		sendingState = nordic_get_sending_state_and_clear_flag();
 	} while (sendingState == sendingState_inProcess );
 
     nordic_HAL_ChipEnableLow();

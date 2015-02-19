@@ -148,11 +148,7 @@ void NpLayer::txTask()
 		else	{
 			dstAddress = npFrame.getDstAddress();
 		}
-
 		//Если MTU ниже размера пакета, то разбивка пакета
-
-		// определение адреса следующего хопа через таблицу роутов, как defaultgate
-
 		bool transferResult = ptrMacLayer->send(&npFrame, dstAddress);
 	}
 }

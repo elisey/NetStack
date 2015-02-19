@@ -8,9 +8,10 @@
 #include "task.h"
 #include "queue.h"
 
-//#define selfAddress 0x33
+
 extern uint16_t selfAddress;
 #define MAX_TTL		32
+
 class NpLayer
 {
 public:
