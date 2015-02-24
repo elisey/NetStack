@@ -154,8 +154,8 @@ bool RadioHAL::queuePacketAndWait(uint8_t* buffer, uint8_t size)
 	xSemaphoreTake(nrfTxSemaphore, 0);		//Отчистка семафора
 	nordic_mode1_start_send_single_packet(buffer, size);
 
-	BaseType_t result = xSemaphoreTake(nrfTxSemaphore, 5 / portTICK_RATE_MS);
-	if (result != pdPASS)	{
+	BaseType_t result = xSemaphoreTake(nrfTxSemaphore, 10 / portTICK_RATE_MS);
+	if (result != pdPASS)	{			//TODO Случается неприем семафора
 		assert(0);
 	}
 	sendingState_t sendingState;
