@@ -12,16 +12,18 @@ PacketAssembly::PacketAssembly()
 bool PacketAssembly::insertFrame(NpFrame* ptrNpFrame)
 {
 	uint8_t uniqueId;
+	uint16_t srcAddress;
 	uniqueId = ptrNpFrame->getUniqueAssembleId();
+	srcAddress = ptrNpFrame->getSrcAddress();
 
 	int index;
-	index = findNodeByUniqueId(uniqueId);
+	index = findNodeByUniqueIdAndSourceAddress(uniqueId, srcAddress);
 	if (index == -1)	{
 		index = findFreeNode();
 		if (index == -1)	{
 			index = findOldestNode();
 		}
-		initNode(index, ptrNpFrame->getTotalNumOfParts(), ptrNpFrame->getUniqueAssembleId());
+		initNode(index, ptrNpFrame->getTotalNumOfParts(), uniqueId, srcAddress);
 	}
 
 	if (insertPart(index, ptrNpFrame) == true)	{
@@ -33,7 +35,7 @@ bool PacketAssembly::insertFrame(NpFrame* ptrNpFrame)
 	return false;
 }
 
-int PacketAssembly::findNodeByUniqueId(uint8_t uniqueId)
+int PacketAssembly::findNodeByUniqueIdAndSourceAddress(uint8_t uniqueId, uint16_t srcAddress)
 {
 	int i;
 	for (i = 0; i < NUM_OF_UNIQUE_NODES; ++i) {
@@ -41,7 +43,9 @@ int PacketAssembly::findNodeByUniqueId(uint8_t uniqueId)
 			continue;
 		}
 		if (nodes[i].uniqueId == uniqueId)	{
-			return i;
+			if (nodes[i].srcAddress == srcAddress)	{
+				return i;
+			}
 		}
 	}
 	return (-1);
@@ -108,11 +112,12 @@ void PacketAssembly::clearNode(int index)
 	nodes[index].clear();
 }
 
-void PacketAssembly::initNode(int index, uint8_t totalNumOfParts, uint8_t uniqueId)
+void PacketAssembly::initNode(int index, uint8_t totalNumOfParts, uint8_t uniqueId, uint16_t srcAddress)
 {
 	nodes[index].numOfReceivedParts = 0;
 	nodes[index].totalNumOfParts = totalNumOfParts;
 	nodes[index].numOfReceivedBytes = 0;
 	nodes[index].uniqueId = uniqueId;
+	nodes[index].srcAddress = srcAddress;
 }
 
