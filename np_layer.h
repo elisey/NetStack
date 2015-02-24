@@ -8,6 +8,7 @@
 #include "task.h"
 #include "queue.h"
 
+#include "PacketAssembly.h"
 
 extern uint16_t selfAddress;
 #define MAX_TTL		32
@@ -40,7 +41,7 @@ public:
 	void forward(NpFrame *ptrNpFrame);
 
 private:
-
+	uint8_t getUniqueAssembleId();
 	void processTp(NpFrame *npFrame);
 
 	bool putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue);
@@ -54,4 +55,6 @@ private:
 	QueueHandle_t rxTpaQueue;
 
 	QueueHandle_t txQueue;
+
+	PacketAssembly packetAssembly;
 };

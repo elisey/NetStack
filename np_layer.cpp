@@ -11,7 +11,7 @@ uint16_t selfAddress = 0;
 
 NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId)
 	:	ptrMacLayer(_ptrMacLayer),
-	 	maxMtu(_maxMtu),
+	 	maxMtu(_maxMtu - NP_FRAME_HEAD_LENGTH),
 	 	inderfaceId(_inderfaceId),
 	 	rxNcmpQueue(NULL),
 	 	rxTpQueue(NULL),
@@ -48,11 +48,13 @@ void NpLayer::rxTask()
 {
 	while(1)
 	{
-		NpFrame npFrame;
+		PoolNode poolNode(0);
 
-		bool result = ptrMacLayer->receive(&npFrame, portMAX_DELAY);
+		bool result = ptrMacLayer->receive(&poolNode, portMAX_DELAY);
 		assert(result == true);
 
+		NpFrame npFrame;
+		npFrame.clone(poolNode);
 
 		uint16_t dstAddress = npFrame.getDstAddress();
 
@@ -62,9 +64,16 @@ void NpLayer::rxTask()
 
 		if ( (dstAddress == selfAddress) ||	( dstAddress == BROADCAST_ADDRESS ) ||	( dstAddress == TOP_REDIRECTION_ADDRESS ))	{
 
-			//Нужно собирать пакет?
-				//отправить в сборочный класс
-				//continue;
+			if (npFrame.getTotalNumOfParts() > 1)	{
+				if (packetAssembly.insertFrame(&npFrame) == false)	{
+					npFrame.free();
+					continue;
+				}
+				else	{
+					npFrame;
+				}
+			}
+
 			NpFrame_ProtocolType_t protocolType;
 			protocolType = npFrame.getProtocolType();
 
@@ -148,8 +157,56 @@ void NpLayer::txTask()
 		else	{
 			dstAddress = npFrame.getDstAddress();
 		}
-		//Если MTU ниже размера пакета, то разбивка пакета
-		bool transferResult = ptrMacLayer->send(&npFrame, dstAddress);
+
+		uint8_t pasketSize = npFrame.getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
+
+		if (pasketSize <= maxMtu)	{
+			npFrame.setTotalNumOfParts(1);
+			npFrame.setCurrentPartIndex(0);
+			npFrame.setUniqueAssembleId(0);
+
+			bool transferResult = ptrMacLayer->send(&npFrame, dstAddress);
+		}
+		else	{
+
+			uint8_t uniqueId = getUniqueAssembleId();
+			uint8_t currentPart = 0;
+			uint8_t numOfParts = pasketSize / maxMtu;
+			if (pasketSize % maxMtu != 0)	{
+				numOfParts++;
+			}
+
+
+			uint8_t numOfTransferedBytes = 0;
+
+			do {
+				NpFrame npFramePart;
+				npFramePart.alloc();
+				npFramePart.copyHead( &npFrame );
+				npFramePart.setTotalNumOfParts(numOfParts);
+				npFramePart.setCurrentPartIndex(currentPart);
+				npFramePart.setUniqueAssembleId(uniqueId);
+				currentPart++;
+				memcpy(npFramePart.getPayloadPtr(), npFrame.getPayloadPtr() + numOfTransferedBytes, maxMtu);
+				npFramePart.getBuffer().setLenght(maxMtu + NP_FRAME_HEAD_LENGTH);
+				numOfTransferedBytes += maxMtu;
+
+				bool transferResult = ptrMacLayer->send(&npFramePart, dstAddress);
+
+			} while ( (pasketSize - numOfTransferedBytes) > maxMtu );
+
+			NpFrame npFramePart;
+			npFramePart.alloc();
+			npFramePart.copyHead( &npFrame );
+			npFramePart.setTotalNumOfParts(numOfParts);
+			npFramePart.setCurrentPartIndex(currentPart);
+			npFramePart.setUniqueAssembleId(uniqueId);
+			memcpy(npFramePart.getPayloadPtr(), npFrame.getPayloadPtr() + numOfTransferedBytes, pasketSize - numOfTransferedBytes);
+			npFramePart.getBuffer().setLenght(pasketSize - numOfTransferedBytes + NP_FRAME_HEAD_LENGTH);
+			bool transferResult = ptrMacLayer->send(&npFramePart, dstAddress);
+
+			npFrame.free();
+		}
 	}
 }
 
@@ -173,4 +230,15 @@ void NpLayer::forward(NpFrame *ptrNpFrame)
 	BaseType_t result;
 	result = xQueueSend(txQueue, ptrNpFrame, portMAX_DELAY);
 	assert(result == pdPASS);
+}
+
+uint8_t NpLayer::getUniqueAssembleId()
+{
+	static uint8_t uniqueId = 0;
+
+	uniqueId++;
+	if (uniqueId == 0)	{
+		uniqueId++;
+	}
+	return uniqueId;
 }

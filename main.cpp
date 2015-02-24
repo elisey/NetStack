@@ -16,12 +16,16 @@ void sender(void *param)
 	uint16_t *address = static_cast<uint16_t*>(param);
     while(1)
     {
-    	vTaskDelay(200 / portTICK_RATE_MS);
+    	vTaskDelay(500 / portTICK_RATE_MS);
     	static uint8_t state = 0;
     	TpFrame tpFrame;
     	tpFrame.alloc();
-    	tpFrame.getBuffer()[0] = state;
-    	tpFrame.getBuffer().setLenght(1);
+
+
+    	int i;
+    	for (i = 0; i < 100; ++i) {
+			(tpFrame.getBuffer())[i] = i + 10;
+		}
 
     	if (state == 0)	{
     		state = 1;
@@ -29,6 +33,9 @@ void sender(void *param)
     	else {
 			state = 0;
 		}
+
+    	tpFrame.getBuffer()[0] = state;
+    	tpFrame.getBuffer().setLenght(100);
 
     	NpFrame npFrame;
     	npFrame.clone(tpFrame);
@@ -61,6 +68,8 @@ uint16_t addr1 = 30;
 uint16_t addr2 = 31;
 uint16_t addr3 = 32;
 
+#include "PacketAssemblyTest.h"
+
 int main(void)
 {
 	Debug_Init();
@@ -81,6 +90,7 @@ int main(void)
 
 	__enable_irq();
 
+	//PacketAssemblyTest();
 
 	if (value == 33)	{
 /*		xTaskCreate(

@@ -25,5 +25,5 @@ private:
 	uint8_t* cloneMemoryFromNode(PoolNode *ptrNode);
 
 	int memoryIndex;
-	const size_t bufferOffset;
+	size_t bufferOffset;
 };
