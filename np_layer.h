@@ -46,6 +46,14 @@ public:
 	}
 
 private:
+
+	bool needRoutePacket(NpFrame *ptrNpFrame);
+	bool needHandleOwnPacket(NpFrame *ptrNpFrame);
+	void handleOwnFrame(NpFrame *ptrNpFrame);
+	bool frameNeedAssemble(NpFrame *ptrNpFrame);
+	bool processAssembling(NpFrame *ptrNpFrame);
+	void parseOwnPacketByProtocol(NpFrame *ptrNpFrame);
+
 	uint8_t getUniqueAssembleId();
 	void processTp(NpFrame *npFrame);
 

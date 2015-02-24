@@ -58,50 +58,92 @@ void NpLayer::rxTask()
 		NpFrame npFrame;
 		npFrame.clone(poolNode);
 
-		uint16_t dstAddress = npFrame.getDstAddress();
-
-		if (dstAddress != selfAddress)	{
+		if (needRoutePacket(&npFrame) == true)	{
 			Routing::instance().handleFrame(&npFrame, inderfaceId);
 		}
-
-		if ( (dstAddress == selfAddress) ||	( dstAddress == BROADCAST_ADDRESS ) ||	( dstAddress == TOP_REDIRECTION_ADDRESS ))	{
-
-			if (npFrame.getTotalNumOfParts() > 1)	{
-				if (packetAssembly.insertFrame(&npFrame) == false)	{
-					npFrame.free();
-					continue;
-				}
-
-			}
-
-			NpFrame_ProtocolType_t protocolType;
-			protocolType = npFrame.getProtocolType();
-
-			switch (protocolType)
-			{
-			case NpFrame_NCMP:
-				if (putFrameToQueue(&npFrame, rxNcmpQueue) == false)	{
-					npFrame.free();
-				}
-				break;
-			case NpFrame_TPA:
-				npFrame.free();
-				//putFrameToQueue(&npFrame, rxTpaQueue);
-				break;
-			case NpFrame_TP:
-				processTp(&npFrame);
-				//npFrame.free();
-				//putFrameToQueue(&npFrame, rxTpQueue);
-				break;
-			default:
-				npFrame.free();
-				break;
-			}
+		if ( needHandleOwnPacket(&npFrame) == true)	{
+			handleOwnFrame(&npFrame);
 		}
 		else	{
 			npFrame.free();
 		}
+	}
+}
 
+bool NpLayer::needRoutePacket(NpFrame *ptrNpFrame)
+{
+	uint16_t dstAddress = ptrNpFrame->getDstAddress();
+
+	if (dstAddress != selfAddress)	{
+		return true;
+	}
+	return false;
+}
+
+bool NpLayer::needHandleOwnPacket(NpFrame *ptrNpFrame)
+{
+	uint16_t dstAddress = ptrNpFrame->getDstAddress();
+
+	if ((dstAddress == selfAddress) ||
+		( dstAddress == BROADCAST_ADDRESS ) ||
+		( dstAddress == TOP_REDIRECTION_ADDRESS ))
+	{
+		return true;
+	}
+	return false;
+}
+
+void NpLayer::handleOwnFrame(NpFrame *ptrNpFrame)
+{
+	uint16_t dstAddress = ptrNpFrame->getDstAddress();
+
+	if (frameNeedAssemble(ptrNpFrame) == true)	{
+		if (processAssembling(ptrNpFrame) == false)	{
+			ptrNpFrame->free();
+			return;
+		}
+	}
+	parseOwnPacketByProtocol(ptrNpFrame);
+
+}
+
+bool NpLayer::frameNeedAssemble(NpFrame *ptrNpFrame)
+{
+	if (ptrNpFrame->getTotalNumOfParts() > 1)	{
+		return true;
+	}
+	return false;
+}
+
+bool NpLayer::processAssembling(NpFrame *ptrNpFrame)
+{
+	return packetAssembly.insertFrame(ptrNpFrame);
+}
+
+void NpLayer::parseOwnPacketByProtocol(NpFrame *ptrNpFrame)
+{
+	NpFrame_ProtocolType_t protocolType;
+	protocolType = ptrNpFrame->getProtocolType();
+
+	switch (protocolType)
+	{
+	case NpFrame_NCMP:
+		if (putFrameToQueue(ptrNpFrame, rxNcmpQueue) == false)	{
+			ptrNpFrame->free();
+		}
+		break;
+	case NpFrame_TPA:
+		ptrNpFrame->free();
+		//putFrameToQueue(&npFrame, rxTpaQueue);
+		break;
+	case NpFrame_TP:
+		processTp(ptrNpFrame);
+		//npFrame.free();
+		//putFrameToQueue(&npFrame, rxTpQueue);
+		break;
+	default:
+		ptrNpFrame->free();
+		break;
 	}
 }
 
