@@ -5,8 +5,8 @@
 
 uint32_t getTimeDelta(uint32_t prevTime, uint32_t currentTime);
 
-NcmpLayerMaster::NcmpLayerMaster(uint8_t _interfaceId, NpLayer* _ptrNpLayer, interfaceType_t _interfaceType)
-	:	NcmpLayerBase(_interfaceId, _ptrNpLayer, _interfaceType)
+NcmpLayerMaster::NcmpLayerMaster(NpLayer* _ptrNpLayer, interfaceType_t _interfaceType)
+	:	NcmpLayerBase(_ptrNpLayer, _interfaceType)
 {
 }
 

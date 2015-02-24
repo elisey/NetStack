@@ -16,8 +16,10 @@ static SemaphoreHandle_t nrfTxSemaphore;
 
 static void MacLayer_RxTask(void *param);
 
-RadioHAL::RadioHAL()
+RadioHAL::RadioHAL(uint16_t maxMtu)
 {
+	setMtuSize(maxMtu);
+
 	rxQueue = xQueueCreate(10, sizeof(RadioMacFrame));
 	nrfMutex = xSemaphoreCreateMutex();
 	nrfTxSemaphore = xSemaphoreCreateBinary();

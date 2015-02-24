@@ -13,7 +13,7 @@
 class RadioHAL : public MacLayerBase
 {
 public:
-	RadioHAL();
+	RadioHAL(uint16_t maxMtu);
 
 	void rxTask();
 	bool send( PoolNode *ptrPoolNode, uint16_t dstAddress);

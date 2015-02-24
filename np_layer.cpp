@@ -9,15 +9,17 @@ static void NpLayer_RxTask(void *param);
 
 uint16_t selfAddress = 0;
 
-NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId)
+NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint8_t _inderfaceId)
 	:	ptrMacLayer(_ptrMacLayer),
-	 	maxMtu(_maxMtu - NP_FRAME_HEAD_LENGTH),
+
 	 	inderfaceId(_inderfaceId),
 	 	rxNcmpQueue(NULL),
 	 	rxTpQueue(NULL),
 	 	rxTpaQueue(NULL)
 
 {
+	maxNpMtu = ptrMacLayer->getMtuSize() - NP_FRAME_HEAD_LENGTH;
+
 	txQueue = xQueueCreate(10, sizeof(NpFrame));
 
 	xTaskCreate(
@@ -69,9 +71,7 @@ void NpLayer::rxTask()
 					npFrame.free();
 					continue;
 				}
-				else	{
-					npFrame;
-				}
+
 			}
 
 			NpFrame_ProtocolType_t protocolType;
@@ -107,7 +107,7 @@ void NpLayer::rxTask()
 
 #include "Led.h"
 
-Led greenLed(GPIOC, GPIO_Pin_6, true);
+Led greenLed(GPIOC, GPIO_Pin_9, true);
 
 void NpLayer::processTp(NpFrame *npFrame)
 {
@@ -160,7 +160,7 @@ void NpLayer::txTask()
 
 		uint8_t pasketSize = npFrame.getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
 
-		if (pasketSize <= maxMtu)	{
+		if (pasketSize <= maxNpMtu)	{
 			npFrame.setTotalNumOfParts(1);
 			npFrame.setCurrentPartIndex(0);
 			npFrame.setUniqueAssembleId(0);
@@ -171,8 +171,8 @@ void NpLayer::txTask()
 
 			uint8_t uniqueId = getUniqueAssembleId();
 			uint8_t currentPart = 0;
-			uint8_t numOfParts = pasketSize / maxMtu;
-			if (pasketSize % maxMtu != 0)	{
+			uint8_t numOfParts = pasketSize / maxNpMtu;
+			if (pasketSize % maxNpMtu != 0)	{
 				numOfParts++;
 			}
 
@@ -187,13 +187,13 @@ void NpLayer::txTask()
 				npFramePart.setCurrentPartIndex(currentPart);
 				npFramePart.setUniqueAssembleId(uniqueId);
 				currentPart++;
-				memcpy(npFramePart.getPayloadPtr(), npFrame.getPayloadPtr() + numOfTransferedBytes, maxMtu);
-				npFramePart.getBuffer().setLenght(maxMtu + NP_FRAME_HEAD_LENGTH);
-				numOfTransferedBytes += maxMtu;
+				memcpy(npFramePart.getPayloadPtr(), npFrame.getPayloadPtr() + numOfTransferedBytes, maxNpMtu);
+				npFramePart.getBuffer().setLenght(maxNpMtu + NP_FRAME_HEAD_LENGTH);
+				numOfTransferedBytes += maxNpMtu;
 
 				bool transferResult = ptrMacLayer->send(&npFramePart, dstAddress);
 
-			} while ( (pasketSize - numOfTransferedBytes) > maxMtu );
+			} while ( (pasketSize - numOfTransferedBytes) > maxNpMtu );
 
 			NpFrame npFramePart;
 			npFramePart.alloc();

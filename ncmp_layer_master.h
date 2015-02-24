@@ -11,7 +11,7 @@
 class NcmpLayerMaster : public NcmpLayerBase
 {
 public:
-	NcmpLayerMaster(uint8_t _interfaceId, NpLayer *_ptrNpLayer, interfaceType_t _interfaceType);
+	NcmpLayerMaster(NpLayer *_ptrNpLayer, interfaceType_t _interfaceType);
 	void task();
 
 	void sendPing(uint16_t dstAddress);

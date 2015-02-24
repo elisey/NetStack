@@ -9,8 +9,8 @@
 
 #include "debug.h"
 
-NcmpLayerSlave::NcmpLayerSlave(uint8_t _interfaceId , NpLayer *_ptrNpLayer, interfaceType_t _interfaceType)
-	:	NcmpLayerBase(_interfaceId, _ptrNpLayer, _interfaceType),
+NcmpLayerSlave::NcmpLayerSlave(NpLayer *_ptrNpLayer, interfaceType_t _interfaceType)
+	:	NcmpLayerBase( _ptrNpLayer, _interfaceType),
 	 	currentMaster(0),
 	 	pongCounter(0)
 {

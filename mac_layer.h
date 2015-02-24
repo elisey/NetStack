@@ -20,7 +20,7 @@
 class MacLayer :	public MacLayerBase
 {
 public:
-	MacLayer(Channel *_ptrChannel);
+	MacLayer(Channel *_ptrChannel, uint16_t maxMtu);
 	void rxTask();
 	bool send(PoolNode *ptrPoolNode, uint16_t dstAddress);
 	bool receive(PoolNode *ptrPoolNode, unsigned int timeout);

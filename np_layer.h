@@ -16,7 +16,7 @@ extern uint16_t selfAddress;
 class NpLayer
 {
 public:
-	NpLayer(MacLayerBase *_ptrMacLayer, uint16_t _maxMtu, uint8_t _inderfaceId);
+	NpLayer(MacLayerBase *_ptrMacLayer, uint8_t _inderfaceId);
 
 	void txTask();
 	void rxTask();
@@ -40,6 +40,11 @@ public:
 			NpFrame_ProtocolType_t protocolType);
 	void forward(NpFrame *ptrNpFrame);
 
+	uint8_t getInterfaceId()
+	{
+		return inderfaceId;
+	}
+
 private:
 	uint8_t getUniqueAssembleId();
 	void processTp(NpFrame *npFrame);
@@ -47,7 +52,7 @@ private:
 	bool putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue);
 
 	MacLayerBase *ptrMacLayer;
-	uint16_t maxMtu;
+	uint16_t maxNpMtu;
 	uint8_t inderfaceId;
 
 	QueueHandle_t rxNcmpQueue;

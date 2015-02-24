@@ -13,7 +13,7 @@ typedef enum	{
 
 class NcmpLayerBase {
 public:
-	NcmpLayerBase(uint8_t _interfaceId, NpLayer *_ptrNpLayer, interfaceType_t _interfaceType);
+	NcmpLayerBase(NpLayer *_ptrNpLayer, interfaceType_t _interfaceType);
 
 	virtual void task() = 0;
 

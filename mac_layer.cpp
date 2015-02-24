@@ -2,9 +2,11 @@
 
 static void MacLayer_RxTask(void *param);
 
-MacLayer::MacLayer(Channel* _ptrChannel)
+MacLayer::MacLayer(Channel* _ptrChannel, uint16_t maxMtu)
 	:	ptrChannel(_ptrChannel), nextPid(0)
 {
+	setMtuSize(maxMtu);
+
 	rxQueue = xQueueCreate(10, sizeof(MacFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));
 	txMutex = xSemaphoreCreateMutex();

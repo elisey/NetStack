@@ -9,7 +9,7 @@
 class NcmpLayerSlave :public NcmpLayerBase
 {
 public:
-	NcmpLayerSlave(uint8_t _interfaceId, NpLayer *_ptrNpLayer, interfaceType_t _interfaceType);
+	NcmpLayerSlave(NpLayer *_ptrNpLayer, interfaceType_t _interfaceType);
 	void task();
 private:
 

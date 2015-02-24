@@ -10,7 +10,10 @@
 #include "ncmp_layer_master.h"
 #include "radio_HAL.h"
 
-//#define MASTER
+#define MAX_RS_PACKET_SIZE		128
+#define MAX_NRF_PACKET_SIZE		32
+
+#define MASTER
 
 
 
