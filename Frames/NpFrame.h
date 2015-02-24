@@ -5,8 +5,9 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include "PoolNode.h"
-
+#include "debug.h"
 typedef enum	{
 	NpFrame_NCMP = 1,	// net control message protocol
 	NpFrame_TPA = 2,	// transport protocol with acknowledgment
@@ -15,6 +16,7 @@ typedef enum	{
 
 #define BROADCAST_ADDRESS			(0)
 #define TOP_REDIRECTION_ADDRESS		(0xFFFF)
+#define NP_FRAME_HEAD_LENGTH		(8)
 
 class NpFrame : public PoolNode
 {
@@ -83,4 +85,71 @@ public:
 		buffer[5] = static_cast<uint8_t>(protocolType);
 	}
 
+#define TOTAL_NUM_OF_PARTS_MASK	(0b11110000)
+#define CURRENT_PART_INDEX_MASK	(0b00001111)
+	uint8_t getTotalNumOfParts()
+	{
+		uint8_t numOfParts;
+		numOfParts = ( (buffer[6] >> 4) & (0b1111) );
+		return numOfParts;
+	}
+
+	void setTotalNumOfParts(uint8_t numOfParts)
+	{
+		assert(numOfParts <= 0b1111);
+
+		uint8_t reg;
+		reg = buffer[6];
+		reg &= ~TOTAL_NUM_OF_PARTS_MASK;
+
+		reg |= (numOfParts << 4);
+		buffer[6] = reg;
+	}
+
+	uint8_t getCurrentPartIndex()
+	{
+		uint8_t currentIndex;
+		currentIndex = ( buffer[6] & (0b1111) );
+		return currentIndex;
+	}
+
+	void setCurrentPartIndex(uint8_t currentIndex)
+	{
+		assert(currentIndex <= 0b1111);
+
+		uint8_t reg;
+		reg = buffer[6];
+		reg &= ~CURRENT_PART_INDEX_MASK;
+
+		reg |= (currentIndex);
+		buffer[6] = reg;
+	}
+
+	uint8_t getUniqueAssembleId()
+	{
+		return buffer[7];
+	}
+
+	void setUniqueAssembleId(uint8_t id)
+	{
+		buffer[7] = id;
+	}
+
+	uint8_t *getPayloadPtr()
+	{
+		return &(buffer[NP_FRAME_HEAD_LENGTH]);
+	}
+
+	unsigned int getPayloadSize()
+	{
+		return ( buffer.getLenght() - 8 );
+	}
+
+	void copyHead(NpFrame *ptrNpFrameSource)
+	{
+		uint8_t *src = ptrNpFrameSource->getBuffer().getDataPtr();
+		uint8_t *dst = buffer.getDataPtr();
+
+		memcpy( dst, src, NP_FRAME_HEAD_LENGTH );
+	}
 };
