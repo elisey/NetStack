@@ -54,6 +54,11 @@ private:
 	bool processAssembling(NpFrame *ptrNpFrame);
 	void parseOwnPacketByProtocol(NpFrame *ptrNpFrame);
 
+	uint16_t getNextHopAddress(NpFrame *ptrNpFrame);
+	void deassemblepacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t payloadSize);
+	void setAssemblyData(NpFrame *ptrNpFrame, uint8_t totalNumOfParts, uint8_t setCurrentPartIndex, uint8_t uniqueAssebleId);
+	uint8_t calculateNumOfParts(uint8_t payloadSize);
+
 	uint8_t getUniqueAssembleId();
 	void processTp(NpFrame *npFrame);
 

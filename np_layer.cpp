@@ -4,6 +4,7 @@
 #include "TpFrame.h"	//TODO инклуд уберется после выделения ТП слоя
 #include "routeTable.h"
 #include "MacFrame.h"
+
 static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
 
@@ -195,65 +196,83 @@ void NpLayer::txTask()
 		result = xQueueReceive(txQueue, &npFrame, portMAX_DELAY);
 		assert(result == pdPASS);
 
-		uint16_t dstAddress;
+		uint16_t dstAddress = getNextHopAddress(&npFrame);
+		uint8_t payloadSize = npFrame.getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
 
-		if (inderfaceId == 0)	{
-			dstAddress = RouterTable::instance().getDefaultGate();
-		}
-		else	{
-			dstAddress = npFrame.getDstAddress();
-		}
-
-		uint8_t pasketSize = npFrame.getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
-
-		if (pasketSize <= maxNpPayload)	{
-			npFrame.setTotalNumOfParts(1);
-			npFrame.setCurrentPartIndex(0);
-			npFrame.setUniqueAssembleId(0);
-
+		if (payloadSize <= maxNpPayload)	{
+			setAssemblyData(&npFrame, 1, 0, 0);
 			bool transferResult = ptrMacLayer->send(&npFrame, dstAddress);
 		}
 		else	{
-
-			uint8_t uniqueId = getUniqueAssembleId();
-			uint8_t currentPart = 0;
-			uint8_t numOfParts = pasketSize / maxNpPayload;
-			if (pasketSize % maxNpPayload != 0)	{
-				numOfParts++;
-			}
-
-
-			uint8_t numOfTransferedBytes = 0;
-
-			do {
-				NpFrame npFramePart;
-				npFramePart.alloc();
-				npFramePart.copyHead( &npFrame );
-				npFramePart.setTotalNumOfParts(numOfParts);
-				npFramePart.setCurrentPartIndex(currentPart);
-				npFramePart.setUniqueAssembleId(uniqueId);
-				currentPart++;
-				memcpy(npFramePart.getPayloadPtr(), npFrame.getPayloadPtr() + numOfTransferedBytes, maxNpPayload);
-				npFramePart.getBuffer().setLenght(maxNpPayload + NP_FRAME_HEAD_LENGTH);
-				numOfTransferedBytes += maxNpPayload;
-
-				bool transferResult = ptrMacLayer->send(&npFramePart, dstAddress);
-
-			} while ( (pasketSize - numOfTransferedBytes) > maxNpPayload );
-
-			NpFrame npFramePart;
-			npFramePart.alloc();
-			npFramePart.copyHead( &npFrame );
-			npFramePart.setTotalNumOfParts(numOfParts);
-			npFramePart.setCurrentPartIndex(currentPart);
-			npFramePart.setUniqueAssembleId(uniqueId);
-			memcpy(npFramePart.getPayloadPtr(), npFrame.getPayloadPtr() + numOfTransferedBytes, pasketSize - numOfTransferedBytes);
-			npFramePart.getBuffer().setLenght(pasketSize - numOfTransferedBytes + NP_FRAME_HEAD_LENGTH);
-			bool transferResult = ptrMacLayer->send(&npFramePart, dstAddress);
-
-			npFrame.free();
+			deassemblepacketAndSendParts(&npFrame, dstAddress, payloadSize);
 		}
 	}
+}
+
+/*
+ * В зависимости от интерфейса выбирается следующий приемник, который получит это сообщение.
+ * Это нужно только для NRF. Если интерфейс 0 - значит получатель сообщения может находится
+ * на расстоянии в нескольких хопах, и отправка сообщения только через вышестоящего хопа,
+ * который выполнит роутинг. Если интерфейс != 0, то значит получатель является прямым соседом,
+ * так как по беспроводному каналу не предусмотрена многохоповость.
+ */
+uint16_t NpLayer::getNextHopAddress(NpFrame *ptrNpFrame)
+{
+	if (inderfaceId == 0)	{
+		return RouterTable::instance().getDefaultGate();
+	}
+	else	{
+		return ptrNpFrame->getDstAddress();
+	}
+}
+
+void NpLayer::deassemblepacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t payloadSize)
+{
+	uint8_t uniqueId = getUniqueAssembleId();
+	uint8_t currentPart = 0;
+	uint8_t numOfParts = calculateNumOfParts(payloadSize);
+	uint8_t numOfTransferedBytes = 0;
+
+	for (currentPart = 0; currentPart < numOfParts; ++currentPart) {
+		NpFrame npFramePart;
+		npFramePart.alloc();
+		npFramePart.copyHead( ptrNpFrame );
+		setAssemblyData(&npFramePart, numOfParts, currentPart, uniqueId);
+
+		uint8_t numOfBytesToCopy;
+		numOfBytesToCopy = payloadSize - numOfTransferedBytes;
+		if (numOfBytesToCopy > maxNpPayload)	{
+			numOfBytesToCopy = maxNpPayload;
+		}
+
+		uint8_t *destination = npFramePart.getPayloadPtr();
+		uint8_t *source = ptrNpFrame->getPayloadPtr() + numOfTransferedBytes;
+		memcpy(destination, source, numOfBytesToCopy);
+		numOfTransferedBytes += numOfBytesToCopy;
+
+		uint8_t partPacketLength = numOfBytesToCopy + NP_FRAME_HEAD_LENGTH;
+		npFramePart.getBuffer().setLenght( partPacketLength );
+
+		bool transferResult = ptrMacLayer->send(&npFramePart, dstAddress);
+	}
+
+	ptrNpFrame->free();
+}
+
+void NpLayer::setAssemblyData(NpFrame *ptrNpFrame, uint8_t totalNumOfParts, uint8_t setCurrentPartIndex, uint8_t uniqueAssebleId)
+{
+	ptrNpFrame->setTotalNumOfParts(totalNumOfParts);
+	ptrNpFrame->setCurrentPartIndex(setCurrentPartIndex);
+	ptrNpFrame->setUniqueAssembleId(uniqueAssebleId);
+}
+
+uint8_t NpLayer::calculateNumOfParts(uint8_t payloadSize)
+{
+	uint8_t numOfParts = payloadSize / maxNpPayload;
+	if (payloadSize % maxNpPayload != 0)	{
+		numOfParts++;
+	}
+	return numOfParts;
 }
 
 void NpLayer::send(NpFrame *ptrNpFrame,
