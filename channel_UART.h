@@ -6,8 +6,8 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#define MAX_PACKET_SIZE		(256)	//TODO единый размер пакета
-#define MIN_PACKET_SIZE		(4)
+#define MAX_RS_PACKET_SIZE		(135)
+#define MIN_RS_PACKET_SIZE		(4)
 
 typedef enum	{
 	uart_channel_1,

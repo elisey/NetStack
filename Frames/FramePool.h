@@ -5,7 +5,9 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-#define MAX_MTU				(256)
+#include "channel_UART.h"
+
+#define MAX_MTU				(MAX_RS_PACKET_SIZE)
 #define NUM_OF_FRAMES		(60)
 
 class FramePool

@@ -15,8 +15,6 @@ NcmpLayerSlave ncmp1(&np1, interfaceType_PointToPoint);
 //NcmpLayerMaster ncmp2(&np2, interfaceType_PointToPoint);
 NcmpLayerMaster ncmp3(&np3, interfaceType_Star);
 
-
-
 #else
 RadioHAL RadioMacLayer(MAX_NRF_PACKET_SIZE);
 NpLayer np0(&RadioMacLayer, 0);

@@ -10,18 +10,12 @@
 #include "ncmp_layer_master.h"
 #include "radio_HAL.h"
 
-#define MAX_RS_PACKET_SIZE		128
 #define MAX_NRF_PACKET_SIZE		32
 
 #define MASTER
 
-
-
 #ifdef MASTER
 #define NUM_OF_INTERFACES	2
-
-#define TOP_MASTER 1
-
 #else
 #define NUM_OF_INTERFACES	1
 #endif
