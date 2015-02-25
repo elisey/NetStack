@@ -40,9 +40,6 @@ void sender(void *param)
     	NpFrame npFrame;
     	npFrame.clone(tpFrame);
     	Routing::instance().send(&npFrame, *address, MAX_TTL, NpFrame_TP);
-    	//interfaces[1]->send(&npFrame, *address, MAX_TTL, NpFrame_TP);
-
-
     }
 }
 

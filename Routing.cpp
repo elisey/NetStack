@@ -21,28 +21,35 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 		int i;
 		for (i = 0; i < NUM_OF_INTERFACES; ++i) {
 			if (srcInterfaceId != i)	{
-				NpFrame newFrame;
-				newFrame.alloc();
-				newFrame.copy(*ptrNpFrame);
-				interfaces[i]->forward(&newFrame);
+				if (interfaces[i] != NULL)	{
+					NpFrame newFrame;
+					newFrame.alloc();
+					newFrame.copy(*ptrNpFrame);
+					interfaces[i]->forward(&newFrame);
+				}
+
 			}
 		}
 	}
 	else if (dstAddress == TOP_REDIRECTION_ADDRESS)	{
 		if (srcInterfaceId != 0)	{
-			NpFrame newFrame;
-			newFrame.alloc();
-			newFrame.copy(*ptrNpFrame);
-			interfaces[0]->forward(&newFrame);
+			if (interfaces[0] != NULL)	{
+				NpFrame newFrame;
+				newFrame.alloc();
+				newFrame.copy(*ptrNpFrame);
+				interfaces[0]->forward(&newFrame);
+			}
 		}
 	}
 	else	{
 		uint8_t targetInterfaceId = RouterTable::instance().getInterfaceForDestinationAddress(dstAddress);
 		if (targetInterfaceId != srcInterfaceId)	{
-			NpFrame newFrame;			//TODO по возможности избавиться от копрования
-			newFrame.alloc();
-			newFrame.copy(*ptrNpFrame);
-			interfaces[targetInterfaceId]->forward(&newFrame);
+			if (interfaces[targetInterfaceId] != NULL)	{
+				NpFrame newFrame;			//TODO по возможности избавиться от копрования
+				newFrame.alloc();
+				newFrame.copy(*ptrNpFrame);
+				interfaces[targetInterfaceId]->forward(&newFrame);
+			}
 		}
 	}
 }
@@ -50,5 +57,10 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 void Routing::send(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t ttl, NpFrame_ProtocolType_t protocolType)
 {
 	uint8_t targetInterfaceId = RouterTable::instance().getInterfaceForDestinationAddress(dstAddress);
-	interfaces[targetInterfaceId]->send(ptrNpFrame, dstAddress, ttl, protocolType);
+	if (interfaces[targetInterfaceId] != NULL)	{
+		interfaces[targetInterfaceId]->send(ptrNpFrame, dstAddress, ttl, protocolType);
+	}
+	else {
+		ptrNpFrame->free();
+	}
 }

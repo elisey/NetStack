@@ -12,12 +12,10 @@ uint16_t selfAddress = 0;
 
 NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint8_t _inderfaceId)
 	:	ptrMacLayer(_ptrMacLayer),
-
 	 	inderfaceId(_inderfaceId),
 	 	rxNcmpQueue(NULL),
 	 	rxTpQueue(NULL),
 	 	rxTpaQueue(NULL)
-
 {
 	maxNpPayload = ptrMacLayer->getMtuSize() - NP_FRAME_HEAD_LENGTH;
 
@@ -59,8 +57,10 @@ void NpLayer::rxTask()
 		NpFrame npFrame;
 		npFrame.clone(poolNode);
 
+		#if (ROUTE_OTHER_PACKETS == 1)
 		if (needRoutePacket(&npFrame) == true)	{
 			Routing::instance().handleFrame(&npFrame, inderfaceId);
+		#endif
 		}
 		if ( needHandleOwnPacket(&npFrame) == true)	{
 			handleOwnFrame(&npFrame);
@@ -99,7 +99,6 @@ void NpLayer::handleOwnFrame(NpFrame *ptrNpFrame)
 	uint16_t dstAddress = ptrNpFrame->getDstAddress();
 
 	if (frameNeedAssemble(ptrNpFrame) == true)	{
-
 #if (USE_OWN_PACKET_ASSEMBLY == 1)
 		if (processAssembling(ptrNpFrame) == false)	{
 			ptrNpFrame->free();
@@ -112,7 +111,6 @@ void NpLayer::handleOwnFrame(NpFrame *ptrNpFrame)
 
 	}
 	parseOwnPacketByProtocol(ptrNpFrame);
-
 }
 
 bool NpLayer::frameNeedAssemble(NpFrame *ptrNpFrame)
