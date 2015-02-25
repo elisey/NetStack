@@ -155,12 +155,16 @@ void NpLayer::processTp(NpFrame *npFrame)
 {
 	TpFrame tpFrame;
 	tpFrame.clone(*npFrame);
-	if (tpFrame.getBuffer()[0] == 0)	{
-		greenLed.setState(false);
+
+	if (tpFrame.getBuffer().getLenght() == 100)	{
+		if (tpFrame.getBuffer()[0] == 0)	{
+			greenLed.setState(false);
+		}
+		else	{
+			greenLed.setState(true);
+		}
 	}
-	else	{
-		greenLed.setState(true);
-	}
+
 	tpFrame.free();
 }
 
