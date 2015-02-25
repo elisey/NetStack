@@ -1,8 +1,8 @@
-#include "mac_layer.h"
+#include "MacLayerSFBus.h"
 
 static void MacLayer_RxTask(void *param);
 
-MacLayer::MacLayer(Channel* _ptrChannel, uint16_t maxMtu)
+MacLayerSFBus::MacLayerSFBus(Channel* _ptrChannel, uint16_t maxMtu)
 	:	ptrChannel(_ptrChannel), nextPid(0)
 {
 	setMtuSize(maxMtu);
@@ -22,12 +22,12 @@ MacLayer::MacLayer(Channel* _ptrChannel, uint16_t maxMtu)
 
 static void MacLayer_RxTask(void *param)
 {
-	MacLayer *ptrObj = static_cast<MacLayer*>(param);
+	MacLayerSFBus *ptrObj = static_cast<MacLayerSFBus*>(param);
 	ptrObj->rxTask();
 	while(1);
 }
 
-void MacLayer::rxTask()
+void MacLayerSFBus::rxTask()
 {
 	while(1)
 	{
@@ -83,7 +83,7 @@ void MacLayer::rxTask()
 	}
 }
 
-bool MacLayer::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
+bool MacLayerSFBus::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 {
 	MacFrame macFrame;
 	macFrame.clone(*ptrPoolNode);
@@ -105,7 +105,7 @@ bool MacLayer::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 	return result;
 }
 
-bool MacLayer::receive(PoolNode *ptrPoolNode, unsigned int timeout)
+bool MacLayerSFBus::receive(PoolNode *ptrPoolNode, unsigned int timeout)
 {
 /*	MacFrame macFrame;
 	macFrame.clone(*ptrPoolNode);*/
@@ -118,7 +118,7 @@ bool MacLayer::receive(PoolNode *ptrPoolNode, unsigned int timeout)
 	return false;
 }
 
-bool MacLayer::transfer(MacFrame &macFrame)
+bool MacLayerSFBus::transfer(MacFrame &macFrame)
 {
 	packetAckType_t ackType = macFrame.getPacketAckType();
 	uint8_t packetPid = macFrame.getPid();
@@ -149,7 +149,7 @@ bool MacLayer::transfer(MacFrame &macFrame)
 	return transferOk;
 }
 
-void MacLayer::sendAck(uint8_t pid)
+void MacLayerSFBus::sendAck(uint8_t pid)
 {
 	MacFrame macFrame;
 	if (macFrame.alloc(0) == false	)	{
@@ -171,7 +171,7 @@ void MacLayer::sendAck(uint8_t pid)
 	}
 }
 
-void MacLayer::ackReceived(uint8_t pid)
+void MacLayerSFBus::ackReceived(uint8_t pid)
 {
 	BaseType_t result;
 	result = xQueueSend(ackQueue, &pid, (TickType_t)1 / portTICK_RATE_MS);
@@ -180,7 +180,7 @@ void MacLayer::ackReceived(uint8_t pid)
 	}
 }
 
-bool MacLayer::isAckReceived(uint8_t pid)
+bool MacLayerSFBus::isAckReceived(uint8_t pid)
 {
 	uint8_t receivedPid;
 	BaseType_t result;
@@ -191,7 +191,7 @@ bool MacLayer::isAckReceived(uint8_t pid)
 	return false;
 }
 
-void MacLayer::clearQueueAck()
+void MacLayerSFBus::clearQueueAck()
 {
 	bool result = pdPASS;
 	uint8_t dummyPid = 0;
@@ -201,7 +201,7 @@ void MacLayer::clearQueueAck()
 	} while(result == pdPASS);
 }
 
-void MacLayer::handleRxPacket(MacFrame *ptrMacFrame)
+void MacLayerSFBus::handleRxPacket(MacFrame *ptrMacFrame)
 {
 	BaseType_t result;
 	result = xQueueSend(rxQueue, ptrMacFrame, (TickType_t)50);
@@ -209,7 +209,7 @@ void MacLayer::handleRxPacket(MacFrame *ptrMacFrame)
 	//ptrMacFrame->free();
 }
 
-uint8_t MacLayer::getUniquePid()
+uint8_t MacLayerSFBus::getUniquePid()
 {
 	return nextPid++;
 }

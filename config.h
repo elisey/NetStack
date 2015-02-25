@@ -4,11 +4,12 @@
 #include "stdint.h"
 
 #include "channel_UART.h"
-#include "mac_layer.h"
+#include "MacLayerSFBus.h"
 #include "np_layer.h"
 #include "ncmp_layer_slave.h"
 #include "ncmp_layer_master.h"
-#include "radio_HAL.h"
+#include "MacLayerNrf.h"
+
 
 #define MAX_NRF_PACKET_SIZE		32
 

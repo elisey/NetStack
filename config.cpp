@@ -1,9 +1,9 @@
 #include "config.h"
 
 #ifdef MASTER
-MacLayer mc1(&ch1, MAX_RS_PACKET_SIZE);
+MacLayerSFBus mc1(&ch1, MAX_SFBus_PACKET_SIZE);
 //MacLayer mc2(&ch3, MAX_RS_PACKET_SIZE);
-RadioHAL RadioMacLayer(MAX_NRF_PACKET_SIZE);
+MacLayerNrf RadioMacLayer(MAX_NRF_PACKET_SIZE);
 
 NpLayer np1(&mc1, 0);
 //NpLayer np2(&mc2, 1);
@@ -16,7 +16,7 @@ NcmpLayerSlave ncmp1(&np1, interfaceType_PointToPoint);
 NcmpLayerMaster ncmp3(&np3, interfaceType_Star);
 
 #else
-RadioHAL RadioMacLayer(MAX_NRF_PACKET_SIZE);
+MacLayerNrf RadioMacLayer(MAX_NRF_PACKET_SIZE);
 NpLayer np0(&RadioMacLayer, 0);
 
 NpLayer *interfaces[NUM_OF_INTERFACES] = {&np0};

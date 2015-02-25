@@ -99,10 +99,17 @@ void NpLayer::handleOwnFrame(NpFrame *ptrNpFrame)
 	uint16_t dstAddress = ptrNpFrame->getDstAddress();
 
 	if (frameNeedAssemble(ptrNpFrame) == true)	{
+
+#if (USE_OWN_PACKET_ASSEMBLY == 1)
 		if (processAssembling(ptrNpFrame) == false)	{
 			ptrNpFrame->free();
 			return;
 		}
+#else
+		ptrNpFrame->free();
+		return;
+#endif
+
 	}
 	parseOwnPacketByProtocol(ptrNpFrame);
 
@@ -204,7 +211,11 @@ void NpLayer::txTask()
 			bool transferResult = ptrMacLayer->send(&npFrame, dstAddress);
 		}
 		else	{
+#if (USE_OWN_PACKET_ASSEMBLY == 1)
 			deassemblepacketAndSendParts(&npFrame, dstAddress, payloadSize);
+#else
+			assert(0);
+#endif
 		}
 	}
 }

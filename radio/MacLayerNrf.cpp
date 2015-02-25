@@ -1,4 +1,4 @@
-#include "radio_HAL.h"
+#include "MacLayerNrf.h"
 #include "NpFrame.h"	// for BROADCAST_ADDR
 #include "nrf24L01Plus.h"
 #include "debug.h"
@@ -16,7 +16,7 @@ static SemaphoreHandle_t nrfTxSemaphore;
 
 static void MacLayer_RxTask(void *param);
 
-RadioHAL::RadioHAL(uint16_t maxMtu)
+MacLayerNrf::MacLayerNrf(uint16_t maxMtu)
 {
 	setMtuSize(maxMtu);
 
@@ -35,12 +35,12 @@ RadioHAL::RadioHAL(uint16_t maxMtu)
 
 static void MacLayer_RxTask(void *param)
 {
-	RadioHAL *ptrObj = static_cast<RadioHAL*>(param);
+	MacLayerNrf *ptrObj = static_cast<MacLayerNrf*>(param);
 	ptrObj->rxTask();
 	while(1);
 }
 
-void RadioHAL::rxTask()
+void MacLayerNrf::rxTask()
 {
 	while(1)	{
 		nrfLock();
@@ -70,7 +70,7 @@ void RadioHAL::rxTask()
 	}
 }
 
-bool RadioHAL::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
+bool MacLayerNrf::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 {
 	RadioMacFrame radioMacFrame;
 	radioMacFrame.clone(*ptrPoolNode);
@@ -94,7 +94,7 @@ bool RadioHAL::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 	return result;
 }
 
-bool RadioHAL::receive(PoolNode *ptrPoolNode, unsigned int timeout)
+bool MacLayerNrf::receive(PoolNode *ptrPoolNode, unsigned int timeout)
 {
 	BaseType_t result;
 	result = xQueueReceive(rxQueue, ptrPoolNode, timeout);
@@ -104,7 +104,7 @@ bool RadioHAL::receive(PoolNode *ptrPoolNode, unsigned int timeout)
 	return false;
 }
 
-void RadioHAL::init(uint16_t selfAddress)
+void MacLayerNrf::init(uint16_t selfAddress)
 {
 	nrfLock();
 	wordToBuffer(selfAddress, selfAddressArray);
@@ -113,7 +113,7 @@ void RadioHAL::init(uint16_t selfAddress)
 	nrfUnlock();
 }
 
-bool RadioHAL::transfer(uint8_t* buffer, uint8_t size, uint16_t dstAddress)
+bool MacLayerNrf::transfer(uint8_t* buffer, uint8_t size, uint16_t dstAddress)
 {
 	nordic_rx_to_Stanby1();
 	nordic_standby1_to_tx_mode1();
@@ -133,7 +133,7 @@ bool RadioHAL::transfer(uint8_t* buffer, uint8_t size, uint16_t dstAddress)
 	return result;
 }
 
-bool RadioHAL::transferBroadcast(uint8_t* buffer, uint8_t size)
+bool MacLayerNrf::transferBroadcast(uint8_t* buffer, uint8_t size)
 {
 	nordic_rx_to_Stanby1();
 	nordic_set_auto_ack_for_pipes(false, false, false, false, false, false);
@@ -151,14 +151,14 @@ bool RadioHAL::transferBroadcast(uint8_t* buffer, uint8_t size)
 	return result;
 }
 
-bool RadioHAL::queuePacketAndWait(uint8_t* buffer, uint8_t size)
+bool MacLayerNrf::queuePacketAndWait(uint8_t* buffer, uint8_t size)
 {
 	xSemaphoreTake(nrfTxSemaphore, 0);		//Отчистка семафора
 	nordic_mode1_start_send_single_packet(buffer, size);
 
-	BaseType_t result = xSemaphoreTake(nrfTxSemaphore, 10 / portTICK_RATE_MS);
+	BaseType_t result = xSemaphoreTake(nrfTxSemaphore, 5 / portTICK_RATE_MS);
 	if (result != pdPASS)	{			//TODO Случается неприем семафора
-		assert(0);
+
 	}
 	sendingState_t sendingState;
 	sendingState = nordic_get_sending_state_and_clear_flag();
@@ -167,7 +167,7 @@ bool RadioHAL::queuePacketAndWait(uint8_t* buffer, uint8_t size)
 	return sendingState == sendingState_Ok;
 }
 
-void RadioHAL::wordToBuffer(uint16_t inputData, uint8_t *buffer)
+void MacLayerNrf::wordToBuffer(uint16_t inputData, uint8_t *buffer)
 {
 	buffer[0] = (uint8_t)(inputData & 0xFF);
 	buffer[1] = (uint8_t)( (inputData >> 8) & 0xFF );
@@ -181,14 +181,13 @@ void RadioHAL::wordToBuffer(uint16_t inputData, uint8_t *buffer)
 	}
 }
 
-void RadioHAL::nrfLock()
+void MacLayerNrf::nrfLock()
 {
 	BaseType_t result = xSemaphoreTake(nrfMutex, 50 / portTICK_RATE_MS);
 	assert(result == pdPASS);
-
 }
 
-void RadioHAL::nrfUnlock()
+void MacLayerNrf::nrfUnlock()
 {
 	xSemaphoreGive(nrfMutex);
 }
@@ -196,9 +195,12 @@ void RadioHAL::nrfUnlock()
 extern "C" {
 	void nordic_HAL_OnIrqLow()
 	{
+		pin1_on;
 		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-		xSemaphoreGiveFromISR(nrfTxSemaphore, &xHigherPriorityTaskWoken);
+		BaseType_t result;
+		result = xSemaphoreGiveFromISR(nrfTxSemaphore, &xHigherPriorityTaskWoken);
+		pin1_off;
+		assert(result == pdPASS);
 		if (xHigherPriorityTaskWoken == pdTRUE)	{
 			taskYIELD();
 		}

@@ -100,12 +100,8 @@ static void prv_externalInterruptInit()
     EXTI->IMR |= EXTI_IMR_MR4;					//Вклчюание прерывания по выбраннйо линии
 }
 
-
-#include "debug.h"
 void EXTI4_IRQHandler()
 {
-	pin1_on;
 	EXTI->PR = EXTI_PR_PR4;
 	nordic_HAL_OnIrqLow();
-	pin1_off;
 }

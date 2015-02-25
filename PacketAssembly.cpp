@@ -120,4 +120,3 @@ void PacketAssembly::initNode(int index, uint8_t totalNumOfParts, uint8_t unique
 	nodes[index].uniqueId = uniqueId;
 	nodes[index].srcAddress = srcAddress;
 }
-

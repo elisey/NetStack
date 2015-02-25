@@ -39,10 +39,10 @@ extern "C" {
 	#define debug_exit()	((void)0)
 #endif
 
-#define pin0_on			GPIOC->BSRR = GPIO_Pin_5
-#define pin0_off		GPIOC->BRR = GPIO_Pin_5
-#define pin1_on			GPIOC->BSRR = GPIO_Pin_0
-#define pin1_off		GPIOC->BRR = GPIO_Pin_0
+#define pin0_on			GPIOC->BSRR = GPIO_Pin_8
+#define pin0_off		GPIOC->BRR = GPIO_Pin_8
+#define pin1_on			GPIOC->BSRR = GPIO_Pin_7
+#define pin1_off		GPIOC->BRR = GPIO_Pin_7
 #define pin2_on			GPIOC->BSRR = GPIO_Pin_1
 #define pin2_off		GPIOC->BRR = GPIO_Pin_1
 #define pin3_on			GPIOC->BSRR = GPIO_Pin_2

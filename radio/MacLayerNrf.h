@@ -10,10 +10,10 @@
 #include "RadioMacFrame.h"
 #include "mac_layer_base.h"
 
-class RadioHAL : public MacLayerBase
+class MacLayerNrf : public MacLayerBase
 {
 public:
-	RadioHAL(uint16_t maxMtu);
+	MacLayerNrf(uint16_t maxMtu);
 
 	void rxTask();
 	bool send( PoolNode *ptrPoolNode, uint16_t dstAddress);

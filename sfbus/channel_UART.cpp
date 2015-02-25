@@ -104,8 +104,8 @@ void ChannelUart::dmaTxInit()
 
 void ChannelUart::dmaTxStart(uint8_t *ptrBuffer, size_t blockSize)
 {
-	assert(blockSize <= MAX_RS_PACKET_SIZE);
-	assert(blockSize >= MIN_RS_PACKET_SIZE);
+	assert(blockSize <= MAX_SFBus_PACKET_SIZE);
+	assert(blockSize >= MIN_SFBus_PACKET_SIZE);
 
 	dmaTx->CMAR = (uint32_t)ptrBuffer;
 	DMA_Cmd(dmaTx, DISABLE);
@@ -138,7 +138,7 @@ void ChannelUart::irqOnRxCompleate()
 	dmaRxStop();
 	size_t rxFrameSize = calculateRxFrameSize();
 
-	if ( (rxFrameSize >= MIN_RS_PACKET_SIZE) && (rxFrameSize <= MAX_RS_PACKET_SIZE))	{
+	if ( (rxFrameSize >= MIN_SFBus_PACKET_SIZE) && (rxFrameSize <= MAX_SFBus_PACKET_SIZE))	{
 		rxFrame.getBuffer().setLenght(rxFrameSize);
 		Frame tempFrame = rxFrame;
 
@@ -161,7 +161,7 @@ void ChannelUart::dmaRxStart()
 
 	dmaRx->CMAR = (uint32_t)(dataPtr);
 	DMA_Cmd(dmaRx, DISABLE);
-	dmaRx->CNDTR = MAX_RS_PACKET_SIZE;
+	dmaRx->CNDTR = MAX_SFBus_PACKET_SIZE;
 	DMA_Cmd(dmaRx, ENABLE);
 }
 
@@ -171,7 +171,7 @@ void ChannelUart::dmaRxInit()
 	dmaInitStructure.DMA_PeripheralBaseAddr = (uint32_t)&(uart->DR);
 	dmaInitStructure.DMA_MemoryBaseAddr = 0;
 	dmaInitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
-	dmaInitStructure.DMA_BufferSize = MAX_RS_PACKET_SIZE;
+	dmaInitStructure.DMA_BufferSize = MAX_SFBus_PACKET_SIZE;
 	dmaInitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
 	dmaInitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
 	dmaInitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte;
@@ -184,7 +184,7 @@ void ChannelUart::dmaRxInit()
 
 size_t ChannelUart::calculateRxFrameSize()
 {
-	return (MAX_RS_PACKET_SIZE - DMA_GetCurrDataCounter(dmaRx));
+	return (MAX_SFBus_PACKET_SIZE - DMA_GetCurrDataCounter(dmaRx));
 }
 
 // Общие функции инициализации

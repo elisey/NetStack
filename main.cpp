@@ -1,6 +1,6 @@
 #include "Frame.h"
 #include "MacFrame.h"
-#include "mac_layer.h"
+#include "MacLayerSFBus.h"
 #include "NpFrame.h"
 #include "ncmp_layer_master.h"
 #include "ncmp_layer_slave.h"
@@ -16,7 +16,7 @@ void sender(void *param)
 	uint16_t *address = static_cast<uint16_t*>(param);
     while(1)
     {
-    	vTaskDelay(500 / portTICK_RATE_MS);
+    	vTaskDelay(200 / portTICK_RATE_MS);
     	static uint8_t state = 0;
     	TpFrame tpFrame;
     	tpFrame.alloc();
@@ -65,7 +65,7 @@ void sender2(void *param)
 }
 
 uint16_t addr1 = 30;
-uint16_t addr2 = 31;
+uint16_t addr2 = 33;
 uint16_t addr3 = 32;
 
 #include "PacketAssemblyTest.h"
@@ -92,7 +92,7 @@ int main(void)
 
 	//PacketAssemblyTest();
 
-	if (value == 33)	{
+	if (value == 30)	{
 /*		xTaskCreate(
 					sender,
 					"irReceiver",

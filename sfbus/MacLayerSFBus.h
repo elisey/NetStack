@@ -17,10 +17,10 @@
 #define mac_layerCRC_SIZE			(2u)
 #define mac_layerWAIT_ACK_TIMEOUT	(2u)
 
-class MacLayer :	public MacLayerBase
+class MacLayerSFBus :	public MacLayerBase
 {
 public:
-	MacLayer(Channel *_ptrChannel, uint16_t maxMtu);
+	MacLayerSFBus(Channel *_ptrChannel, uint16_t maxMtu);
 	void rxTask();
 	bool send(PoolNode *ptrPoolNode, uint16_t dstAddress);
 	bool receive(PoolNode *ptrPoolNode, unsigned int timeout);
