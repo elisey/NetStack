@@ -60,7 +60,7 @@ private:
 	bool putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue);
 
 	MacLayerBase *ptrMacLayer;
-	uint16_t maxNpMtu;
+	uint16_t maxNpPayload;
 	uint8_t inderfaceId;
 
 	QueueHandle_t rxNcmpQueue;

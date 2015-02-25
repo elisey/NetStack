@@ -18,7 +18,7 @@ NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint8_t _inderfaceId)
 	 	rxTpaQueue(NULL)
 
 {
-	maxNpMtu = ptrMacLayer->getMtuSize() - NP_FRAME_HEAD_LENGTH;
+	maxNpPayload = ptrMacLayer->getMtuSize() - NP_FRAME_HEAD_LENGTH;
 
 	txQueue = xQueueCreate(10, sizeof(NpFrame));
 
@@ -202,7 +202,7 @@ void NpLayer::txTask()
 
 		uint8_t pasketSize = npFrame.getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
 
-		if (pasketSize <= maxNpMtu)	{
+		if (pasketSize <= maxNpPayload)	{
 			npFrame.setTotalNumOfParts(1);
 			npFrame.setCurrentPartIndex(0);
 			npFrame.setUniqueAssembleId(0);
@@ -213,8 +213,8 @@ void NpLayer::txTask()
 
 			uint8_t uniqueId = getUniqueAssembleId();
 			uint8_t currentPart = 0;
-			uint8_t numOfParts = pasketSize / maxNpMtu;
-			if (pasketSize % maxNpMtu != 0)	{
+			uint8_t numOfParts = pasketSize / maxNpPayload;
+			if (pasketSize % maxNpPayload != 0)	{
 				numOfParts++;
 			}
 
@@ -229,13 +229,13 @@ void NpLayer::txTask()
 				npFramePart.setCurrentPartIndex(currentPart);
 				npFramePart.setUniqueAssembleId(uniqueId);
 				currentPart++;
-				memcpy(npFramePart.getPayloadPtr(), npFrame.getPayloadPtr() + numOfTransferedBytes, maxNpMtu);
-				npFramePart.getBuffer().setLenght(maxNpMtu + NP_FRAME_HEAD_LENGTH);
-				numOfTransferedBytes += maxNpMtu;
+				memcpy(npFramePart.getPayloadPtr(), npFrame.getPayloadPtr() + numOfTransferedBytes, maxNpPayload);
+				npFramePart.getBuffer().setLenght(maxNpPayload + NP_FRAME_HEAD_LENGTH);
+				numOfTransferedBytes += maxNpPayload;
 
 				bool transferResult = ptrMacLayer->send(&npFramePart, dstAddress);
 
-			} while ( (pasketSize - numOfTransferedBytes) > maxNpMtu );
+			} while ( (pasketSize - numOfTransferedBytes) > maxNpPayload );
 
 			NpFrame npFramePart;
 			npFramePart.alloc();
