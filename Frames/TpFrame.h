@@ -6,7 +6,7 @@
 class TpFrame	: public PoolNode
 {
 public:
-	TpFrame()	 : PoolNode(10)
+	TpFrame()	 : PoolNode(9)
 	{
 
 	}

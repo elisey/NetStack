@@ -18,7 +18,7 @@ typedef enum	{
 class NcmpFrame	: public PoolNode
 {
 public:
-	NcmpFrame()	 : PoolNode(10)
+	NcmpFrame()	 : PoolNode(9)
 	{
 	}
 
