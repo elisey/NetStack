@@ -96,8 +96,6 @@ bool NpLayer::needHandleOwnPacket(NpFrame *ptrNpFrame)
 
 void NpLayer::handleOwnFrame(NpFrame *ptrNpFrame)
 {
-	uint16_t dstAddress = ptrNpFrame->getDstAddress();
-
 	if (frameNeedAssemble(ptrNpFrame) == true)	{
 #if (USE_OWN_PACKET_ASSEMBLY == 1)
 		if (processAssembling(ptrNpFrame) == false)	{
@@ -162,7 +160,7 @@ void NpLayer::processTp(NpFrame *npFrame)
 	TpFrame tpFrame;
 	tpFrame.clone(*npFrame);
 
-	if (tpFrame.getBuffer().getLenght() == 100)	{
+	if (tpFrame.getBuffer().getLenght() == tpFrame.getBuffer()[1])	{
 		if (tpFrame.getBuffer()[0] == 0)	{
 			greenLed.setState(false);
 		}
@@ -206,7 +204,7 @@ void NpLayer::txTask()
 
 		if (payloadSize <= maxNpPayload)	{
 			setAssemblyData(&npFrame, 1, 0, 0);
-			bool transferResult = ptrMacLayer->send(&npFrame, dstAddress);
+			ptrMacLayer->send(&npFrame, dstAddress);
 		}
 		else	{
 #if (USE_OWN_PACKET_ASSEMBLY == 1)
@@ -262,7 +260,7 @@ void NpLayer::deassemblepacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddr
 		uint8_t partPacketLength = numOfBytesToCopy + NP_FRAME_HEAD_LENGTH;
 		npFramePart.getBuffer().setLenght( partPacketLength );
 
-		bool transferResult = ptrMacLayer->send(&npFramePart, dstAddress);
+		ptrMacLayer->send(&npFramePart, dstAddress);
 	}
 
 	ptrNpFrame->free();

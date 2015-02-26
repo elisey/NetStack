@@ -13,6 +13,7 @@
 #include "Routing.h"
 void sender(void *param)
 {
+	const uint8_t LENGTH = 110;
 	uint16_t *address = static_cast<uint16_t*>(param);
     while(1)
     {
@@ -23,7 +24,7 @@ void sender(void *param)
 
 
     	int i;
-    	for (i = 0; i < 100; ++i) {
+    	for (i = 0; i < LENGTH; ++i) {
 			(tpFrame.getBuffer())[i] = i + 10;
 		}
 
@@ -35,7 +36,8 @@ void sender(void *param)
 		}
 
     	tpFrame.getBuffer()[0] = state;
-    	tpFrame.getBuffer().setLenght(100);
+    	tpFrame.getBuffer()[1] = LENGTH;
+    	tpFrame.getBuffer().setLenght(LENGTH);
 
     	NpFrame npFrame;
     	npFrame.clone(tpFrame);
@@ -70,9 +72,9 @@ uint16_t addr3 = 32;
 int main(void)
 {
 	Debug_Init();
-	pin1_on;
+	pin0_on;
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB ,ENABLE);
-	pin1_off;
+	pin0_off;
 	GPIO_InitTypeDef gpio;
 	gpio.GPIO_Mode = GPIO_Mode_IPU;
 	gpio.GPIO_Speed = GPIO_Speed_50MHz;
