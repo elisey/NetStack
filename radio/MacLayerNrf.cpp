@@ -45,8 +45,7 @@ void MacLayerNrf::rxTask()
 	while(1)	{
 		nrfLock();
 
-		if(nordic_is_packet_available())
-		{
+		while( nordic_is_packet_available() )	{
 			RadioMacFrame radioMacFrame;
 			radioMacFrame.alloc();
 
@@ -75,10 +74,12 @@ void MacLayerNrf::rxTask()
 				 * чтения одного пакета там может остаться еще два пакета максимум.
 				 */
 				if (!nordic_is_packet_available()) {
-					nordic_clear_packet_available_flag();
+
 				}
 			}
 		}
+		nordic_clear_packet_available_flag();
+
 		nrfUnlock();
 		vTaskDelay(1 / portTICK_RATE_MS);
 	}
