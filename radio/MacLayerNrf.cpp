@@ -51,18 +51,32 @@ void MacLayerNrf::rxTask()
 			radioMacFrame.alloc();
 
 			uint8_t length = nordic_get_rx_payload_width();
-			radioMacFrame.getBuffer().setLenght( length );
-			uint8_t* ptrBuffer = radioMacFrame.getBuffer().getDataPtr();
-			nordic_read_rx_fifo(ptrBuffer, length);
 
-			BaseType_t result;
-			result = xQueueSend(rxQueue, &radioMacFrame, (TickType_t)50);
-			assert(result == pdPASS);
+			/*
+			 * Есть случаи,когда NRF выставляет флаг, что входящий буфер не пуст,
+			 * но при попытке чтения длины этого пакета NRF отдает ноль.
+			 * В таком случае помогает отчистка входящих буферов.
+			 */
+			if ( (length == 0) || ( length > 32 ) )	{
+				nordic_flush_rx_fifo();
+				pin0_on;
+			}
+			else {
+				radioMacFrame.getBuffer().setLenght( length );
+				uint8_t* ptrBuffer = radioMacFrame.getBuffer().getDataPtr();
+				nordic_read_rx_fifo(ptrBuffer, length);
 
-			// Only clear the interrupt if no more receivedPacket available
-			// because nordic has 3 level Rx FIFO.
-			if (!nordic_is_packet_available()) {
-				nordic_clear_packet_available_flag();
+				BaseType_t result;
+				result = xQueueSend(rxQueue, &radioMacFrame, (TickType_t)50);
+				assert(result == pdPASS);
+				/*
+				 * Отчистка флага прерывания только  если больше входящих
+				 * пакетов нет. Так как в чипе 3-х уровневый ФИФО, и после
+				 * чтения одного пакета там может остаться еще два пакета максимум.
+				 */
+				if (!nordic_is_packet_available()) {
+					nordic_clear_packet_available_flag();
+				}
 			}
 		}
 		nrfUnlock();
