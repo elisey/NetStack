@@ -54,7 +54,7 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 	}
 }
 
-void Routing::send(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t ttl, NpFrame_ProtocolType_t protocolType)
+bool Routing::send(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t ttl, NpFrame_ProtocolType_t protocolType)
 {
 	uint8_t targetInterfaceId = RouterTable::instance().getInterfaceForDestinationAddress(dstAddress);
 	if (interfaces[targetInterfaceId] != NULL)	{
@@ -62,5 +62,7 @@ void Routing::send(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t ttl, NpFram
 	}
 	else {
 		ptrNpFrame->free();
+		return false;
 	}
+	return true;
 }
