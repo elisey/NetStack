@@ -8,16 +8,15 @@
 #define TP_FRAME_SRC_PORT			(0)
 #define TP_FRAME_DST_PORT			(1)
 #define TP_FRAME_UNIQUE_ID			(2)
-#define TP_FRAME_FLAGS				(3)
+#define TP_FRAME_TYPE				(3)
 
-#define TP_FRAME_FLAG_START			(0)
-#define TP_FRAME_FLAG_STOP			(1)
-#define TP_FRAME_FLAG_ACK			(2)
-#define TP_FRAME_FLAG_REJECT		(3)
-
-#define setBit(reg, bit)			((reg) |= (bit))
-#define clearBit(reg, bit)			((reg) &= ~(bit))
-#define readBit(reg, bit)			((reg) & (bit))
+typedef enum	{
+	TpFrameType_Connect = 1,
+	TpFrameType_Disconnect,
+	TpFrameType_Ack,
+	TpFrameType_Reject,
+	TpFrameType_Data
+}	TpFrameType_t;
 
 class TpFrame	: public PoolNode
 {
@@ -25,6 +24,8 @@ public:
 	TpFrame()	 : PoolNode(9)
 	{
 	}
+
+	uint16_t srcAddress;
 
 	void setSrcPort(uint8_t port)
 	{
@@ -56,63 +57,16 @@ public:
 		return (buffer[TP_FRAME_UNIQUE_ID]);
 	}
 
-	void setFlagStart(bool flag)
+	TpFrameType_t getType()
 	{
-		if (flag)	{
-			setBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_START);
-		}
-		else	{
-			clearBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_START);
-		}
+		TpFrameType_t result;
+		result = static_cast< TpFrameType_t >(buffer[TP_FRAME_TYPE]);
+		return result;
 	}
 
-	bool getFlagStart()
+	void setType (TpFrameType_t newType)
 	{
-		return ( readBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_START) != 0 );
-	}
-
-	void setFlagStop(bool flag)
-	{
-		if (flag)	{
-			setBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_STOP);
-		}
-		else	{
-			clearBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_STOP);
-		}
-	}
-
-	bool getFlagStop()
-	{
-		return ( readBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_STOP) != 0 );
-	}
-
-	void setFlagAck(bool flag)
-	{
-		if (flag)	{
-			setBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_ACK);
-		}
-		else	{
-			clearBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_ACK);
-		}
-	}
-
-	bool getFlagAck()
-	{
-		return ( readBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_ACK) != 0 );
-	}
-
-	void setFlagReject(bool flag)
-	{
-		if (flag)	{
-			setBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_REJECT);
-		}
-		else	{
-			clearBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_REJECT);
-	}
-
-	bool getFlagReject()
-	{
-		return ( readBit(buffer[TP_FRAME_FLAGS], 1 << TP_FRAME_FLAG_REJECT) != 0 );
+		buffer[TP_FRAME_TYPE] = static_cast< uint8_t >(newType);
 	}
 
 	uint8_t *getPayloadPtr()
