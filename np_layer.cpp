@@ -60,8 +60,8 @@ void NpLayer::rxTask()
 		#if (ROUTE_OTHER_PACKETS == 1)
 		if (needRoutePacket(&npFrame) == true)	{
 			Routing::instance().handleFrame(&npFrame, inderfaceId);
-		#endif
 		}
+		#endif
 		if ( needHandleOwnPacket(&npFrame) == true)	{
 			handleOwnFrame(&npFrame);
 		}
