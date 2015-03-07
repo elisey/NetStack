@@ -8,7 +8,7 @@
 #include "task.h"
 #include "queue.h"
 
-#define NUM_OF_RESEND_TRYES	(5)
+#define NUM_OF_RESEND_TRYES	(8)
 
 typedef enum	{
 	connectionStatus_disconnected = 1,
@@ -19,13 +19,14 @@ typedef enum	{
 class TpSocket {
 public:
 	TpSocket();
-	void init(uint8_t _selfPort);
+	void bind(uint8_t _selfPort);
 
 
 	bool listen();
-	bool stopListen();
 	bool connect( uint16_t dstAddress, uint8_t dstPort);
-	bool disconnect();
+	bool close();
+	bool abort();
+
 	bool send(uint8_t *buffer, unsigned int size);
 	bool getConnectionStatus();
 	bool isConnected();

@@ -9,7 +9,7 @@ Led blueLed(GPIOC, GPIO_Pin_8);
 
 void sender(void *param)
 {
-	tpSocket.init(0);
+	tpSocket.bind(0);
 	if (tpSocket.connect(30, 1))	{
 		greenLed.setState(true);
 	}
@@ -19,11 +19,12 @@ void sender(void *param)
 
     	vTaskDelay(200 / portTICK_RATE_MS);
 
-    	if (tpSocket.send(&data, 1))	{
+    	if (tpSocket.send(&data, 1) == true)	{
     		blueLed.tougle();
     	}
     	else {
     		greenLed.setState(false);
+    		tpSocket.abort();
     		while(tpSocket.connect(30, 1) == false)
     		{
     			vTaskDelay(200 / portTICK_RATE_MS);
@@ -37,7 +38,7 @@ void sender(void *param)
 void receiver(void *param)
 {
 	Led led1(GPIOC, GPIO_Pin_6);
-	tpSocket.init(1);
+	tpSocket.bind(1);
 	tpSocket.listen();
 
 	while(2)
@@ -51,6 +52,7 @@ void receiver(void *param)
 				led1.setState(false);
 			}
 		}
+		//vTaskDelay(10 / portTICK_RATE_MS);
 	}
 }
 

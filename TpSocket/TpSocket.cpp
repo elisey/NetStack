@@ -26,7 +26,7 @@ TpSocket::TpSocket()
 
 }
 
-void TpSocket::init(uint8_t _selfPort = 0)
+void TpSocket::bind(uint8_t _selfPort = 0)
 {
 	int result;
 	result = TpLayer::instance().registerSocket(this, _selfPort);
@@ -43,14 +43,7 @@ bool TpSocket::listen( )
 	return false;
 }
 
-bool TpSocket::stopListen()
-{
-	if (connectionStatus == connectionStatus_listen)	{
-		setStateDisconnected();
-		return true;
-	}
-	return false;
-}
+
 
 bool TpSocket::connect( uint16_t _remoteAddress, uint8_t _remotePort)
 {
@@ -65,7 +58,7 @@ bool TpSocket::connect( uint16_t _remoteAddress, uint8_t _remotePort)
 	}
 	return result;
 }
-bool TpSocket::disconnect()
+bool TpSocket::close()
 {
 	if (connectionStatus == connectionStatus_connected)	{
 		sendDisconnect();
@@ -73,6 +66,12 @@ bool TpSocket::disconnect()
 		return true;
 	}
 	return false;
+}
+
+bool TpSocket::abort()
+{
+	setStateDisconnected();
+	return true;
 }
 
 bool TpSocket::send(uint8_t *buffer, unsigned int size)
