@@ -2,6 +2,7 @@
 
 #include "TpSocket.h"
 #include "NpFrame.h"
+#include "Mutex.h"
 
 #define MAX_NUM_OF_SOCKETS			(10)
 #define DYNAMIC_START_PORT_INDEX	(128)
@@ -26,7 +27,7 @@ class TpLayer	{
 public:
 
 	int registerSocket(TpSocket *ptrPtSocket, uint8_t port = 0);
-	bool unregisterSocket(TpSocket *ptrPtSocket, uint8_t port);
+	//bool unregisterSocket(TpSocket *ptrPtSocket, uint8_t port);
 	void handleTpFrame(NpFrame *ptrNpFrame);
 
 private:
@@ -37,6 +38,7 @@ private:
 	void clearNodeByIndex(uint8_t index);
 
 	RegisteredSocketNode nodes[MAX_NUM_OF_SOCKETS];
+	Mutex mutex;
 
 //Singleton realisation
 public:

@@ -9,21 +9,28 @@ TpLayer::TpLayer()
 
 int TpLayer::registerSocket(TpSocket* ptrPtSocket, uint8_t port)
 {
-	if (port == 0)	{
-		port = getFreePortNumber();
+	mutex.lock();
+
+	int resultPort = port;
+	if (resultPort == 0)	{
+		resultPort = getFreePortNumber();
 	}
-	if (isPortOccupied(port) == true)	{
-		return (-1);
+
+	if (isPortOccupied(resultPort) == true)	{
+		resultPort = (-1);
 	}
-	int index;
-	index == findFreeNode();
-	assert(index != (-1));
-	nodes[index].ptrPtSocket = ptrPtSocket;
-	nodes[index].port = port;
-	return port;
+	else	{
+		int index;
+		index = findFreeNode();
+		assert(index != (-1));
+		nodes[index].ptrPtSocket = ptrPtSocket;
+		nodes[index].port = resultPort;
+	}
+	mutex.unlock();
+	return resultPort;
 }
 
-bool TpLayer::unregisterSocket(TpSocket *ptrPtSocket, uint8_t port)
+/*bool TpLayer::unregisterSocket(TpSocket *ptrPtSocket, uint8_t port)
 {
 	assert(port != 0);
 
@@ -39,7 +46,7 @@ bool TpLayer::unregisterSocket(TpSocket *ptrPtSocket, uint8_t port)
 		return true;
 	}
 	return false;
-}
+}*/
 
 void TpLayer::handleTpFrame(NpFrame *ptrNpFrame)
 {
@@ -57,7 +64,7 @@ void TpLayer::handleTpFrame(NpFrame *ptrNpFrame)
 		return;
 	}
 	if (nodes[index].ptrPtSocket != NULL)	{
-		nodes[index].ptrPtSocket->handleFrame(&tpFrame);	//TODO
+		nodes[index].ptrPtSocket->handleRxTpFrame(&tpFrame);
 	}
 }
 
@@ -66,7 +73,7 @@ int TpLayer::getFreePortNumber()
 	static int port = DYNAMIC_START_PORT_INDEX;
 
 	int counter = 0;
-	while( isPoisPortOccupied(port) == true )	{
+	while( isPortOccupied(port) == true )	{
 		port++;
 		if (port == 0)	{
 			port = DYNAMIC_START_PORT_INDEX;

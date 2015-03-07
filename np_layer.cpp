@@ -1,9 +1,9 @@
 #include "np_layer.h"
 #include "Routing.h"
 #include "debug.h"
-#include "TpFrame.h"	//TODO инклуд уберется после выделения ТП слоя
 #include "routeTable.h"
 #include "MacFrame.h"
+#include "TpLayer.h"
 
 static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
@@ -141,7 +141,7 @@ void NpLayer::parseOwnPacketByProtocol(NpFrame *ptrNpFrame)
 		//putFrameToQueue(&npFrame, rxTpaQueue);
 		break;
 	case NpFrame_TP:
-		processTp(ptrNpFrame);
+		TpLayer::instance().handleTpFrame(ptrNpFrame);
 		//npFrame.free();
 		//putFrameToQueue(&npFrame, rxTpQueue);
 		break;
@@ -149,27 +149,6 @@ void NpLayer::parseOwnPacketByProtocol(NpFrame *ptrNpFrame)
 		ptrNpFrame->free();
 		break;
 	}
-}
-
-#include "Led.h"
-
-Led greenLed(GPIOC, GPIO_Pin_9, true);
-
-void NpLayer::processTp(NpFrame *npFrame)
-{
-	TpFrame tpFrame;
-	tpFrame.clone(*npFrame);
-
-	if (tpFrame.getBuffer().getLenght() == tpFrame.getBuffer()[1])	{
-		if (tpFrame.getBuffer()[0] == 0)	{
-			greenLed.setState(false);
-		}
-		else	{
-			greenLed.setState(true);
-		}
-	}
-
-	tpFrame.free();
 }
 
 bool NpLayer::putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue)
