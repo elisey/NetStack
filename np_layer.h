@@ -11,7 +11,7 @@
 #include "PacketAssembly.h"
 
 extern uint16_t selfAddress;
-#define MAX_TTL		32
+
 #define USE_OWN_PACKET_ASSEMBLY		(1)
 #define ROUTE_OTHER_PACKETS			(1)
 

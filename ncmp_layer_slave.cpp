@@ -6,6 +6,7 @@
 #include "task.h"
 
 #include "routeTable.h"
+#include "Routing.h"	//For MAX_TTL
 
 #include "debug.h"
 
