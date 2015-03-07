@@ -145,22 +145,30 @@ bool TpSocket::transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType)
 	NpFrame npFrame;
 	npFrame.clone(*ptrTpFrame);
 
+	bool transferResult = false;
 	int i;
 	for (i = 0; i < NUM_OF_RESEND_TRYES; ++i) {
+
+		NpFrame npFrameToSend;
+		npFrameToSend.alloc();
+		npFrameToSend.copy(npFrame);
+
 		clearAckQueue();
-		bool isRouteExist = Routing::instance().send( &npFrame, remoteAddress, MAX_TTL, NpFrame_TP );
+		bool isRouteExist = Routing::instance().send( &npFrameToSend, remoteAddress, MAX_TTL, NpFrame_TP );
 		if (isRouteExist == false)	{
-			//return false;
 			vTaskDelay(50 / portTICK_RATE_MS);
 			continue;
 		}
 		bool isAckReceived;
 		isAckReceived = waitForAck(uniqueId, 50 / portTICK_RATE_MS);
 		if (isAckReceived == true)	{
-			return true;
+			transferResult = true;
+			break;
 		}
 	}
-	return false;
+
+	npFrame.free();
+	return transferResult;
 }
 
 
