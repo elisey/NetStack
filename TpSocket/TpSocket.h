@@ -8,6 +8,8 @@
 #include "task.h"
 #include "queue.h"
 
+#include "UniqueItemHandler.h"
+
 #define NUM_OF_RESEND_TRYES	(8)
 
 typedef enum	{
@@ -20,7 +22,6 @@ class TpSocket {
 public:
 	TpSocket();
 	void bind(uint8_t _selfPort);
-
 
 	bool listen();
 	bool connect( uint16_t dstAddress, uint8_t dstPort);
@@ -36,13 +37,11 @@ public:
 	void rxTask();
 	void txTask();
 
-
 private:
 	bool sendConnect();
 	bool sendDisconnect();
 	bool sendBuffer(uint8_t *buffer, unsigned int size);
 	bool transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType);
-
 
 	void parceInDisconnectedState(TpFrame *ptrTpFrame);
 	void parceInListenState(TpFrame *ptrTpFrame);
@@ -70,4 +69,5 @@ private:
 	QueueHandle_t ackQueue;
 	Mutex mutex;
 
+	UniqueItemHandler<uint8_t> uniqueFrame;
 };

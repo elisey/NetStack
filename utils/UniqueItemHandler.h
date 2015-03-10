@@ -1,13 +1,13 @@
 #pragma once
 #include <stdint.h>
 
-#define UniqueFrameNUM_OF_ITEMS		5
+#define UniqueItemHandlerNUM_OF_ITEMS		5
 
 template <typename T>
-class UniqueFrame
+class UniqueItemHandler
 {
 public:
-	UniqueFrame()	: oldestItemIndex(0), isInitialized(false)
+	UniqueItemHandler()	: oldestItemIndex(0), isInitialized(false)
 	{
 	}
 
@@ -18,7 +18,7 @@ public:
 		}
 
 		unsigned int i;
-		for (i = 0; i < UniqueFrameNUM_OF_ITEMS; ++i) {
+		for (i = 0; i < UniqueItemHandlerNUM_OF_ITEMS; ++i) {
 			if (item == items[i])	{
 				return false;
 			}
@@ -35,7 +35,7 @@ public:
 			isInitialized = true;
 
 			unsigned int i;
-			for (i = 0; i < UniqueFrameNUM_OF_ITEMS; ++i) {
+			for (i = 0; i < UniqueItemHandlerNUM_OF_ITEMS; ++i) {
 				items[i] = item;
 			}
 		}
@@ -43,14 +43,14 @@ public:
 			items[oldestItemIndex] = item;
 
 			oldestItemIndex++;
-			if (oldestItemIndex >= UniqueFrameNUM_OF_ITEMS){
+			if (oldestItemIndex >= UniqueItemHandlerNUM_OF_ITEMS){
 				oldestItemIndex = 0;
 			}
 		}
 	}
 
 private:
-	T items[UniqueFrameNUM_OF_ITEMS];
+	T items[UniqueItemHandlerNUM_OF_ITEMS];
 	uint8_t oldestItemIndex;
 	bool isInitialized;
 };

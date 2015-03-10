@@ -89,9 +89,9 @@
   </Components>
   <Files>
     <File name="Frames/MacFrame.h" path="Frames/MacFrame.h" type="1"/>
+    <File name="FreeRTOS/src/event_groups.c" path="FreeRTOS/src/event_groups.c" type="1"/>
     <File name="TpSocket/TpLayer.cpp" path="TpSocket/TpLayer.cpp" type="1"/>
     <File name="TpSocket/TpSocket.h" path="TpSocket/TpSocket.h" type="1"/>
-    <File name="FreeRTOS/src/event_groups.c" path="FreeRTOS/src/event_groups.c" type="1"/>
     <File name="utils/debug.h" path="utils/debug.h" type="1"/>
     <File name="utils/Mutex.h" path="utils/Mutex.h" type="1"/>
     <File name="radio" path="" type="2"/>
@@ -114,8 +114,8 @@
     <File name="radio/nrf24/nrf24L01Plus.c" path="radio/nrf24/nrf24L01Plus.c" type="1"/>
     <File name="Frames/NpFrame.h" path="Frames/NpFrame.h" type="1"/>
     <File name="Frames/RadioMacFrame.h" path="Frames/RadioMacFrame.h" type="1"/>
-    <File name="routeTable.h" path="routeTable.h" type="1"/>
     <File name="FreeRTOS/include/portmacro.h" path="FreeRTOS/include/portmacro.h" type="1"/>
+    <File name="routeTable.h" path="routeTable.h" type="1"/>
     <File name="mac_layer_base.h" path="mac_layer_base.h" type="1"/>
     <File name="sfbus/channel.h" path="sfbus/channel.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_gpio.c" path="stm_lib/src/stm32f10x_gpio.c" type="1"/>
@@ -131,11 +131,11 @@
     <File name="FreeRTOS/include/queue.h" path="FreeRTOS/include/queue.h" type="1"/>
     <File name="FreeRTOS/include/event_groups.h" path="FreeRTOS/include/event_groups.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_rcc.c" path="stm_lib/src/stm32f10x_rcc.c" type="1"/>
+    <File name="Frames/NcmpFrame.h" path="Frames/NcmpFrame.h" type="1"/>
     <File name="FreeRTOS/include/croutine.h" path="FreeRTOS/include/croutine.h" type="1"/>
     <File name="FreeRTOS/include/port.c" path="FreeRTOS/include/port.c" type="1"/>
-    <File name="Frames/NcmpFrame.h" path="Frames/NcmpFrame.h" type="1"/>
-    <File name="radio/MacLayerNrf.h" path="radio/MacLayerNrf.h" type="1"/>
     <File name="PacketAssemblyTest.cpp" path="PacketAssemblyTest.cpp" type="1"/>
+    <File name="radio/MacLayerNrf.h" path="radio/MacLayerNrf.h" type="1"/>
     <File name="FreeRTOS/include/projdefs.h" path="FreeRTOS/include/projdefs.h" type="1"/>
     <File name="Frames/Buffer.h" path="Frames/Buffer.h" type="1"/>
     <File name="sfbus/channel.cpp" path="sfbus/channel.cpp" type="1"/>
@@ -146,16 +146,15 @@
     <File name="radio/nrf24/nrf24L01Plus_HAL_stm32f10x_hard_spi.c" path="radio/nrf24/nrf24L01Plus_HAL_stm32f10x_hard_spi.c" type="1"/>
     <File name="utils/debug.c" path="utils/debug.c" type="1"/>
     <File name="stm_lib" path="" type="2"/>
-    <File name="sfbus/channel_UART.cpp" path="sfbus/channel_UART.cpp" type="1"/>
     <File name="Frames/Frame.h" path="Frames/Frame.h" type="1"/>
-    <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
+    <File name="sfbus/channel_UART.cpp" path="sfbus/channel_UART.cpp" type="1"/>
     <File name="main.cpp" path="main.cpp" type="1"/>
+    <File name="cmsis_boot/system_stm32f10x.h" path="cmsis_boot/system_stm32f10x.h" type="1"/>
     <File name="utils/Crc16.h" path="utils/Crc16.h" type="1"/>
     <File name="Routing.h" path="Routing.h" type="1"/>
     <File name="utils/spi.h" path="utils/spi.h" type="1"/>
     <File name="TpSocket/TpLayer.h" path="TpSocket/TpLayer.h" type="1"/>
     <File name="radio/MacLayerNrf.cpp" path="radio/MacLayerNrf.cpp" type="1"/>
-    <File name="sfbus/UniqueFrame.h" path="sfbus/UniqueFrame.h" type="1"/>
     <File name="FreeRTOS/include/FreeRTOSConfig.h" path="FreeRTOS/include/FreeRTOSConfig.h" type="1"/>
     <File name="utils/Led.cpp" path="utils/Led.cpp" type="1"/>
     <File name="cmsis_boot" path="" type="2"/>
@@ -165,10 +164,11 @@
     <File name="cmsis_boot/startup" path="" type="2"/>
     <File name="np_layer.h" path="np_layer.h" type="1"/>
     <File name="cmsis_boot/startup/startup_stm32f10x_hd.c" path="cmsis_boot/startup/startup_stm32f10x_hd.c" type="1"/>
+    <File name="utils/UniqueItemHandler.h" path="utils/UniqueItemHandler.h" type="1"/>
     <File name="stm_lib/src/stm32f10x_spi.c" path="stm_lib/src/stm32f10x_spi.c" type="1"/>
     <File name="TpSocket/TpSocket.cpp" path="TpSocket/TpSocket.cpp" type="1"/>
-    <File name="FreeRTOS/src/list.c" path="FreeRTOS/src/list.c" type="1"/>
     <File name="ncmp_layer_slave.h" path="ncmp_layer_slave.h" type="1"/>
+    <File name="FreeRTOS/src/list.c" path="FreeRTOS/src/list.c" type="1"/>
     <File name="ncmp_layer_base.h" path="ncmp_layer_base.h" type="1"/>
     <File name="utils/Led.h" path="utils/Led.h" type="1"/>
     <File name="FreeRTOS/src" path="" type="2"/>
@@ -187,8 +187,8 @@
     <File name="cmsis/core_cm3.h" path="cmsis/core_cm3.h" type="1"/>
     <File name="sfbus" path="" type="2"/>
     <File name="PacketAssemblyTest.h" path="PacketAssemblyTest.h" type="1"/>
-    <File name="FreeRTOS/include/list.h" path="FreeRTOS/include/list.h" type="1"/>
     <File name="Frames/TpFrame.h" path="Frames/TpFrame.h" type="1"/>
+    <File name="FreeRTOS/include/list.h" path="FreeRTOS/include/list.h" type="1"/>
     <File name="FreeRTOS/include/portable.h" path="FreeRTOS/include/portable.h" type="1"/>
     <File name="FreeRTOS/include/timers.h" path="FreeRTOS/include/timers.h" type="1"/>
     <File name="FreeRTOS/include" path="" type="2"/>

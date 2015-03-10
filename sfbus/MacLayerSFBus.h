@@ -9,7 +9,7 @@
 
 #include "MacFrame.h"
 #include "channel.h"
-#include "UniqueFrame.h"
+#include "UniqueItemHandler.h"
 
 #include "mac_layer_base.h"
 
@@ -35,7 +35,7 @@ private:
 	uint8_t getUniquePid();
 
 	Channel *ptrChannel;
-	UniqueFrame<uint8_t> uniqueFrame;
+	UniqueItemHandler<uint8_t> uniqueFrame;
 	QueueHandle_t rxQueue;
 	QueueHandle_t ackQueue;
 	SemaphoreHandle_t txMutex;

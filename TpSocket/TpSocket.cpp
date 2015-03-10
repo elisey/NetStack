@@ -191,9 +191,6 @@ bool TpSocket::transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType)
 	return transferResult;
 }
 
-
-
-
 void TpSocket::handleRxTpFrame(TpFrame* ptrTpFrame)
 {
 	BaseType_t result;
@@ -226,7 +223,14 @@ void TpSocket::rxTask()
 			continue;
 		}
 
-		//проверка на уникальность и отсеивание
+		uint8_t packetUniqueId = tpFrame.getUniqueId();
+		if (uniqueFrame.isFrameUnique(packetUniqueId) == false)	{
+			tpFrame.free();
+			continue;
+		}
+		else	{
+			uniqueFrame.putNewFrame(packetUniqueId);
+		}
 
 		if (connectionStatus == connectionStatus_listen)	{
 			parceInListenState(&tpFrame);
