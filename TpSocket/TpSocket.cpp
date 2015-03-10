@@ -4,8 +4,8 @@
 #include "Routing.h"
 
 uint8_t inBuffer[256];
-unsigned int wrBufferIndex = 0;
-unsigned int rdBufferIndex = 0;
+volatile uint8_t wrBufferIndex = 0;
+uint8_t rdBufferIndex = 0;
 
 static void TpSocket_RxTask(void *param);
 
@@ -22,8 +22,6 @@ TpSocket::TpSocket()
 			this,
 			tskIDLE_PRIORITY + 1,
 			NULL);
-
-
 }
 
 void TpSocket::bind(uint8_t _selfPort = 0)
@@ -36,18 +34,20 @@ void TpSocket::bind(uint8_t _selfPort = 0)
 
 bool TpSocket::listen( )
 {
+	bool result = false;
+	mutex.lock();
 	if (connectionStatus == connectionStatus_disconnected)	{
 		setStateListen();
-		return true;
+		result = true;
 	}
-	return false;
+	mutex.unlock();
+	return result;
 }
-
-
 
 bool TpSocket::connect( uint16_t _remoteAddress, uint8_t _remotePort)
 {
 	bool result = false;
+	mutex.lock();
 	if (connectionStatus == connectionStatus_disconnected)	{
 		setStateConnected(_remotePort, _remoteAddress);
 
@@ -56,43 +56,48 @@ bool TpSocket::connect( uint16_t _remoteAddress, uint8_t _remotePort)
 			setStateDisconnected();
 		}
 	}
+	mutex.unlock();
 	return result;
 }
+
 bool TpSocket::close()
 {
+	bool result = false;
+	mutex.lock();
 	if (connectionStatus == connectionStatus_connected)	{
 		sendDisconnect();
 		setStateDisconnected();
-		return true;
+		result = true;
 	}
-	return false;
+	mutex.unlock();
+	return result;
 }
 
-bool TpSocket::abort()
+void TpSocket::abort()
 {
+	mutex.lock();
 	setStateDisconnected();
-	return true;
+	mutex.unlock();
 }
 
 bool TpSocket::send(uint8_t *buffer, unsigned int size)
 {
-	if (connectionStatus != connectionStatus_connected)	{
-		return false;
-	}
-
-	//TODO проверка максимального размера пакета.
-
-	TpFrame tpFrame;
-	tpFrame.alloc();
-	uint8_t *dst = tpFrame.getPayloadPtr();
-	memcpy( dst, buffer, size );
-	tpFrame.getBuffer().setLenght(size + TP_FRAME_HEAD_LENGTH);
-	return transfer(&tpFrame, TpFrameType_Data);
+	mutex.lock();
+	bool result = sendBuffer(buffer, size);
+	mutex.unlock();
+	return result;
 }
 
-bool TpSocket::getConnectionStatus()
+bool TpSocket::checkConnectionStatus()
 {
-	return connectionStatus;
+	bool result = false;
+	mutex.lock();
+
+	if ( isConnected() == true)	{
+		result = sendBuffer(NULL, 0);
+	}
+	mutex.unlock();
+	return result;
 }
 
 bool TpSocket::isConnected()
@@ -130,6 +135,22 @@ bool TpSocket::sendDisconnect()
 	return transfer(&tpFrame, TpFrameType_Disconnect);
 }
 
+bool TpSocket::sendBuffer(uint8_t *buffer, unsigned int size)
+{
+	bool result = false;
+	if (connectionStatus == connectionStatus_connected)	{
+		//TODO проверка максимального размера пакета.
+
+		TpFrame tpFrame;
+		tpFrame.alloc();
+		uint8_t *dst = tpFrame.getPayloadPtr();
+		memcpy( dst, buffer, size );
+		tpFrame.getBuffer().setLenght(size + TP_FRAME_HEAD_LENGTH);
+		result = transfer(&tpFrame, TpFrameType_Data);
+	}
+	return result;
+}
+
 bool TpSocket::transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType)
 {
 	assert(remoteAddress != 0);
@@ -138,7 +159,7 @@ bool TpSocket::transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType)
 	ptrTpFrame->setDstPort(remotePort);
 	ptrTpFrame->setType(tpFrameType);
 
-	uint8_t uniqueId = getUniqueId();
+	uint8_t uniqueId = generateNextUniqueId();
 	ptrTpFrame->setUniqueId( uniqueId );
 
 	NpFrame npFrame;
@@ -204,12 +225,6 @@ void TpSocket::rxTask()
 			tpFrame.free();
 			continue;
 		}
-		else	{
-			uint8_t packetPort = tpFrame.getSrcPort();
-			uint16_t packetAddress = tpFrame.srcAddress;
-			uint8_t packetUniqueId = tpFrame.getUniqueId();
-			sendAck(packetPort, packetAddress, packetUniqueId);
-		}
 
 		//проверка на уникальность и отсеивание
 
@@ -255,9 +270,12 @@ void TpSocket::parceInDisconnectedState(TpFrame *ptrTpFrame)
 void TpSocket::parceInListenState(TpFrame *ptrTpFrame)
 {
 	if (ptrTpFrame->getType() == TpFrameType_Connect)	{
+
 		uint8_t _remotePort = ptrTpFrame->getSrcPort();
 		uint16_t _remoteAddress = ptrTpFrame->srcAddress;
 		setStateConnected(_remotePort, _remoteAddress);
+
+		sendAck(_remotePort, _remoteAddress, ptrTpFrame->getUniqueId());
 	}
 }
 
@@ -265,10 +283,16 @@ void TpSocket::parceInConnectedState(TpFrame *ptrTpFrame)
 {
 	TpFrameType_t packetType = ptrTpFrame->getType();
 
+	uint8_t _remotePort = ptrTpFrame->getSrcPort();
+	uint16_t _remoteAddress = ptrTpFrame->srcAddress;
+	uint8_t uniqueId = ptrTpFrame->getUniqueId();
+
+	//TODO функциональность под вопросом
 	if (packetType == TpFrameType_Connect)	{
-		uint8_t _remotePort = ptrTpFrame->getSrcPort();
-		uint16_t _remoteAddress = ptrTpFrame->srcAddress;
+
 		setStateConnected(_remotePort, _remoteAddress);
+
+		sendAck(_remotePort, _remoteAddress, uniqueId);
 		return;
 	}
 
@@ -281,6 +305,8 @@ void TpSocket::parceInConnectedState(TpFrame *ptrTpFrame)
 
 	if (packetType == TpFrameType_Disconnect)	{
 		setStateDisconnected();
+
+		sendAck(_remotePort, _remoteAddress, uniqueId);
 		return;
 	}
 
@@ -289,13 +315,15 @@ void TpSocket::parceInConnectedState(TpFrame *ptrTpFrame)
 		unsigned int size = ptrTpFrame->getPayloadSize();
 		uint8_t *src = ptrTpFrame->getPayloadPtr();
 
-		int i;
+		unsigned int i;
 		for (i = 0; i < size; ++i) {
 			inBuffer[wrBufferIndex] = src[i];
 			wrBufferIndex++;
 
 			assert(wrBufferIndex != rdBufferIndex);
 		}
+
+		sendAck(_remotePort, _remoteAddress, uniqueId);
 		return;
 	}
 }
@@ -353,7 +381,7 @@ void TpSocket::setStateConnected(uint8_t _remotePort, uint16_t _remoteAddress)
 	remoteAddress = _remoteAddress;
 }
 
-uint8_t TpSocket::getUniqueId()
+uint8_t TpSocket::generateNextUniqueId()
 {
 	return nextUniqueId++;
 }

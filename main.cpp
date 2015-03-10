@@ -52,7 +52,7 @@ void receiver(void *param)
 				led1.setState(false);
 			}
 		}
-		//vTaskDelay(10 / portTICK_RATE_MS);
+		vTaskDelay(10 / portTICK_RATE_MS);
 	}
 }
 

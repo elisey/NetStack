@@ -25,10 +25,9 @@ public:
 	bool listen();
 	bool connect( uint16_t dstAddress, uint8_t dstPort);
 	bool close();
-	bool abort();
-
+	void abort();
 	bool send(uint8_t *buffer, unsigned int size);
-	bool getConnectionStatus();
+	bool checkConnectionStatus();
 	bool isConnected();
 	int receiveChar();
 
@@ -41,6 +40,7 @@ public:
 private:
 	bool sendConnect();
 	bool sendDisconnect();
+	bool sendBuffer(uint8_t *buffer, unsigned int size);
 	bool transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType);
 
 
@@ -57,9 +57,7 @@ private:
 	void setStateListen();
 	void setStateConnected(uint8_t remotePort, uint16_t remoteAddress);
 
-	uint8_t getUniqueId();
-	void lock();
-	void unlock();
+	uint8_t generateNextUniqueId();
 
 	uint8_t selfPort;
 	uint8_t remotePort;
