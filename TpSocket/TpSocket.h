@@ -43,9 +43,9 @@ private:
 	bool sendBuffer(uint8_t *buffer, unsigned int size);
 	bool transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType);
 
-	void parceInDisconnectedState(TpFrame *ptrTpFrame);
-	void parceInListenState(TpFrame *ptrTpFrame);
-	void parceInConnectedState(TpFrame *ptrTpFrame);
+	void parceInDisconnectedState(TpFrame *ptrTpFrame, bool isPacketUnique);
+	void parceInListenState(TpFrame *ptrTpFrame, bool isPacketUnique);
+	void parceInConnectedState(TpFrame *ptrTpFrame, bool isPacketUnique);
 
 	void clearAckQueue();
 	void ackReceived(uint8_t uniqueId);
