@@ -18,7 +18,7 @@ typedef enum	{
 	connectionStatus_connected
 } connectionStatus_t;
 
-#define MAX_TP_PAYLOAD_SIZE		(135 - 15)
+#define MAX_TP_PAYLOAD_SIZE		(143 - 15)
 
 class TpSocket {
 public:
