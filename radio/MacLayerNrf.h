@@ -11,7 +11,8 @@
 #include "mac_layer_base.h"
 
 #define MAX_NRF_PAYLOAD_SIZE		32
-
+#define macLayerNrfRESEND_NUM		(3)
+#define macLayerNrfMAX_RESEND_DELAY	(3)
 class MacLayerNrf : public MacLayerBase
 {
 public:
@@ -27,6 +28,9 @@ private:
 	bool transferBroadcast(uint8_t *buffer, uint8_t size);
 	bool queuePacketAndWait(uint8_t* buffer, uint8_t size);
 	void wordToBuffer(uint16_t inputData, uint8_t *buffer);
+
+	void randomDelay(int maxDelayTime);
+
 	void nrfLock();
 	void nrfUnlock();
 

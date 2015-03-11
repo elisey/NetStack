@@ -3,6 +3,8 @@
 #include "nrf24L01Plus.h"
 #include "debug.h"
 
+#include <stdlib.h>
+
 #define ADDRESS_WIDTH	(5)		// (3 - 5)
 #define CHANNEL_MHZ		(2400)	// 2400 - 2525 MHz
 #define BITRATE_KBPS	(2000)	// 1000, 2000 Kbps
@@ -140,7 +142,17 @@ bool MacLayerNrf::transfer(uint8_t* buffer, uint8_t size, uint16_t dstAddress)
 	nordic_set_rx_pipe0_addr(txAddress, ADDRESS_WIDTH);
 
 	bool result;
-	result = queuePacketAndWait(buffer, size);
+	int i;
+	for (i = 0; i < macLayerNrfRESEND_NUM; ++i) {
+		result = queuePacketAndWait(buffer, size);
+		if (result == true)	{
+			break;
+		}
+
+		pin4_on;
+		randomDelay(macLayerNrfMAX_RESEND_DELAY);
+		pin4_off;
+	}
 
 	nordic_set_rx_pipe0_addr(selfAddressArray, ADDRESS_WIDTH);
 
@@ -161,7 +173,7 @@ bool MacLayerNrf::transferBroadcast(uint8_t* buffer, uint8_t size)
 	result = queuePacketAndWait(buffer, size);
 
 	nordic_set_auto_ack_for_pipes(true, false, false, false, false, false);
-    nordic_set_auto_transmit_options(750, 3);
+    nordic_set_auto_transmit_options(500, 2);
 	nordic_standby1_to_rx();
 	return result;
 }
@@ -196,6 +208,14 @@ void MacLayerNrf::wordToBuffer(uint16_t inputData, uint8_t *buffer)
 	}
 }
 
+void MacLayerNrf::randomDelay(int maxDelayTime)
+{
+	uint8_t tickDelay = rand() % (maxDelayTime + 1);
+	if (tickDelay != 0)	{
+		vTaskDelay(tickDelay / portTICK_RATE_MS);
+	}
+}
+
 void MacLayerNrf::nrfLock()
 {
 	BaseType_t result = xSemaphoreTake(nrfMutex, 50 / portTICK_RATE_MS);
@@ -210,11 +230,9 @@ void MacLayerNrf::nrfUnlock()
 extern "C" {
 	void nordic_HAL_OnIrqLow()
 	{
-		pin1_on;
 		BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 		BaseType_t result;
 		result = xSemaphoreGiveFromISR(nrfTxSemaphore, &xHigherPriorityTaskWoken);
-		pin1_off;
 		assert(result == pdPASS);
 		if (xHigherPriorityTaskWoken == pdTRUE)	{
 			taskYIELD();

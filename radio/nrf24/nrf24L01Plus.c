@@ -105,7 +105,7 @@ void nordic_init(
 	nordic_enable_pipes(true, true, false, false, false, false);
 	nordic_set_auto_ack_for_pipes(true, false, false, false, false, false);
 
-	nordic_set_auto_transmit_options(750, 3);
+	nordic_set_auto_transmit_options(500, 2);
 
 	nordic_set_addr_width(address_width);
 
