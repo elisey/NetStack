@@ -6,6 +6,9 @@
 #include "task.h"
 #include "queue.h"
 
+#define MAX_SFBus_PACKET_SIZE		(135)
+#define MIN_SFBus_PACKET_SIZE		(4)
+
 class Channel
 {
 public:

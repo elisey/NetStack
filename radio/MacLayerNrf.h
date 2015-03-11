@@ -10,10 +10,12 @@
 #include "RadioMacFrame.h"
 #include "mac_layer_base.h"
 
+#define MAX_NRF_PAYLOAD_SIZE		32
+
 class MacLayerNrf : public MacLayerBase
 {
 public:
-	MacLayerNrf(uint16_t maxMtu);
+	MacLayerNrf();
 
 	void rxTask();
 	bool send( PoolNode *ptrPoolNode, uint16_t dstAddress);

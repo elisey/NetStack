@@ -17,7 +17,7 @@ NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint8_t _inderfaceId)
 	 	rxTpQueue(NULL),
 	 	rxTpaQueue(NULL)
 {
-	maxNpPayload = ptrMacLayer->getMtuSize() - NP_FRAME_HEAD_LENGTH;
+	maxNpPayload = ptrMacLayer->getMaxPayloadSize() - NP_FRAME_HEAD_LENGTH;
 
 	txQueue = xQueueCreate(10, sizeof(NpFrame));
 

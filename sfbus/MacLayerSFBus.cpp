@@ -2,10 +2,10 @@
 
 static void MacLayer_RxTask(void *param);
 
-MacLayerSFBus::MacLayerSFBus(Channel* _ptrChannel, uint16_t maxMtu)
+MacLayerSFBus::MacLayerSFBus(Channel* _ptrChannel)
 	:	ptrChannel(_ptrChannel), nextPid(0)
 {
-	setMtuSize(maxMtu);
+	setMaxPayloadSize(mac_layerMAX_PAYLOAD_SIZE);
 
 	rxQueue = xQueueCreate(10, sizeof(MacFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));

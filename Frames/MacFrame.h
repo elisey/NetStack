@@ -8,6 +8,8 @@ typedef enum	{
 	packetAckType_Ack = 3
 } packetAckType_t;
 
+#define SFBus_FRAME_HEAD_LENGTH		(4)
+
 class MacFrame: public PoolNode
 {
 public:

@@ -6,8 +6,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#define MAX_SFBus_PACKET_SIZE		(135)
-#define MIN_SFBus_PACKET_SIZE		(4)
+
 
 typedef enum	{
 	uart_channel_1,

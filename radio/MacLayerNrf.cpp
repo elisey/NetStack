@@ -16,9 +16,9 @@ static SemaphoreHandle_t nrfTxSemaphore;
 
 static void MacLayer_RxTask(void *param);
 
-MacLayerNrf::MacLayerNrf(uint16_t maxMtu)
+MacLayerNrf::MacLayerNrf()
 {
-	setMtuSize(maxMtu);
+	setMaxPayloadSize(MAX_NRF_PAYLOAD_SIZE);
 
 	rxQueue = xQueueCreate(10, sizeof(RadioMacFrame));
 	nrfMutex = xSemaphoreCreateMutex();
