@@ -139,14 +139,26 @@ bool TpSocket::sendBuffer(uint8_t *buffer, unsigned int size)
 {
 	bool result = false;
 	if (connectionStatus == connectionStatus_connected)	{
-		//TODO проверка максимального размера пакета.
 
-		TpFrame tpFrame;
-		tpFrame.alloc();
-		uint8_t *dst = tpFrame.getPayloadPtr();
-		memcpy( dst, buffer, size );
-		tpFrame.getBuffer().setLenght(size + TP_FRAME_HEAD_LENGTH);
-		result = transfer(&tpFrame, TpFrameType_Data);
+		do {
+			unsigned int numOfBytesToSend = size;
+			if (numOfBytesToSend > MAX_TP_PAYLOAD_SIZE) {
+				numOfBytesToSend = MAX_TP_PAYLOAD_SIZE;
+			}
+
+			TpFrame tpFrame;
+			tpFrame.alloc();
+			uint8_t *dst = tpFrame.getPayloadPtr();
+			memcpy( dst, buffer, numOfBytesToSend );
+			tpFrame.getBuffer().setLenght(numOfBytesToSend + TP_FRAME_HEAD_LENGTH);
+			result = transfer(&tpFrame, TpFrameType_Data);
+
+			if (result == false)	{
+				return false;
+			}
+			buffer += numOfBytesToSend;
+			size -= numOfBytesToSend;
+		} while (size > 0);
 	}
 	return result;
 }
