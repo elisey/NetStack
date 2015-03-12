@@ -9,7 +9,6 @@ MacLayerSFBus::MacLayerSFBus(Channel* _ptrChannel)
 
 	rxQueue = xQueueCreate(10, sizeof(MacFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));
-	txMutex = xSemaphoreCreateMutex();
 
 	xTaskCreate(
 			MacLayer_RxTask,
@@ -97,10 +96,9 @@ bool MacLayerSFBus::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 	bool result;
 	BaseType_t mutexTakeResult;
 
-	mutexTakeResult = xSemaphoreTake(txMutex, portMAX_DELAY);
-	assert(mutexTakeResult == pdPASS);
+	txMutex.lock();
 	result = transfer(macFrame);
-	xSemaphoreGive(txMutex);
+	txMutex.unlock();
 
 	return result;
 }
@@ -151,11 +149,9 @@ bool MacLayerSFBus::transfer(MacFrame &macFrame)
 			 * буферов), то при повтороной проверке наличия ACK результат будет положительным.
 			 */
 			pin4_on;
-			xSemaphoreGive(txMutex);
+			txMutex.unlock();
 			vTaskDelay(1);
-			BaseType_t mutexTakeResult;
-			mutexTakeResult = xSemaphoreTake(txMutex, portMAX_DELAY);
-			assert(mutexTakeResult == pdPASS);
+			txMutex.lock();
 
 			if (isAckReceived(packetPid, 0) == true)	{
 				transferOk = true;
@@ -186,14 +182,9 @@ void MacLayerSFBus::sendAck(uint8_t pid)
 	macFrame.setPacketAckType(packetAckType_Ack);
 	macFrame.calculateAndSetCrc();
 
-	BaseType_t result = xSemaphoreTake(txMutex, 50);
-	if (result == pdPASS)	{
-		transfer(macFrame);
-		xSemaphoreGive(txMutex);
-	}
-	else	{
-		macFrame.free();
-	}
+	txMutex.lock();
+	transfer(macFrame);
+	txMutex.unlock();
 }
 
 void MacLayerSFBus::ackReceived(uint8_t pid)

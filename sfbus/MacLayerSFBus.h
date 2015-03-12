@@ -12,6 +12,7 @@
 #include "UniqueItemHandler.h"
 
 #include "mac_layer_base.h"
+#include "Mutex.h"
 
 #define mac_layerRESEND_NUM				(3u)
 #define mac_layerCRC_SIZE				(2u)
@@ -38,6 +39,6 @@ private:
 	UniqueItemHandler<uint8_t> uniqueFrame;
 	QueueHandle_t rxQueue;
 	QueueHandle_t ackQueue;
-	SemaphoreHandle_t txMutex;
+	Mutex txMutex;
 	uint8_t nextPid;
 };
