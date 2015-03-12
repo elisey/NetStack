@@ -3,7 +3,7 @@
 #include "nrf24L01Plus.h"
 #include "debug.h"
 
-#include <stdlib.h>
+#include "delay.h"
 
 #define ADDRESS_WIDTH	(5)		// (3 - 5)
 #define CHANNEL_MHZ		(2400)	// 2400 - 2525 MHz
@@ -60,7 +60,7 @@ void MacLayerNrf::rxTask()
 			 */
 			if ( (length == 0) || ( length > 32 ) )	{
 				nordic_flush_rx_fifo();
-				pin0_on;
+				//pin0_on;
 			}
 			else {
 				radioMacFrame.getBuffer().setLenght( length );
@@ -148,10 +148,7 @@ bool MacLayerNrf::transfer(uint8_t* buffer, uint8_t size, uint16_t dstAddress)
 		if (result == true)	{
 			break;
 		}
-
-		pin4_on;
-		randomDelay(macLayerNrfMAX_RESEND_DELAY);
-		pin4_off;
+		Delay_RandomDelay(macLayerNrfMAX_RESEND_DELAY);
 	}
 
 	nordic_set_rx_pipe0_addr(selfAddressArray, ADDRESS_WIDTH);
@@ -205,14 +202,6 @@ void MacLayerNrf::wordToBuffer(uint16_t inputData, uint8_t *buffer)
 	int i;
 	for (i = 2; i < ADDRESS_WIDTH; ++i) {
 		buffer[i] = ADDRESS_FILLER;
-	}
-}
-
-void MacLayerNrf::randomDelay(int maxDelayTime)
-{
-	uint8_t tickDelay = rand() % (maxDelayTime + 1);
-	if (tickDelay != 0)	{
-		vTaskDelay(tickDelay / portTICK_RATE_MS);
 	}
 }
 

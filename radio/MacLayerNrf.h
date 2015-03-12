@@ -29,8 +29,6 @@ private:
 	bool queuePacketAndWait(uint8_t* buffer, uint8_t size);
 	void wordToBuffer(uint16_t inputData, uint8_t *buffer);
 
-	void randomDelay(int maxDelayTime);
-
 	void nrfLock();
 	void nrfUnlock();
 
