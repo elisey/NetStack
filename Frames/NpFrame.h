@@ -10,8 +10,7 @@
 #include "debug.h"
 typedef enum	{
 	NpFrame_NCMP = 1,	// net control message protocol
-	NpFrame_TPA = 2,	// transport protocol with acknowledgment
-	NpFrame_TP = 3,		// transport protocol (without acknowledgment)
+	NpFrame_TP = 2,		// transport protocol
 } NpFrame_ProtocolType_t;
 
 #define BROADCAST_ADDRESS			(0)

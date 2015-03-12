@@ -125,14 +125,8 @@ void NpLayer::parseOwnPacketByProtocol(NpFrame *ptrNpFrame)
 			ptrNpFrame->free();
 		}
 		break;
-	case NpFrame_TPA:
-		ptrNpFrame->free();
-		//putFrameToQueue(&npFrame, rxTpaQueue);
-		break;
 	case NpFrame_TP:
 		TpLayer::instance().handleTpFrame(ptrNpFrame);
-		//npFrame.free();
-		//putFrameToQueue(&npFrame, rxTpQueue);
 		break;
 	default:
 		ptrNpFrame->free();
@@ -254,6 +248,16 @@ void NpLayer::send(NpFrame *ptrNpFrame,
 void NpLayer::forward(NpFrame *ptrNpFrame)
 {
 	transfer(ptrNpFrame);
+}
+
+uint8_t NpLayer::getInterfaceId()
+{
+	return inderfaceId;
+}
+
+void NpLayer::setRxNcmpQueue(QueueHandle_t _rxNcmpQueue)
+{
+	rxNcmpQueue = _rxNcmpQueue;
 }
 
 uint8_t NpLayer::getUniqueAssembleId()
