@@ -147,23 +147,25 @@ bool NpLayer::putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue)
 
 bool NpLayer::transfer(NpFrame *ptrNpFrame)
 {
+	bool result = false;
+
 	txMutex.lock();
 	uint16_t dstAddress = getNextHopAddress(ptrNpFrame);
 	uint8_t payloadSize = ptrNpFrame->getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
 
 	if (payloadSize <= maxNpPayload)	{
 		setAssemblyData(ptrNpFrame, 1, 0, 0);
-		ptrMacLayer->send(ptrNpFrame, dstAddress);
+		result = ptrMacLayer->send(ptrNpFrame, dstAddress);
 	}
 	else	{
 #if (USE_OWN_PACKET_ASSEMBLY == 1)
-		deassemblepacketAndSendParts(ptrNpFrame, dstAddress, payloadSize);
+		result = deassemblePacketAndSendParts(ptrNpFrame, dstAddress, payloadSize);
 #else
 		assert(0);
 #endif
 	}
 	txMutex.unlock();
-	//TODO добавить проверку статуса отправки
+	return result;
 }
 
 /*
@@ -183,8 +185,9 @@ uint16_t NpLayer::getNextHopAddress(NpFrame *ptrNpFrame)
 	}
 }
 
-void NpLayer::deassemblepacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t payloadSize)
+bool NpLayer::deassemblePacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t payloadSize)
 {
+	bool result = false;
 	uint8_t uniqueId = getUniqueAssembleId();
 	uint8_t currentPart = 0;
 	uint8_t numOfParts = calculateNumOfParts(payloadSize);
@@ -210,10 +213,13 @@ void NpLayer::deassemblepacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddr
 		uint8_t partPacketLength = numOfBytesToCopy + NP_FRAME_HEAD_LENGTH;
 		npFramePart.getBuffer().setLenght( partPacketLength );
 
-		ptrMacLayer->send(&npFramePart, dstAddress);
+		result = ptrMacLayer->send(&npFramePart, dstAddress);
+		if (result == false)	{
+			break;
+		}
 	}
-
 	ptrNpFrame->free();
+	return result;
 }
 
 void NpLayer::setAssemblyData(NpFrame *ptrNpFrame, uint8_t totalNumOfParts, uint8_t setCurrentPartIndex, uint8_t uniqueAssebleId)
@@ -232,7 +238,7 @@ uint8_t NpLayer::calculateNumOfParts(uint8_t payloadSize)
 	return numOfParts;
 }
 
-void NpLayer::send(NpFrame *ptrNpFrame,
+bool NpLayer::send(NpFrame *ptrNpFrame,
 		uint16_t dstAddess,
 		uint8_t ttl,
 		NpFrame_ProtocolType_t protocolType)
@@ -242,12 +248,12 @@ void NpLayer::send(NpFrame *ptrNpFrame,
 	ptrNpFrame->setTtl(ttl);
 	ptrNpFrame->setProtocolType(protocolType);
 
-	transfer(ptrNpFrame);
+	return transfer(ptrNpFrame);
 }
 
-void NpLayer::forward(NpFrame *ptrNpFrame)
+bool NpLayer::forward(NpFrame *ptrNpFrame)
 {
-	transfer(ptrNpFrame);
+	return transfer(ptrNpFrame);
 }
 
 uint8_t NpLayer::getInterfaceId()

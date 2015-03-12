@@ -22,8 +22,8 @@ public:
 	NpLayer(MacLayerBase *_ptrMacLayer, uint8_t _inderfaceId);
 
 	void rxTask();
-	void send(NpFrame *ptrNpFrame, uint16_t dstAddess, uint8_t ttl, NpFrame_ProtocolType_t protocolType);
-	void forward(NpFrame *ptrNpFrame);
+	bool send(NpFrame *ptrNpFrame, uint16_t dstAddess, uint8_t ttl, NpFrame_ProtocolType_t protocolType);
+	bool forward(NpFrame *ptrNpFrame);
 	uint8_t getInterfaceId();
 	void setRxNcmpQueue(QueueHandle_t _rxNcmpQueue);
 
@@ -38,7 +38,7 @@ private:
 
 	bool transfer(NpFrame *ptrNpFrame);
 	uint16_t getNextHopAddress(NpFrame *ptrNpFrame);
-	void deassemblepacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t payloadSize);
+	bool deassemblePacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t payloadSize);
 	void setAssemblyData(NpFrame *ptrNpFrame, uint8_t totalNumOfParts, uint8_t setCurrentPartIndex, uint8_t uniqueAssebleId);
 	uint8_t calculateNumOfParts(uint8_t payloadSize);
 
