@@ -29,7 +29,7 @@ private:
 	bool transfer(MacFrame &macFrame);
 	void sendAck(uint8_t pid);
 	void ackReceived(uint8_t pid);
-	bool isAckReceived(uint8_t pid);
+	bool isAckReceived(uint8_t pid, unsigned int timeout);
 	void clearQueueAck();
 	void handleRxPacket(MacFrame *ptrMacFrame);
 	uint8_t getUniquePid();

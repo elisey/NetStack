@@ -130,14 +130,39 @@ bool MacLayerSFBus::transfer(MacFrame &macFrame)
 	ptrChannel->send(&frame);
 	bool transferOk = false;
 	if (ackType == packetAckType_withAck)	{
-
 		unsigned int i;
 		for (i = 0; i < mac_layerRESEND_NUM - 1; ++i) {
-			if (isAckReceived(packetPid) == true)	{
+			if (isAckReceived(packetPid, mac_layerWAIT_ACK_TIMEOUT) == true)	{
 				transferOk = true;
 				break;
 			}
-			clearQueueAck();
+
+			/*
+			 * Метод борьбы с коллизиями. Когда два передатчика начинают передачу отновременно,
+			 * они блокируют задачу парсинга входящих сообщений, которая пытается захватить мьютекс передатчика
+			 * чтобы отправить ACK (void sendAck(uint8_t pid)).
+			 * Ни один из них не отвечает ACK другому, поэтому решают что их сообщение не дошло
+			 * до адресата, и производят ресенды до тех пор, пока не сдедают максимально установленное
+			 * их количество. В этом случае их сообщения теряются. Для борьбы с этим в случае неудачной
+			 * попытки отправки сообщения передатчик отдает мьютекс на 1 системный тик, чтобы произошла
+			 * отправка ACK в другом потоке. Предполагая что другая сторона сделала тоже самое, производится
+			 * повторная проверка на наличие ACK на неудачно отправленное сообщение. Если данная ситуация имела
+			 * место быть (а не отброс пакета приемной стороной из за битой контрольной суммы или переполнении входных
+			 * буферов), то при повтороной проверке наличия ACK результат будет положительным.
+			 */
+			pin4_on;
+			xSemaphoreGive(txMutex);
+			vTaskDelay(1);
+			BaseType_t mutexTakeResult;
+			mutexTakeResult = xSemaphoreTake(txMutex, portMAX_DELAY);
+			assert(mutexTakeResult == pdPASS);
+
+			if (isAckReceived(packetPid, 0) == true)	{
+				transferOk = true;
+				pin4_off;
+				break;
+			}
+			pin4_off;
 			ptrChannel->send(&frame);
 		}
 		transferOk = false;
@@ -180,11 +205,13 @@ void MacLayerSFBus::ackReceived(uint8_t pid)
 	}
 }
 
-bool MacLayerSFBus::isAckReceived(uint8_t pid)
+bool MacLayerSFBus::isAckReceived(uint8_t pid, unsigned int timeout)
 {
+	//TODO ожидание АК в течение времени, а не до первого ака
+
 	uint8_t receivedPid;
 	BaseType_t result;
-	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)mac_layerWAIT_ACK_TIMEOUT / portTICK_RATE_MS);
+	result = xQueueReceive(ackQueue, &receivedPid, (TickType_t)timeout / portTICK_RATE_MS);
 	if (result == pdPASS)	{
 		return (receivedPid == pid);
 	}
