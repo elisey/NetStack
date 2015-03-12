@@ -15,7 +15,7 @@ TpSocket::TpSocket()
 {
 	rxQueue = xQueueCreate(10, sizeof(TpFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));
-
+	ringBufferCountingSemaphore = xSemaphoreCreateCounting(INPUT_RING_BUFFER_SIZE, 0);
 	xTaskCreate(
 			TpSocket_RxTask,
 			"TpSocket_RxTask",
@@ -106,17 +106,16 @@ bool TpSocket::isConnected()
 	return (connectionStatus == connectionStatus_connected);
 }
 
-int TpSocket::receiveChar()
+uint8_t TpSocket::receiveChar()
 {
-	int ch;
-	if (wrBufferIndex == rdBufferIndex)	{
-		ch = (-1);
-	}
-	else {
-		ch = inBuffer[rdBufferIndex];
-		rdBufferIndex++;
-	}
+	uint8_t ch;
 
+	BaseType_t result;
+	result = xSemaphoreTake(ringBufferCountingSemaphore, portMAX_DELAY);
+	assert(result == pdPASS);
+
+	ch = inBuffer[rdBufferIndex];
+	rdBufferIndex++;
 	return ( ch );
 }
 
@@ -336,16 +335,18 @@ void TpSocket::parceInConnectedState(TpFrame *ptrTpFrame, bool isPacketUnique)
 			uint8_t *src = ptrTpFrame->getPayloadPtr();
 			unsigned int i;
 			for (i = 0; i < size; ++i) {
-				inBuffer[wrBufferIndex] = src[i];
-				wrBufferIndex++;
 				int counter = 0;
-				if (wrBufferIndex == rdBufferIndex)	{
+				while (xSemaphoreGive(ringBufferCountingSemaphore) == pdFAIL)
+				{
+					assert(wrBufferIndex != rdBufferIndex);
 					counter++;
 					assert(counter < 50);
 					pin4_on;
 					vTaskDelay(1);
 					pin4_off;
 				}
+				inBuffer[wrBufferIndex] = src[i];
+				wrBufferIndex++;
 			}
 		}
 		return;

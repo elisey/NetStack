@@ -7,6 +7,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "semphr.h"
 
 #include "UniqueItemHandler.h"
 
@@ -19,6 +20,7 @@ typedef enum	{
 } connectionStatus_t;
 
 #define MAX_TP_PAYLOAD_SIZE		(143 - 15)
+#define INPUT_RING_BUFFER_SIZE	(0xFF)
 
 class TpSocket {
 public:
@@ -32,7 +34,7 @@ public:
 	bool send(uint8_t *buffer, unsigned int size);
 	bool checkConnectionStatus();
 	bool isConnected();
-	int receiveChar();
+	uint8_t receiveChar();
 
 	void handleRxTpFrame(TpFrame* ptrTpFrame);
 
@@ -69,9 +71,10 @@ private:
 
 	QueueHandle_t rxQueue;
 	QueueHandle_t ackQueue;
+	xSemaphoreHandle ringBufferCountingSemaphore;
 	Mutex mutex;
 
-	uint8_t inBuffer[256];
+	uint8_t inBuffer[INPUT_RING_BUFFER_SIZE];
 	volatile uint8_t wrBufferIndex;
 	uint8_t rdBufferIndex;
 
