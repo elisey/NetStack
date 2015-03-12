@@ -334,13 +334,18 @@ void TpSocket::parceInConnectedState(TpFrame *ptrTpFrame, bool isPacketUnique)
 		if (isPacketUnique == true)	{
 			unsigned int size = ptrTpFrame->getPayloadSize();
 			uint8_t *src = ptrTpFrame->getPayloadPtr();
-
 			unsigned int i;
 			for (i = 0; i < size; ++i) {
 				inBuffer[wrBufferIndex] = src[i];
 				wrBufferIndex++;
-
-				assert(wrBufferIndex != rdBufferIndex);
+				int counter = 0;
+				if (wrBufferIndex == rdBufferIndex)	{
+					counter++;
+					assert(counter < 50);
+					pin4_on;
+					vTaskDelay(1);
+					pin4_off;
+				}
 			}
 		}
 		return;
