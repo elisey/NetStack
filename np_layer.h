@@ -7,7 +7,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-
+#include "Mutex.h"
 #include "PacketAssembly.h"
 
 extern uint16_t selfAddress;
@@ -21,7 +21,6 @@ class NpLayer
 public:
 	NpLayer(MacLayerBase *_ptrMacLayer, uint8_t _inderfaceId);
 
-	void txTask();
 	void rxTask();
 
 	void setRxNcmpQueue(QueueHandle_t _rxNcmpQueue)
@@ -57,6 +56,7 @@ private:
 	bool processAssembling(NpFrame *ptrNpFrame);
 	void parseOwnPacketByProtocol(NpFrame *ptrNpFrame);
 
+	bool transfer(NpFrame *ptrNpFrame);
 	uint16_t getNextHopAddress(NpFrame *ptrNpFrame);
 	void deassemblepacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t payloadSize);
 	void setAssemblyData(NpFrame *ptrNpFrame, uint8_t totalNumOfParts, uint8_t setCurrentPartIndex, uint8_t uniqueAssebleId);
@@ -75,7 +75,7 @@ private:
 	QueueHandle_t rxTpQueue;
 	QueueHandle_t rxTpaQueue;
 
-	QueueHandle_t txQueue;
+	Mutex txMutex;
 
 	PacketAssembly packetAssembly;
 };

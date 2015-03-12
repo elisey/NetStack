@@ -5,7 +5,6 @@
 #include "MacFrame.h"
 #include "TpLayer.h"
 
-static void NpLayer_TxTask(void *param);
 static void NpLayer_RxTask(void *param);
 
 uint16_t selfAddress = 0;
@@ -18,16 +17,6 @@ NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint8_t _inderfaceId)
 	 	rxTpaQueue(NULL)
 {
 	maxNpPayload = ptrMacLayer->getMaxPayloadSize() - NP_FRAME_HEAD_LENGTH;
-
-	txQueue = xQueueCreate(10, sizeof(NpFrame));
-
-	xTaskCreate(
-			NpLayer_TxTask,
-			"NpLayer_TxTask",
-			configMINIMAL_STACK_SIZE,
-			this,
-			tskIDLE_PRIORITY + 1,
-			NULL);
 
 	xTaskCreate(
 			NpLayer_RxTask,
@@ -162,37 +151,25 @@ bool NpLayer::putFrameToQueue(NpFrame * ptrNpFrame, QueueHandle_t queue)
 	return true;
 }
 
-static void NpLayer_TxTask(void *param)
+bool NpLayer::transfer(NpFrame *ptrNpFrame)
 {
-	NpLayer *ptrObj = static_cast<NpLayer*>(param);
-	ptrObj->txTask();
-	while(1);
-}
+	txMutex.lock();
+	uint16_t dstAddress = getNextHopAddress(ptrNpFrame);
+	uint8_t payloadSize = ptrNpFrame->getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
 
-void NpLayer::txTask()
-{
-	while(1)
-	{
-		NpFrame npFrame;
-		BaseType_t result;
-		result = xQueueReceive(txQueue, &npFrame, portMAX_DELAY);
-		assert(result == pdPASS);
-
-		uint16_t dstAddress = getNextHopAddress(&npFrame);
-		uint8_t payloadSize = npFrame.getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
-
-		if (payloadSize <= maxNpPayload)	{
-			setAssemblyData(&npFrame, 1, 0, 0);
-			ptrMacLayer->send(&npFrame, dstAddress);
-		}
-		else	{
-#if (USE_OWN_PACKET_ASSEMBLY == 1)
-			deassemblepacketAndSendParts(&npFrame, dstAddress, payloadSize);
-#else
-			assert(0);
-#endif
-		}
+	if (payloadSize <= maxNpPayload)	{
+		setAssemblyData(ptrNpFrame, 1, 0, 0);
+		ptrMacLayer->send(ptrNpFrame, dstAddress);
 	}
+	else	{
+#if (USE_OWN_PACKET_ASSEMBLY == 1)
+		deassemblepacketAndSendParts(ptrNpFrame, dstAddress, payloadSize);
+#else
+		assert(0);
+#endif
+	}
+	txMutex.unlock();
+	//TODO добавить проверку статуса отправки
 }
 
 /*
@@ -271,16 +248,12 @@ void NpLayer::send(NpFrame *ptrNpFrame,
 	ptrNpFrame->setTtl(ttl);
 	ptrNpFrame->setProtocolType(protocolType);
 
-	BaseType_t result;
-	result = xQueueSend(txQueue, ptrNpFrame, portMAX_DELAY);
-	assert(result == pdPASS);
+	transfer(ptrNpFrame);
 }
 
 void NpLayer::forward(NpFrame *ptrNpFrame)
 {
-	BaseType_t result;
-	result = xQueueSend(txQueue, ptrNpFrame, portMAX_DELAY);
-	assert(result == pdPASS);
+	transfer(ptrNpFrame);
 }
 
 uint8_t NpLayer::getUniqueAssembleId()

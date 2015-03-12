@@ -15,7 +15,7 @@ NcmpLayerBase::NcmpLayerBase(NpLayer *_ptrNpLayer, interfaceType_t _interfaceTyp
 			"NcmpLayer_Task",
 			configMINIMAL_STACK_SIZE,
 			this,
-			tskIDLE_PRIORITY + 1,
+			tskIDLE_PRIORITY + 2,
 			NULL);
 }
 
