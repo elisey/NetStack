@@ -12,7 +12,7 @@ void Debug_Init()
 
 	GPIO_InitTypeDef gpio;
 	gpio.GPIO_Mode = GPIO_Mode_Out_PP;
-	gpio.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_7 ;
+	gpio.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_7 | GPIO_Pin_3 | GPIO_Pin_13;
 	gpio.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOC, &gpio);
 

@@ -49,8 +49,8 @@ extern "C" {
 #define pin3_off		GPIOC->BRR = GPIO_Pin_2
 #define pin4_on			GPIOC->BSRR = GPIO_Pin_3
 #define pin4_off		GPIOC->BRR = GPIO_Pin_3
-#define pin5_on			GPIOC->BSRR = GPIO_Pin_0
-#define pin5_off		GPIOC->BRR = GPIO_Pin_0
+#define pin5_on			GPIOC->BSRR = GPIO_Pin_13
+#define pin5_off		GPIOC->BRR = GPIO_Pin_13
 #define pin6_on			GPIOB->BSRR = GPIO_Pin_6
 #define pin6_off		GPIOB->BRR = GPIO_Pin_6
 #define pin7_on			GPIOB->BSRR = GPIO_Pin_7
