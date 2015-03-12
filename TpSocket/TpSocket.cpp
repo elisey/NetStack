@@ -3,14 +3,15 @@
 
 #include "Routing.h"
 
-uint8_t inBuffer[256];
-volatile uint8_t wrBufferIndex = 0;
-uint8_t rdBufferIndex = 0;
+
 
 static void TpSocket_RxTask(void *param);
 
 TpSocket::TpSocket()
-	:	connectionStatus(connectionStatus_disconnected), nextUniqueId(0)
+	:	connectionStatus(connectionStatus_disconnected),
+	 	nextUniqueId(0),
+	 	wrBufferIndex(0),
+	 	rdBufferIndex(0)
 {
 	rxQueue = xQueueCreate(10, sizeof(TpFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));

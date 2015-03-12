@@ -71,5 +71,9 @@ private:
 	QueueHandle_t ackQueue;
 	Mutex mutex;
 
+	uint8_t inBuffer[256];
+	volatile uint8_t wrBufferIndex;
+	uint8_t rdBufferIndex;
+
 	UniqueItemHandler<uint8_t> uniqueFrame;
 };
