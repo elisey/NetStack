@@ -55,12 +55,14 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 
 bool Routing::send(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t ttl, NpFrame_ProtocolType_t protocolType)
 {
+	bool result;
 	uint8_t targetInterfaceId = RouterTable::instance().getInterfaceForDestinationAddress(dstAddress);
 	if (interfaces[targetInterfaceId] != NULL)	{
-		return interfaces[targetInterfaceId]->send(ptrNpFrame, dstAddress, ttl, protocolType);
+		result = interfaces[targetInterfaceId]->send(ptrNpFrame, dstAddress, ttl, protocolType);
 	}
 	else {
 		ptrNpFrame->free();
-		return false;
+		result = false;
 	}
+	return result;
 }

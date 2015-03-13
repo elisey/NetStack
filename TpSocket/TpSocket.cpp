@@ -365,8 +365,7 @@ void TpSocket::clearAckQueue()
 
 void TpSocket::ackReceived(uint8_t uniqueId)
 {
-	BaseType_t result;
-	result = xQueueSend(ackQueue, &uniqueId, (TickType_t)5);	//TODO сколько ждать?
+	xQueueSend(ackQueue, &uniqueId, (TickType_t)5 / portTICK_RATE_MS);
 }
 
 bool TpSocket::waitForAck(uint8_t uniqueId, int timeout)

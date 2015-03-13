@@ -94,7 +94,6 @@ bool MacLayerSFBus::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 	macFrame.calculateAndSetCrc();
 
 	bool result;
-	BaseType_t mutexTakeResult;
 
 	txMutex.lock();
 	result = transfer(macFrame);

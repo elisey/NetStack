@@ -83,7 +83,7 @@ uint8_t nordic_HAL_GetIrqPinState()
 
 static void prv_externalInterruptInit()
 {
-	NVIC_SetPriority(EXTI4_IRQn, 12);		//TODO приоритет для работы совместно с FreeRTOS. Проверить
+	NVIC_SetPriority(EXTI4_IRQn, 14);
 	NVIC_EnableIRQ(EXTI4_IRQn);
 
 	RCC->APB2ENR |= RCC_APB2ENR_AFIOEN;

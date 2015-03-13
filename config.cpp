@@ -1,5 +1,13 @@
 #include "config.h"
 
+#include "channel_UART.h"
+#include "MacLayerSFBus.h"
+
+#include "ncmp_layer_slave.h"
+#include "ncmp_layer_master.h"
+#include "MacLayerNrf.h"
+
+
 #ifdef MASTER
 MacLayerSFBus mc1(&ch1);
 MacLayerSFBus mc2(&ch3);

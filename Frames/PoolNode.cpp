@@ -18,7 +18,7 @@ bool PoolNode::alloc(uint32_t timeout)
 	int tempMemoryIndex = pool.takeFreeFrameIndex(timeout);
 	if (tempMemoryIndex == -1)	{
 		if (timeout != 0)	{
-			while(1){};		//TODO обработка ошибки невозможности выделить фрейм
+			assert(0);
 		}
 		return false;
 	}

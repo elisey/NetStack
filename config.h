@@ -3,12 +3,7 @@
 
 #include <stdint.h>
 
-#include "channel_UART.h"
-#include "MacLayerSFBus.h"
 #include "np_layer.h"
-#include "ncmp_layer_slave.h"
-#include "ncmp_layer_master.h"
-#include "MacLayerNrf.h"
 #include "TpSocket.h"
 
 #define DEVICE_TYPE	2

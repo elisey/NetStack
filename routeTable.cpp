@@ -1,5 +1,6 @@
 #include "routeTable.h"
 #include "debug.h"
+#include "NpFrame.h"
 
 RouterTable::RouterTable()	: defaultGate(0)
 {
@@ -101,7 +102,7 @@ uint8_t RouterTable::getFreeEntryIndex()
 {
 	int i;
 	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
-		if (routerTableNodes[i].address == 0)	{		//TODO проброс адреса
+		if (routerTableNodes[i].address == BROADCAST_ADDRESS)	{
 			return i;
 		}
 	}

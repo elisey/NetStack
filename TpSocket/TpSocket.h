@@ -11,7 +11,7 @@
 
 #include "UniqueItemHandler.h"
 
-#define NUM_OF_RESEND_TRYES	(8)
+
 
 typedef enum	{
 	connectionStatus_disconnected = 1,
@@ -19,6 +19,7 @@ typedef enum	{
 	connectionStatus_connected
 } connectionStatus_t;
 
+#define NUM_OF_RESEND_TRYES	(8)
 #define MAX_TP_PAYLOAD_SIZE		(143 - 15)
 #define INPUT_RING_BUFFER_SIZE	(0xFF)
 
