@@ -161,7 +161,6 @@ bool MacLayerSFBus::transfer(MacFrame &macFrame)
 			pin4_off;
 			ptrChannel->send(&frame);
 		}
-		transferOk = false;
 	}
 	else {
 		transferOk = true;
