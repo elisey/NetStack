@@ -1,13 +1,14 @@
 #include "FramePool.h"
+#include "NetConfig.h"
 
-uint8_t framesPool[MAX_MTU * NUM_OF_FRAMES];
+uint8_t framesPool[netConfigMAX_FRAME_SIZE * netConfigNUM_OF_FRAMES];
 
 FramePool::FramePool()
 {
-	freeFramesQueue = xQueueCreate(NUM_OF_FRAMES, sizeof(int));
+	freeFramesQueue = xQueueCreate(netConfigNUM_OF_FRAMES, sizeof(int));
 
 	int i;
-	for (i = 0; i < NUM_OF_FRAMES; ++i) {
+	for (i = 0; i < netConfigNUM_OF_FRAMES; ++i) {
 		BaseType_t result = xQueueSend(freeFramesQueue, &i, 0);
 		assert(result == pdPASS);
 	}
@@ -41,8 +42,8 @@ uint8_t* FramePool::getMemoryPtrByMemoryIndex(int memoryIndex)
 		return NULL;
 	}
 
-	assert(memoryIndex < NUM_OF_FRAMES);
-	return &(framesPool[memoryIndex * MAX_MTU]);
+	assert(memoryIndex < netConfigNUM_OF_FRAMES);
+	return &(framesPool[memoryIndex * netConfigMAX_FRAME_SIZE]);
 }
 
 void FramePool::releaseFrame(int memoryIndex)

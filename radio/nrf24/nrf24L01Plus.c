@@ -17,6 +17,7 @@
  */
 #include "nrf24L01Plus.h"
 #include "nrf24L01Plus_HAL.h"
+#include "NetConfig.h"
 
 #define commandACTIVATE					(0x50)
 #define commandR_RX_PL_WID				(0x60)
@@ -30,7 +31,6 @@ static uint8_t nordic_transfer(uint8_t command, uint8_t* data, unsigned short le
 {
 	int i = 0;
 
-	NORDIC_LOCK_SPI();
 	nordic_HAL_ChipSelect();
 
 	uint8_t status = nordic_HAL_SpiTransfer(command);
@@ -46,7 +46,6 @@ static uint8_t nordic_transfer(uint8_t command, uint8_t* data, unsigned short le
 	}
 
 	nordic_HAL_ChipDeselect();
-	NORDIC_UNLOCK_SPI();
 
 	return status;
 }
@@ -105,7 +104,7 @@ void nordic_init(
 	nordic_enable_pipes(true, true, false, false, false, false);
 	nordic_set_auto_ack_for_pipes(true, false, false, false, false, false);
 
-	nordic_set_auto_transmit_options(500, 2);
+	nordic_set_auto_transmit_options(nrf24_HARDWARE_RETRANSMIT_DELAY, nrf24_NUM_OF_HARDWARE_RETRANSMIT);
 
 	nordic_set_addr_width(address_width);
 
@@ -116,10 +115,9 @@ void nordic_init(
 	nordic_power_up();
 
 	volatile unsigned int i;
-	for (i = 0; i < 900000; ++i) {
+	for (i = 0; i < 90000; ++i) {		//TODO задержка
 
 	}
-	NORDIC_DELAY_US(2000);
 }
 
 bool nordic_is_air_free()

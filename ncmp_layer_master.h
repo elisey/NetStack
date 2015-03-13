@@ -4,10 +4,6 @@
 #include "ncmp_layer_base.h"
 #include "NcmpFrame.h"
 
-#define NUM_OF_PING_TRY			(3)
-#define WAIT_FOR_PONG_TIMEOUT	(10)
-#define PING_PERIOD				(20)
-
 class NcmpLayerMaster : public NcmpLayerBase
 {
 public:

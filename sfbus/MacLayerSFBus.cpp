@@ -1,21 +1,24 @@
 #include "MacLayerSFBus.h"
+#include "NetConfig.h"
+
+#define SFBus_CRC_SIZE				(2u)
 
 static void MacLayer_RxTask(void *param);
 
 MacLayerSFBus::MacLayerSFBus(Channel* _ptrChannel)
 	:	ptrChannel(_ptrChannel), nextPid(0)
 {
-	setMaxPayloadSize(mac_layerMAX_PAYLOAD_SIZE);
+	setMaxPayloadSize(SFBus_MAX_PAYLOAD_SIZE);
 
-	rxQueue = xQueueCreate(10, sizeof(MacFrame));
-	ackQueue = xQueueCreate(3, sizeof(uint8_t));
+	rxQueue = xQueueCreate(SFBus_RX_MAC_QUEUE_SIZE, sizeof(MacFrame));
+	ackQueue = xQueueCreate(SFBus_RX_ACK_QUEUE_SIZE, sizeof(uint8_t));
 
 	xTaskCreate(
 			MacLayer_RxTask,
 			"MacLayer_RxTask",
 			configMINIMAL_STACK_SIZE,
 			this,
-			tskIDLE_PRIORITY + 2,
+			SFBus_RX_MAC_TASK_PRIORITY,
 			NULL);
 }
 
@@ -44,7 +47,7 @@ void MacLayerSFBus::rxTask()
 		}
 
 		//Убрать CRC из буфера.
-		macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() - mac_layerCRC_SIZE );
+		macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() - SFBus_CRC_SIZE );
 
 		packetAckType_t ackType = macFrame.getPacketAckType();
 		uint8_t pid = macFrame.getPid();
@@ -90,7 +93,7 @@ bool MacLayerSFBus::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 	macFrame.setPacketAckType(packetAckType_withAck);
 	macFrame.setPid( getUniquePid() );
 	// добавить место для CRC в буфер
-	macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() + mac_layerCRC_SIZE );
+	macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() + SFBus_CRC_SIZE );
 	macFrame.calculateAndSetCrc();
 
 	bool result;
@@ -128,8 +131,8 @@ bool MacLayerSFBus::transfer(MacFrame &macFrame)
 	bool transferOk = false;
 	if (ackType == packetAckType_withAck)	{
 		unsigned int i;
-		for (i = 0; i < mac_layerRESEND_NUM - 1; ++i) {
-			if (isAckReceived(packetPid, mac_layerWAIT_ACK_TIMEOUT) == true)	{
+		for (i = 0; i < SFBus_RESEND_NUM - 1; ++i) {
+			if (isAckReceived(packetPid, SFBus_WAIT_ACK_TIMEOUT) == true)	{
 				transferOk = true;
 				break;
 			}
@@ -223,7 +226,6 @@ void MacLayerSFBus::handleRxPacket(MacFrame *ptrMacFrame)
 	BaseType_t result;
 	result = xQueueSend(rxQueue, ptrMacFrame, (TickType_t)50);
 	assert(result == pdPASS);
-	//ptrMacFrame->free();
 }
 
 uint8_t MacLayerSFBus::getUniquePid()

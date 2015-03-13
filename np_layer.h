@@ -12,10 +12,6 @@
 
 extern uint16_t selfAddress;
 
-#define USE_OWN_PACKET_ASSEMBLY		(1)
-#define ROUTE_OTHER_PACKETS			(1)
-
-
 class NpLayer
 {
 public:
@@ -52,8 +48,6 @@ private:
 	uint8_t inderfaceId;
 
 	QueueHandle_t rxNcmpQueue;
-	QueueHandle_t rxTpQueue;
-	QueueHandle_t rxTpaQueue;
 
 	Mutex txMutex;
 

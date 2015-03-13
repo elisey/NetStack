@@ -1,13 +1,11 @@
 #include "ncmp_layer_slave.h"
 #include "NpFrame.h"
 #include "NcmpFrame.h"
-
+#include "routeTable.h"
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "routeTable.h"
-#include "Routing.h"	//For MAX_TTL
-
+#include "NetConfig.h"
 #include "debug.h"
 
 NcmpLayerSlave::NcmpLayerSlave(NpLayer *_ptrNpLayer, interfaceType_t _interfaceType)
@@ -23,7 +21,7 @@ void NcmpLayerSlave::task()
 	{
 		if (currentMaster == 0)	{
 			sendImSlave();
-			uint16_t foundMaster = waitForMaster(IM_SLAVE_PACKET_PERIOD);
+			uint16_t foundMaster = waitForMaster(ncmp_IM_SLAVE_PACKET_PERIOD);
 			if (foundMaster != 0)	{
 				currentMaster = foundMaster;
 				sendMyRoute(currentMaster);
@@ -32,7 +30,7 @@ void NcmpLayerSlave::task()
 			}
 		}
 		else	{
-			if (waitForPingAndReply(WAIT_FOR_PING_PERIOD) == false)	{
+			if (waitForPingAndReply(ncmp_WAIT_FOR_PING_PERIOD) == false)	{
 				currentMaster = 0;
 				RouterTable::instance().setDefaultGate(0);
 			}
@@ -122,7 +120,7 @@ void NcmpLayerSlave::sendRoutes()
 
 	ncmpFrame.insertEntryToRoutesPacket( selfAddress );
 	int i;
-	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
+	for (i = 0; i < rt_ROUTER_TABLE_SIZE; ++i) {
 		uint16_t address = RouterTable::instance()[i].address;
 		if (address != 0)	{
 			ncmpFrame.insertEntryToRoutesPacket( RouterTable::instance()[i].address );
@@ -130,7 +128,7 @@ void NcmpLayerSlave::sendRoutes()
 	}
 	NpFrame npFrame;
 	npFrame.clone(ncmpFrame);
-	ptrNpLayer->send(&npFrame, TOP_REDIRECTION_ADDRESS, MAX_TTL, NpFrame_NCMP);
+	ptrNpLayer->send(&npFrame, np_TOP_REDIRECTION_ADDRESS, np_MAX_TTL, NpFrame_NCMP);
 }
 
 void NcmpLayerSlave::pingReplay(uint16_t dstAddress)
@@ -170,7 +168,7 @@ void NcmpLayerSlave::sendPongWithRoutes(uint16_t dstAddress)
 
 	ncmpFrame.insertEntryToRoutesPacket( selfAddress );
 	int i;
-	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
+	for (i = 0; i < rt_ROUTER_TABLE_SIZE; ++i) {
 		uint16_t address = RouterTable::instance()[i].address;
 		if (address != 0)	{
 			ncmpFrame.insertEntryToRoutesPacket( RouterTable::instance()[i].address );
@@ -190,7 +188,7 @@ void NcmpLayerSlave::sendImSlave()
 	ncmpFrame.setPacketType(ncmpPacket_ImSlave);
 	NpFrame npFrame;
 	npFrame.clone(ncmpFrame);
-	ptrNpLayer->send(&npFrame, BROADCAST_ADDRESS, 1, NpFrame_NCMP);
+	ptrNpLayer->send(&npFrame, np_BROADCAST_ADDRESS, 1, NpFrame_NCMP);
 }
 
 uint32_t NcmpLayerSlave::getTimeDelta(uint32_t prevTime, uint32_t currentTime)

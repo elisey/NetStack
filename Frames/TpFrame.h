@@ -2,8 +2,7 @@
 
 #include <stdint.h>
 #include "PoolNode.h"
-
-#define TP_FRAME_HEAD_LENGTH		(4)
+#include "NetConfig.h"
 
 #define TP_FRAME_SRC_PORT			(0)
 #define TP_FRAME_DST_PORT			(1)
@@ -71,11 +70,11 @@ public:
 
 	uint8_t *getPayloadPtr()
 	{
-		return &(buffer[TP_FRAME_HEAD_LENGTH]);
+		return &(buffer[tp_FRAME_HEAD_LENGTH]);
 	}
 
 	unsigned int getPayloadSize()
 	{
-		return ( buffer.getLenght() - TP_FRAME_HEAD_LENGTH );
+		return ( buffer.getLenght() - tp_FRAME_HEAD_LENGTH );
 	}
 };

@@ -3,9 +3,9 @@
 #include "TpSocket.h"
 #include "NpFrame.h"
 #include "Mutex.h"
+#include "NetConfig.h"
 
-#define MAX_NUM_OF_SOCKETS			(10)
-#define DYNAMIC_START_PORT_INDEX	(128)
+#define DYNAMIC_START_PORT_INDEX	(128)	//начиная с этого значения выдаются динамические порты.
 
 struct RegisteredSocketNode {
 	RegisteredSocketNode()
@@ -27,7 +27,6 @@ class TpLayer	{
 public:
 
 	int registerSocket(TpSocket *ptrPtSocket, uint8_t port = 0);
-	//bool unregisterSocket(TpSocket *ptrPtSocket, uint8_t port);
 	void handleTpFrame(NpFrame *ptrNpFrame);
 
 private:
@@ -37,7 +36,7 @@ private:
 	int findFreeNode();
 	void clearNodeByIndex(uint8_t index);
 
-	RegisteredSocketNode nodes[MAX_NUM_OF_SOCKETS];
+	RegisteredSocketNode nodes[tp_MAX_NUM_OF_SOCKETS];
 	Mutex mutex;
 
 //Singleton realisation

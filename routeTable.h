@@ -1,7 +1,6 @@
 #pragma once
 #include <stdint.h>
-
-#define ROUTER_TABLE_SIZE	20
+#include "NetConfig.h"
 
 class RouterTableNode
 {
@@ -42,7 +41,7 @@ private:
 	uint8_t getFreeEntryIndex();
 	int getEntryIndexByDestinationAddress(uint16_t dstAddress);
 
-	RouterTableNode routerTableNodes[ROUTER_TABLE_SIZE];
+	RouterTableNode routerTableNodes[rt_ROUTER_TABLE_SIZE];
 	uint16_t defaultGate;
 	//Singleton realisation
 public:

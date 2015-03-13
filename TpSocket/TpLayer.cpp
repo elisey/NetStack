@@ -4,7 +4,6 @@
 
 TpLayer::TpLayer()
 {
-
 }
 
 int TpLayer::registerSocket(TpSocket* ptrPtSocket, uint8_t port)
@@ -29,24 +28,6 @@ int TpLayer::registerSocket(TpSocket* ptrPtSocket, uint8_t port)
 	mutex.unlock();
 	return resultPort;
 }
-
-/*bool TpLayer::unregisterSocket(TpSocket *ptrPtSocket, uint8_t port)
-{
-	assert(port != 0);
-
-	if (isPortOccupied(port) == false)	{
-		return false;
-	}
-
-	int index;
-	index = findNodeIndexByPort(port);
-
-	if (nodes[index].ptrPtSocket == ptrPtSocket)	{
-		clearNodeByIndex(index);
-		return true;
-	}
-	return false;
-}*/
 
 void TpLayer::handleTpFrame(NpFrame *ptrNpFrame)
 {
@@ -100,7 +81,7 @@ bool TpLayer::isPortOccupied(uint8_t port)
 int TpLayer::findNodeIndexByPort(uint8_t port)
 {
 	int i;
-	for (i = 0; i < MAX_NUM_OF_SOCKETS; ++i) {
+	for (i = 0; i < tp_MAX_NUM_OF_SOCKETS; ++i) {
 		if (nodes[i].port == port)	{
 			return i;
 		}
@@ -111,7 +92,7 @@ int TpLayer::findNodeIndexByPort(uint8_t port)
 int TpLayer::findFreeNode()
 {
 	int i;
-	for (i = 0; i < MAX_NUM_OF_SOCKETS; ++i) {
+	for (i = 0; i < tp_MAX_NUM_OF_SOCKETS; ++i) {
 		if (nodes[i].ptrPtSocket == NULL)	{
 			return i;
 		}

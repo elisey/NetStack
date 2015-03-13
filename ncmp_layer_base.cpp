@@ -1,4 +1,5 @@
 #include "ncmp_layer_base.h"
+#include "NetConfig.h"
 
 static void NcmpLayer_Task(void *param);
 
@@ -7,7 +8,7 @@ NcmpLayerBase::NcmpLayerBase(NpLayer *_ptrNpLayer, interfaceType_t _interfaceTyp
  	interfaceType(_interfaceType)
 {
 	interfaceId = ptrNpLayer->getInterfaceId();
-	rxQueue = xQueueCreate(10, sizeof(NpFrame));
+	rxQueue = xQueueCreate(ncmp_RX_QUEUE_SIZE, sizeof(NpFrame));
 	ptrNpLayer->setRxNcmpQueue(rxQueue);
 
 	xTaskCreate(
@@ -15,7 +16,7 @@ NcmpLayerBase::NcmpLayerBase(NpLayer *_ptrNpLayer, interfaceType_t _interfaceTyp
 			"NcmpLayer_Task",
 			configMINIMAL_STACK_SIZE,
 			this,
-			tskIDLE_PRIORITY + 2,
+			ncmp_TASK_PRIORITY,
 			NULL);
 }
 

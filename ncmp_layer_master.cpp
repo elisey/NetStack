@@ -2,6 +2,7 @@
 
 #include "routeTable.h"
 #include "Routing.h"
+#include "NetConfig.h"
 
 uint32_t getTimeDelta(uint32_t prevTime, uint32_t currentTime);
 
@@ -24,9 +25,9 @@ void NcmpLayerMaster::task()
 
 			bool pingResult;
 			int i;
-			for (i = 0; i < NUM_OF_PING_TRY; ++i) {
+			for (i = 0; i < ncmp_NUM_OF_PING_TRY; ++i) {
 				sendPing(targetAddress);
-				pingResult = waitForPingAnswer(targetAddress, WAIT_FOR_PONG_TIMEOUT);
+				pingResult = waitForPingAnswer(targetAddress, ncmp_WAIT_FOR_PONG_TIMEOUT);
 				if (pingResult == true)	{
 					break;
 				}
@@ -36,7 +37,7 @@ void NcmpLayerMaster::task()
 				deleteSlave(targetAddress);
 			}
 		}
-		waitForAnyPackets(prevTick, PING_PERIOD);
+		waitForAnyPackets(prevTick, ncmp_PING_PERIOD);
 	}
 }
 
@@ -136,7 +137,7 @@ void NcmpLayerMaster::deleteSlave(uint16_t slaveAddress)
 
 	NpFrame npFrame;
 	npFrame.clone(ncmpFrame);
-	Routing::instance().send(&npFrame, TOP_REDIRECTION_ADDRESS, MAX_TTL, NpFrame_NCMP);
+	Routing::instance().send(&npFrame, np_TOP_REDIRECTION_ADDRESS, np_MAX_TTL, NpFrame_NCMP);
 }
 
 void NcmpLayerMaster::parsePacket(NcmpFrame *packet, uint16_t srcAddress)
@@ -212,7 +213,7 @@ void NcmpLayerMaster::parseMyRoutePacket(NcmpFrame *packet)
 void NcmpLayerMaster::parsePongWithRoutesPacket(NcmpFrame *packet)
 {
 	int i;
-	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
+	for (i = 0; i < rt_ROUTER_TABLE_SIZE; ++i) {
 		if ( ( RouterTable::instance()[i].interfaceId == interfaceId) &&
 			( RouterTable::instance()[i].isNeighbor == false  ))	{
 			RouterTable::instance()[i].clear();

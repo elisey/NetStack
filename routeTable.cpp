@@ -1,6 +1,7 @@
 #include "routeTable.h"
 #include "debug.h"
 #include "NpFrame.h"
+#include "NetConfig.h"
 
 RouterTable::RouterTable()	: defaultGate(0)
 {
@@ -18,7 +19,7 @@ uint8_t RouterTable::getInterfaceForDestinationAddress(uint16_t dstAddress)
 	if (entryIndex == (-1))	{
 		return 0;
 	}
-	assert( (entryIndex < ROUTER_TABLE_SIZE) && (entryIndex >=0 ) );
+	assert( (entryIndex < rt_ROUTER_TABLE_SIZE) && (entryIndex >=0 ) );
 	return (routerTableNodes[entryIndex].interfaceId);
 }
 
@@ -59,7 +60,7 @@ void RouterTable::deleteRoute(uint16_t dstAddress)
 uint16_t RouterTable::findRouteForInterface(uint8_t interfaceId)
 {
 	int i;
-	for (i = 0; i < ROUTER_TABLE_SIZE + 1; ++i)	{
+	for (i = 0; i < rt_ROUTER_TABLE_SIZE + 1; ++i)	{
 		if (routerTableNodes[i].interfaceId == interfaceId)	{
 			return routerTableNodes[i].address;
 		}
@@ -74,8 +75,8 @@ int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
 	}*/
 
 	int i;
-	for (i = 0; i < ROUTER_TABLE_SIZE + 1; ++i) {
-		if (++prevRoute >= ROUTER_TABLE_SIZE)	{
+	for (i = 0; i < rt_ROUTER_TABLE_SIZE + 1; ++i) {
+		if (++prevRoute >= rt_ROUTER_TABLE_SIZE)	{
 			prevRoute = 0;
 		}
 
@@ -101,8 +102,8 @@ uint16_t RouterTable::getDefaultGate()
 uint8_t RouterTable::getFreeEntryIndex()
 {
 	int i;
-	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
-		if (routerTableNodes[i].address == BROADCAST_ADDRESS)	{
+	for (i = 0; i < rt_ROUTER_TABLE_SIZE; ++i) {
+		if (routerTableNodes[i].address == np_BROADCAST_ADDRESS)	{
 			return i;
 		}
 	}
@@ -116,7 +117,7 @@ int RouterTable::getEntryIndexByDestinationAddress(uint16_t dstAddress)
 		return (-1);
 	}
 	int i;
-	for (i = 0; i < ROUTER_TABLE_SIZE; ++i) {
+	for (i = 0; i < rt_ROUTER_TABLE_SIZE; ++i) {
 		if (routerTableNodes[i].address == dstAddress)	{
 			return i;
 		}

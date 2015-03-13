@@ -3,7 +3,8 @@
 #include "debug.h"
 #include "Led.h"
 
-#include "config.h"
+#include "NetStackBuilder.h"
+
 Led greenLed(GPIOC, GPIO_Pin_9);
 Led blueLed(GPIOC, GPIO_Pin_8);
 

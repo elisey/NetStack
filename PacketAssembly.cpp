@@ -79,7 +79,7 @@ bool PacketAssembly::insertPart(int index, NpFrame* ptrNpFrame)
 	if (currentPartIndex == (totalNumOfParts - 1) )	{
 		nodes[index].frame.copyHead(ptrNpFrame);
 
-		uint8_t length = nodes[index].numOfReceivedBytes + NP_FRAME_HEAD_LENGTH;
+		uint8_t length = nodes[index].numOfReceivedBytes + np_FRAME_HEAD_SIZE;
 		nodes[index].frame.getBuffer().setLenght(length);
 		return true;
 	}

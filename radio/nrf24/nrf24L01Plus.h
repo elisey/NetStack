@@ -56,24 +56,11 @@ extern "C" {
 #include <stdbool.h>
 #include "nrf24L01Plus_HAL.h"
 
-
 typedef enum	{
 	sendingState_inProcess = 0,
 	sendingState_Fail = 1,
 	sendingState_Ok = 2
 } sendingState_t;
-
-//#define NORDIC_EXCHANGE_SPI(byte)	spi_transfer(byte)
-#define NORDIC_LOCK_SPI()
-#define NORDIC_UNLOCK_SPI()
-#define NORDIC_DELAY_US(us)
-//#define NORDIC_CS_ENABLE()          nrf24_csn_digitalWrite(0)
-//#define NORDIC_CS_DISABLE()         nrf24_csn_digitalWrite(1)
-//#define NORDIC_CE_HIGH()            nrf24_ce_digitalWrite(1)
-//#define NORDIC_CE_LOW()            	nrf24_ce_digitalWrite(0)
-//#define NORDIC_INT_SIGNAL()         (!nordic_HAL_GetIrqPinState()) /* Signal is active low */
-
-
 
 /// Initializes the chip to begin data exchange.
 /// Enables only Pipe0, sets default address for the Pipe and disables Enhanced Shockburst.

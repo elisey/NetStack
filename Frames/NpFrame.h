@@ -8,14 +8,12 @@
 #include <string.h>
 #include "PoolNode.h"
 #include "debug.h"
+
+#include "NetConfig.h"
 typedef enum	{
 	NpFrame_NCMP = 1,	// net control message protocol
 	NpFrame_TP = 2,		// transport protocol
 } NpFrame_ProtocolType_t;
-
-#define BROADCAST_ADDRESS			(0)
-#define TOP_REDIRECTION_ADDRESS		(0xFFFF)
-#define NP_FRAME_HEAD_LENGTH		(7)
 
 class NpFrame : public PoolNode
 {
@@ -138,12 +136,12 @@ public:
 
 	uint8_t *getPayloadPtr()
 	{
-		return &(buffer[NP_FRAME_HEAD_LENGTH]);
+		return &(buffer[np_FRAME_HEAD_SIZE]);
 	}
 
 	unsigned int getPayloadSize()
 	{
-		return ( buffer.getLenght() - NP_FRAME_HEAD_LENGTH );
+		return ( buffer.getLenght() - np_FRAME_HEAD_SIZE );
 	}
 
 	void copyHead(NpFrame *ptrNpFrameSource)
@@ -151,6 +149,6 @@ public:
 		uint8_t *src = ptrNpFrameSource->getBuffer().getDataPtr();
 		uint8_t *dst = buffer.getDataPtr();
 
-		memcpy( dst, src, NP_FRAME_HEAD_LENGTH );
+		memcpy( dst, src, np_FRAME_HEAD_SIZE );
 	}
 };

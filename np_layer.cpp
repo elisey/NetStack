@@ -4,6 +4,7 @@
 #include "routeTable.h"
 #include "MacFrame.h"
 #include "TpLayer.h"
+#include "NetConfig.h"
 
 static void NpLayer_RxTask(void *param);
 
@@ -12,18 +13,16 @@ uint16_t selfAddress = 0;
 NpLayer::NpLayer(MacLayerBase* _ptrMacLayer, uint8_t _inderfaceId)
 	:	ptrMacLayer(_ptrMacLayer),
 	 	inderfaceId(_inderfaceId),
-	 	rxNcmpQueue(NULL),
-	 	rxTpQueue(NULL),
-	 	rxTpaQueue(NULL)
+	 	rxNcmpQueue(NULL)
 {
-	maxNpPayload = ptrMacLayer->getMaxPayloadSize() - NP_FRAME_HEAD_LENGTH;
+	maxNpPayload = ptrMacLayer->getMaxPayloadSize() - np_FRAME_HEAD_SIZE;
 
 	xTaskCreate(
 			NpLayer_RxTask,
 			"NpLayer_RxTask",
 			configMINIMAL_STACK_SIZE,
 			this,
-			tskIDLE_PRIORITY + 1,
+			np_RX_TASK_PRIORITY,
 			NULL);
 }
 
@@ -46,7 +45,7 @@ void NpLayer::rxTask()
 		NpFrame npFrame;
 		npFrame.clone(poolNode);
 
-		#if (ROUTE_OTHER_PACKETS == 1)
+		#if (np_ROUTE_OTHER_PACKETS == 1)
 		if (needRoutePacket(&npFrame) == true)	{
 			Routing::instance().handleFrame(&npFrame, inderfaceId);
 		}
@@ -75,8 +74,8 @@ bool NpLayer::needHandleOwnPacket(NpFrame *ptrNpFrame)
 	uint16_t dstAddress = ptrNpFrame->getDstAddress();
 
 	if ((dstAddress == selfAddress) ||
-		( dstAddress == BROADCAST_ADDRESS ) ||
-		( dstAddress == TOP_REDIRECTION_ADDRESS ))
+		( dstAddress == np_BROADCAST_ADDRESS ) ||
+		( dstAddress == np_TOP_REDIRECTION_ADDRESS ))
 	{
 		return true;
 	}
@@ -86,7 +85,7 @@ bool NpLayer::needHandleOwnPacket(NpFrame *ptrNpFrame)
 void NpLayer::handleOwnFrame(NpFrame *ptrNpFrame)
 {
 	if (frameNeedAssemble(ptrNpFrame) == true)	{
-#if (USE_OWN_PACKET_ASSEMBLY == 1)
+#if (np_USE_OWN_PACKET_ASSEMBLY == 1)
 		if (processAssembling(ptrNpFrame) == false)	{
 			ptrNpFrame->free();
 			return;
@@ -151,14 +150,14 @@ bool NpLayer::transfer(NpFrame *ptrNpFrame)
 
 	txMutex.lock();
 	uint16_t dstAddress = getNextHopAddress(ptrNpFrame);
-	uint8_t payloadSize = ptrNpFrame->getBuffer().getLenght() - NP_FRAME_HEAD_LENGTH;
+	uint8_t payloadSize = ptrNpFrame->getBuffer().getLenght() - np_FRAME_HEAD_SIZE;
 
 	if (payloadSize <= maxNpPayload)	{
 		setAssemblyData(ptrNpFrame, 1, 0, 0);
 		result = ptrMacLayer->send(ptrNpFrame, dstAddress);
 	}
 	else	{
-#if (USE_OWN_PACKET_ASSEMBLY == 1)
+#if (np_USE_OWN_PACKET_ASSEMBLY == 1)
 		result = deassemblePacketAndSendParts(ptrNpFrame, dstAddress, payloadSize);
 #else
 		assert(0);
@@ -210,7 +209,7 @@ bool NpLayer::deassemblePacketAndSendParts(NpFrame *ptrNpFrame, uint16_t dstAddr
 		memcpy(destination, source, numOfBytesToCopy);
 		numOfTransferedBytes += numOfBytesToCopy;
 
-		uint8_t partPacketLength = numOfBytesToCopy + NP_FRAME_HEAD_LENGTH;
+		uint8_t partPacketLength = numOfBytesToCopy + np_FRAME_HEAD_SIZE;
 		npFramePart.getBuffer().setLenght( partPacketLength );
 
 		result = ptrMacLayer->send(&npFramePart, dstAddress);

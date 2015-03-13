@@ -3,9 +3,6 @@
 #include <stdint.h>
 #include "ncmp_layer_base.h"
 
-#define IM_SLAVE_PACKET_PERIOD	(15)
-#define WAIT_FOR_PING_PERIOD	(50)
-
 class NcmpLayerSlave :public NcmpLayerBase
 {
 public:

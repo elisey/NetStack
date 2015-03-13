@@ -2,15 +2,11 @@
 #include <stdint.h>
 #include "NpFrame.h"
 
-#define MAX_TTL		(31)
-
 class Routing	{
 public:
 	void handleFrame(NpFrame *ptrNpFrame, uint8_t srcInterfaceId);
 	bool send(NpFrame *ptrNpFrame, uint16_t dstAddess, uint8_t ttl, NpFrame_ProtocolType_t protocolType);
 private:
-
-
 
 //Singleton realisation
 public:

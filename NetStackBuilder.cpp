@@ -1,4 +1,4 @@
-#include "config.h"
+#include "NetStackBuilder.h"
 
 #include "channel_UART.h"
 #include "MacLayerSFBus.h"

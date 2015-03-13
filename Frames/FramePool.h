@@ -5,11 +5,6 @@
 #include "FreeRTOS.h"
 #include "queue.h"
 
-#include "channel_UART.h"
-
-#define MAX_MTU				(MAX_SFBus_PACKET_SIZE)
-#define NUM_OF_FRAMES		(60)
-
 class FramePool
 {
 public:

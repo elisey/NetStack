@@ -1,13 +1,10 @@
 #include "MacLayerNrf.h"
-#include "NpFrame.h"	// for BROADCAST_ADDR
 #include "nrf24L01Plus.h"
 #include "debug.h"
-
 #include "delay.h"
+#include "NetConfig.h"
 
 #define ADDRESS_WIDTH	(5)		// (3 - 5)
-#define CHANNEL_MHZ		(2400)	// 2400 - 2525 MHz
-#define BITRATE_KBPS	(2000)	// 1000, 2000 Kbps
 #define ADDRESS_FILLER	(0xC2)
 
 uint8_t selfAddressArray[ADDRESS_WIDTH];
@@ -22,7 +19,7 @@ MacLayerNrf::MacLayerNrf()
 {
 	setMaxPayloadSize(MAX_NRF_PAYLOAD_SIZE);
 
-	rxQueue = xQueueCreate(10, sizeof(RadioMacFrame));
+	rxQueue = xQueueCreate(nrf24_RX_MAC_QUEUE_SIZE, sizeof(RadioMacFrame));
 	nrfMutex = xSemaphoreCreateMutex();
 	nrfTxSemaphore = xSemaphoreCreateBinary();
 
@@ -31,7 +28,7 @@ MacLayerNrf::MacLayerNrf()
 			"MacLayer_RxTask",
 			configMINIMAL_STACK_SIZE,
 			this,
-			tskIDLE_PRIORITY + 2,
+			nrf24_RX_MAC_TASK_PRIORITY,
 			NULL);
 }
 
@@ -56,7 +53,7 @@ void MacLayerNrf::rxTask()
 			/*
 			 * Есть случаи,когда NRF выставляет флаг, что входящий буфер не пуст,
 			 * но при попытке чтения длины этого пакета NRF отдает ноль.
-			 * В таком случае помогает отчистка входящих буферов.
+			 * В таком случае помогает отчистка входящих буферов. Магия китайских модулей.
 			 */
 			if ( (length == 0) || ( length > 32 ) )	{
 				nordic_flush_rx_fifo();
@@ -100,7 +97,7 @@ bool MacLayerNrf::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 
 	nrfLock();
 
-	if (dstAddress == BROADCAST_ADDRESS)	{
+	if (dstAddress == np_BROADCAST_ADDRESS)	{
 		result = transferBroadcast(ptrData, size);
 	}
 	else 	{
@@ -125,7 +122,7 @@ void MacLayerNrf::init(uint16_t selfAddress)
 {
 	nrfLock();
 	wordToBuffer(selfAddress, selfAddressArray);
-	nordic_init((selfAddressArray), broadcastAddressArray, 32, CHANNEL_MHZ, BITRATE_KBPS, ADDRESS_WIDTH);
+	nordic_init((selfAddressArray), broadcastAddressArray, 32, nrf24_CHANNEL_MHZ, nrf24_BITRATE_KBPS, ADDRESS_WIDTH);
 	nordic_standby1_to_rx();
 	nrfUnlock();
 }
@@ -170,7 +167,7 @@ bool MacLayerNrf::transferBroadcast(uint8_t* buffer, uint8_t size)
 	result = queuePacketAndWait(buffer, size);
 
 	nordic_set_auto_ack_for_pipes(true, false, false, false, false, false);
-    nordic_set_auto_transmit_options(500, 2);
+    nordic_set_auto_transmit_options(nrf24_HARDWARE_RETRANSMIT_DELAY, nrf24_NUM_OF_HARDWARE_RETRANSMIT);
 	nordic_standby1_to_rx();
 	return result;
 }
@@ -180,8 +177,8 @@ bool MacLayerNrf::queuePacketAndWait(uint8_t* buffer, uint8_t size)
 	xSemaphoreTake(nrfTxSemaphore, 0);		//Отчистка семафора
 	nordic_mode1_start_send_single_packet(buffer, size);
 
-	BaseType_t result = xSemaphoreTake(nrfTxSemaphore, 5 / portTICK_RATE_MS);
-	if (result != pdPASS)	{			//TODO Случается неприем семафора
+	BaseType_t result = xSemaphoreTake(nrfTxSemaphore, nrf24_WAIT_TRANSMIT_STATUS_TIMEOUT / portTICK_RATE_MS);
+	if (result != pdPASS)	{			//TODO Случается неприем семафора в отведенный промежуток времени
 
 	}
 	sendingState_t sendingState;

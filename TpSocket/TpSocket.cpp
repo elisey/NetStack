@@ -2,8 +2,7 @@
 #include "TpLayer.h"
 
 #include "Routing.h"
-
-
+#include "NetConfig.h"
 
 static void TpSocket_RxTask(void *param);
 
@@ -123,7 +122,7 @@ bool TpSocket::sendConnect()
 {
 	TpFrame tpFrame;
 	tpFrame.alloc();
-	tpFrame.getBuffer().setLenght(TP_FRAME_HEAD_LENGTH);
+	tpFrame.getBuffer().setLenght(tp_FRAME_HEAD_LENGTH);
 	return transfer(&tpFrame, TpFrameType_Connect);
 }
 
@@ -131,7 +130,7 @@ bool TpSocket::sendDisconnect()
 {
 	TpFrame tpFrame;
 	tpFrame.alloc();
-	tpFrame.getBuffer().setLenght(TP_FRAME_HEAD_LENGTH);
+	tpFrame.getBuffer().setLenght(tp_FRAME_HEAD_LENGTH);
 	return transfer(&tpFrame, TpFrameType_Disconnect);
 }
 
@@ -142,15 +141,15 @@ bool TpSocket::sendBuffer(uint8_t *buffer, unsigned int size)
 
 		do {
 			unsigned int numOfBytesToSend = size;
-			if (numOfBytesToSend > MAX_TP_PAYLOAD_SIZE) {
-				numOfBytesToSend = MAX_TP_PAYLOAD_SIZE;
+			if (numOfBytesToSend > tp_MAX_TP_PAYLOAD_SIZE) {
+				numOfBytesToSend = tp_MAX_TP_PAYLOAD_SIZE;
 			}
 
 			TpFrame tpFrame;
 			tpFrame.alloc();
 			uint8_t *dst = tpFrame.getPayloadPtr();
 			memcpy( dst, buffer, numOfBytesToSend );
-			tpFrame.getBuffer().setLenght(numOfBytesToSend + TP_FRAME_HEAD_LENGTH);
+			tpFrame.getBuffer().setLenght(numOfBytesToSend + tp_FRAME_HEAD_LENGTH);
 			result = transfer(&tpFrame, TpFrameType_Data);
 
 			if (result == false)	{
@@ -179,26 +178,25 @@ bool TpSocket::transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType)
 
 	bool transferResult = false;
 	int i;
-	for (i = 0; i < NUM_OF_RESEND_TRYES; ++i) {
+	for (i = 0; i < tp_NUM_OF_RESEND_TRYES; ++i) {
 
 		NpFrame npFrameToSend;
 		npFrameToSend.alloc();
 		npFrameToSend.copy(npFrame);
 
 		clearAckQueue();
-		bool isRouteExist = Routing::instance().send( &npFrameToSend, remoteAddress, MAX_TTL, NpFrame_TP );
-		if (isRouteExist == false)	{
-			vTaskDelay(50 / portTICK_RATE_MS);
+		bool isTransferFail = Routing::instance().send( &npFrameToSend, remoteAddress, np_MAX_TTL, NpFrame_TP );
+		if (isTransferFail == false)	{
+			vTaskDelay(tp_RESEND_TIMEOUT_IF_FAIL / portTICK_RATE_MS);
 			continue;
 		}
 		bool isAckReceived;
-		isAckReceived = waitForAck(uniqueId, 50 / portTICK_RATE_MS);
+		isAckReceived = waitForAck(uniqueId, tp_ACK_WAIT_TIMEOUT / portTICK_RATE_MS);
 		if (isAckReceived == true)	{
 			transferResult = true;
 			break;
 		}
 	}
-
 	npFrame.free();
 	return transferResult;
 }
@@ -262,7 +260,7 @@ bool TpSocket::sendAck(uint8_t _remotePort, uint16_t _remoteAddress, uint8_t uni
 
 	TpFrame tpFrame;
 	tpFrame.alloc();
-	tpFrame.getBuffer().setLenght(TP_FRAME_HEAD_LENGTH);
+	tpFrame.getBuffer().setLenght(tp_FRAME_HEAD_LENGTH);
 
 	tpFrame.setSrcPort(selfPort);
 	tpFrame.setDstPort(_remotePort);
@@ -272,7 +270,7 @@ bool TpSocket::sendAck(uint8_t _remotePort, uint16_t _remoteAddress, uint8_t uni
 	NpFrame npFrame;
 	npFrame.clone(tpFrame);
 
-	return Routing::instance().send( &npFrame, _remoteAddress, MAX_TTL, NpFrame_TP );
+	return Routing::instance().send( &npFrame, _remoteAddress, np_MAX_TTL, NpFrame_TP );
 }
 
 void TpSocket::parceInDisconnectedState(TpFrame *ptrTpFrame, bool isPacketUnique)

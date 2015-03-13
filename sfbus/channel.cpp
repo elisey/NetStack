@@ -1,9 +1,10 @@
 #include "channel.h"
 #include "debug.h"
+#include "NetConfig.h"
 
 Channel::Channel()
 {
-	rxQueue = xQueueCreate(20, sizeof(Frame));
+	rxQueue = xQueueCreate(SFBus_RX_RAW_QUEUE_SIZE, sizeof(Frame));
 }
 
 void Channel::send(Frame *ptrFrame)

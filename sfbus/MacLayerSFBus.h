@@ -5,7 +5,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
-#include "semphr.h"
 
 #include "MacFrame.h"
 #include "channel.h"
@@ -14,10 +13,6 @@
 #include "mac_layer_base.h"
 #include "Mutex.h"
 
-#define mac_layerRESEND_NUM				(3u)
-#define mac_layerCRC_SIZE				(2u)
-#define mac_layerWAIT_ACK_TIMEOUT		(2u)
-#define mac_layerMAX_PAYLOAD_SIZE		(MAX_SFBus_PACKET_SIZE - SFBus_FRAME_HEAD_LENGTH)
 class MacLayerSFBus :	public MacLayerBase
 {
 public:

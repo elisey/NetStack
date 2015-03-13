@@ -1,6 +1,8 @@
 #include "Routing.h"
 #include "routeTable.h"
-#include "config.h"
+#include "NetStackBuilder.h"
+#include "NetConfig.h"
+
 Routing::Routing()
 {
 }
@@ -17,7 +19,7 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 	uint16_t dstAddress;
 	dstAddress = ptrNpFrame->getDstAddress();
 
-	if (dstAddress == BROADCAST_ADDRESS)	{
+	if (dstAddress == np_BROADCAST_ADDRESS)	{
 		int i;
 		for (i = 0; i < NUM_OF_INTERFACES; ++i) {
 			if (srcInterfaceId != i)	{
@@ -30,7 +32,7 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 			}
 		}
 	}
-	else if (dstAddress == TOP_REDIRECTION_ADDRESS)	{
+	else if (dstAddress == np_TOP_REDIRECTION_ADDRESS)	{
 		if (srcInterfaceId != 0)	{
 			if (interfaces[0] != NULL)	{
 				NpFrame newFrame;
