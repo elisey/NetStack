@@ -6,6 +6,7 @@
 
 
 //SfBus MAC settings
+#define SFBus_BAUD_RATE						(1000000)
 #define SFBus_MAX_PACKET_SIZE				(netConfigMAX_FRAME_SIZE)
 #define SFBus_MIN_PACKET_SIZE				(4)
 #define SFBus_FRAME_HEAD_SIZE				(4)

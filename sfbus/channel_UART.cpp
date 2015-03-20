@@ -62,6 +62,7 @@ void ChannelUart::waitForTransferCompleate()
 void ChannelUart::irqOnTxCompleate()
 {
 	DMA_Cmd(dmaTx, DISABLE);
+	CLEAR_BIT(uart->CR1, USART_CR1_TE);
 	xSemaphoreGiveFromISR(txSemaphore, NULL);
 }
 
@@ -250,7 +251,7 @@ void ChannelUart::initUartRegisters(USART_TypeDef * USARTx)
 {
 	USART_InitTypeDef usartStruct;
 
-	usartStruct.USART_BaudRate = 1000000;
+	usartStruct.USART_BaudRate = SFBus_BAUD_RATE;
 	usartStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
 	usartStruct.USART_Mode = USART_Mode_Rx;
 	usartStruct.USART_Parity = USART_Parity_No;
