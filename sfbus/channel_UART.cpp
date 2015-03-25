@@ -62,7 +62,11 @@ void ChannelUart::waitForTransferCompleate()
 void ChannelUart::irqOnTxCompleate()
 {
 	DMA_Cmd(dmaTx, DISABLE);
-	xSemaphoreGiveFromISR(txSemaphore, NULL);
+	BaseType_t higherPriorityTaskWoken;
+	xSemaphoreGiveFromISR(txSemaphore, &higherPriorityTaskWoken);
+	if (higherPriorityTaskWoken == pdTRUE)	{
+		taskYIELD();
+	}
 }
 
 void ChannelUart::dmaTxInit()
