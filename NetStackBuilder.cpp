@@ -1,6 +1,7 @@
 #include "NetStackBuilder.h"
 
 #include "channel_UART.h"
+#include "channel_UART_IRQ.h"
 #include "MacLayerSFBus.h"
 
 #include "ncmp_layer_slave.h"
@@ -10,6 +11,7 @@
 
 #ifdef MASTER
 MacLayerSFBus mc1(&ch1);
+//MacLayerSFBus mc2(&channelUartIrq);
 MacLayerSFBus mc2(&ch3);
 
 NpLayer np1(&mc1, 0);
