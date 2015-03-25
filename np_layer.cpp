@@ -125,7 +125,7 @@ void NpLayer::parseOwnPacketByProtocol(NpFrame *ptrNpFrame)
 		}
 		break;
 	case NpFrame_TP:
-		TpLayer::instance().handleTpFrame(ptrNpFrame);
+		tpLayer.handleTpFrame(ptrNpFrame);
 		break;
 	default:
 		ptrNpFrame->free();

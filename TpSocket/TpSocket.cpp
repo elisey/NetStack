@@ -27,7 +27,7 @@ TpSocket::TpSocket()
 void TpSocket::bind(uint8_t _selfPort = 0)
 {
 	int result;
-	result = TpLayer::instance().registerSocket(this, _selfPort);
+	result = tpLayer.registerSocket(this, _selfPort);
 	assert((result != (-1)) && (result <= 0xFF));
 	selfPort = result;
 }

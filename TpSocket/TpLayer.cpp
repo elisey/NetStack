@@ -2,6 +2,8 @@
 #include "TpFrame.h"
 #include "debug.h"
 
+TpLayer tpLayer;
+
 TpLayer::TpLayer()
 {
 }

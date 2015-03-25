@@ -41,13 +41,11 @@ private:
 
 //Singleton realisation
 public:
-	static TpLayer& instance()
-	{
-		static TpLayer theSingleInstance;
-		return theSingleInstance;
-	}
-private:
 	TpLayer();
+
+private:
 	TpLayer(const TpLayer& root);
 	TpLayer& operator=(const TpLayer&);
 };
+
+extern TpLayer tpLayer;
