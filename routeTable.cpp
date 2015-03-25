@@ -60,7 +60,7 @@ void RouterTable::deleteRoute(uint16_t dstAddress)
 uint16_t RouterTable::findRouteForInterface(uint8_t interfaceId)
 {
 	int i;
-	for (i = 0; i < rt_ROUTER_TABLE_SIZE + 1; ++i)	{
+	for (i = 0; i < (rt_ROUTER_TABLE_SIZE); ++i)	{
 		if (routerTableNodes[i].interfaceId == interfaceId)	{
 			return routerTableNodes[i].address;
 		}
@@ -75,7 +75,7 @@ int RouterTable::getNextRouteToPing(int prevRoute, uint8_t interfaceId)
 	}*/
 
 	int i;
-	for (i = 0; i < rt_ROUTER_TABLE_SIZE + 1; ++i) {
+	for (i = 0; i < (rt_ROUTER_TABLE_SIZE + 1); ++i) {
 		if (++prevRoute >= rt_ROUTER_TABLE_SIZE)	{
 			prevRoute = 0;
 		}
