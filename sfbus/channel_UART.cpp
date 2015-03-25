@@ -43,7 +43,7 @@ ChannelUart::ChannelUart(uart_channel_t ch_uart)
 void ChannelUart::transfer(Frame *frame)
 {
 	clearTxSemaphore();
-	SET_BIT(uart->CR1, USART_CR1_TE);	// Включение передатчика. При включении автомататически
+	//SET_BIT(uart->CR1, USART_CR1_TE);	// Включение передатчика. При включении автомататически
 										// посылается последовательность IDLE, которая нужна
 										// для отделения пакетов друг от друга.
 
@@ -62,7 +62,6 @@ void ChannelUart::waitForTransferCompleate()
 void ChannelUart::irqOnTxCompleate()
 {
 	DMA_Cmd(dmaTx, DISABLE);
-	CLEAR_BIT(uart->CR1, USART_CR1_TE);
 	xSemaphoreGiveFromISR(txSemaphore, NULL);
 }
 
@@ -253,7 +252,7 @@ void ChannelUart::initUartRegisters(USART_TypeDef * USARTx)
 
 	usartStruct.USART_BaudRate = SFBus_BAUD_RATE;
 	usartStruct.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-	usartStruct.USART_Mode = USART_Mode_Rx;
+	usartStruct.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 	usartStruct.USART_Parity = USART_Parity_No;
 	usartStruct.USART_StopBits = USART_StopBits_1;
 	usartStruct.USART_WordLength = USART_WordLength_8b;
