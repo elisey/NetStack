@@ -1,9 +1,7 @@
 #pragma once
 #include <stdint.h>
 
-#define UniqueItemHandlerNUM_OF_ITEMS		5
-
-template <typename T>
+template <int ArrayLength, typename T>
 class UniqueItemHandler
 {
 public:
@@ -18,7 +16,7 @@ public:
 		}
 
 		unsigned int i;
-		for (i = 0; i < UniqueItemHandlerNUM_OF_ITEMS; ++i) {
+		for (i = 0; i < ArrayLength; ++i) {
 			if (item == items[i])	{
 				return false;
 			}
@@ -35,7 +33,7 @@ public:
 			isInitialized = true;
 
 			unsigned int i;
-			for (i = 0; i < UniqueItemHandlerNUM_OF_ITEMS; ++i) {
+			for (i = 0; i < ArrayLength; ++i) {
 				items[i] = item;
 			}
 		}
@@ -43,14 +41,14 @@ public:
 			items[oldestItemIndex] = item;
 
 			oldestItemIndex++;
-			if (oldestItemIndex >= UniqueItemHandlerNUM_OF_ITEMS){
+			if (oldestItemIndex >= ArrayLength){
 				oldestItemIndex = 0;
 			}
 		}
 	}
 
 private:
-	T items[UniqueItemHandlerNUM_OF_ITEMS];
+	T items[ArrayLength];
 	uint8_t oldestItemIndex;
 	bool isInitialized;
 };

@@ -31,7 +31,7 @@ private:
 	uint8_t getUniquePid();
 
 	Channel *ptrChannel;
-	UniqueItemHandler<uint8_t> uniqueFrame;
+	UniqueItemHandler<5, uint8_t> uniqueFrame;
 	QueueHandle_t rxQueue;
 	QueueHandle_t ackQueue;
 	Mutex txMutex;

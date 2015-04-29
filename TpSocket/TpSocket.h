@@ -75,5 +75,5 @@ private:
 	volatile uint8_t wrBufferIndex;
 	uint8_t rdBufferIndex;
 
-	UniqueItemHandler<uint8_t> uniqueFrame;
+	UniqueItemHandler<5, uint8_t> uniqueFrame;
 };
