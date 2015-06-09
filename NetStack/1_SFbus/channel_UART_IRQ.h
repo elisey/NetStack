@@ -6,6 +6,8 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
+#include "NetConfig.h"
+
 class ChannelUartIrq : public Channel
 {
 //Общее
@@ -45,4 +47,6 @@ private:
 
 };
 
+#if (USE_UART_5 == 1)
 extern ChannelUartIrq channelUartIrq;
+#endif

@@ -1,10 +1,17 @@
 #include "channel_UART.h"
-#include "NetConfig.h"
 
+#if (USE_UART_1 == 1)
 ChannelUart ch1(uart_channel_1);
+#endif
+#if (USE_UART_2 == 1)
 ChannelUart ch2(uart_channel_2);
+#endif
+#if (USE_UART_3 == 1)
 ChannelUart ch3(uart_channel_3);
+#endif
+#if (USE_UART_4 == 1)
 ChannelUart ch4(uart_channel_4);
+#endif
 
 ChannelUart::ChannelUart(uart_channel_t ch_uart)
 	: uart_channel(ch_uart)
@@ -277,13 +284,14 @@ void ChannelUart::initUartPins(GPIO_TypeDef* txGPIOx, uint16_t txPin, GPIO_TypeD
 	GPIO_Init(txGPIOx,&gpioStruct);
 
 	gpioStruct.GPIO_Pin = rxPin;
-	gpioStruct.GPIO_Mode = GPIO_Mode_IPU;
+	gpioStruct.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	gpioStruct.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(rxGPIOx,&gpioStruct);
 }
 
 extern "C"	{
 
+#if (USE_UART_1 == 1)
 void USART1_IRQHandler()
 {
 	if (USART_GetITStatus(USART1, USART_IT_IDLE) == SET)	{
@@ -292,7 +300,9 @@ void USART1_IRQHandler()
 		ch1.irqOnRxCompleate();
 	}
 }
+#endif
 
+#if (USE_UART_2 == 1)
 void USART2_IRQHandler()
 {
 	if (USART_GetITStatus(USART2, USART_IT_IDLE) == SET)	{
@@ -301,7 +311,9 @@ void USART2_IRQHandler()
 		ch2.irqOnRxCompleate();
 	}
 }
+#endif
 
+#if (USE_UART_3 == 1)
 void USART3_IRQHandler()
 {
 	if (USART_GetITStatus(USART3, USART_IT_IDLE) == SET)	{
@@ -310,7 +322,9 @@ void USART3_IRQHandler()
 		ch3.irqOnRxCompleate();
 	}
 }
+#endif
 
+#if (USE_UART_4 == 1)
 void UART4_IRQHandler()
 {
 	if (USART_GetITStatus(UART4, USART_IT_IDLE) == SET)	{
@@ -319,7 +333,9 @@ void UART4_IRQHandler()
 		ch4.irqOnRxCompleate();
 	}
 }
+#endif
 
+#if (USE_UART_1 == 1)
 void DMA1_Channel4_IRQHandler()
 {
 	if (DMA_GetITStatus(DMA1_IT_TC4) == SET )	{
@@ -327,7 +343,9 @@ void DMA1_Channel4_IRQHandler()
 		ch1.irqOnTxCompleate();
 	}
 }
+#endif
 
+#if (USE_UART_2 == 1)
 void DMA1_Channel7_IRQHandler()
 {
 	if (DMA_GetITStatus(DMA1_IT_TC7) == SET )	{
@@ -335,7 +353,9 @@ void DMA1_Channel7_IRQHandler()
 		ch2.irqOnTxCompleate();
 	}
 }
+#endif
 
+#if (USE_UART_3 == 1)
 void DMA1_Channel2_IRQHandler()
 {
 	if (DMA_GetITStatus(DMA1_IT_TC2) == SET )	{
@@ -343,7 +363,9 @@ void DMA1_Channel2_IRQHandler()
 		ch3.irqOnTxCompleate();
 	}
 }
+#endif
 
+#if (USE_UART_4 == 1)
 void DMA2_Channel4_5_IRQHandler()
 {
 	if (DMA_GetITStatus(DMA2_IT_TC5) == SET )	{
@@ -351,4 +373,5 @@ void DMA2_Channel4_5_IRQHandler()
 		ch4.irqOnTxCompleate();
 	}
 }
+#endif
 }

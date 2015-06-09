@@ -6,7 +6,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-
+#include "NetConfig.h"
 
 typedef enum	{
 	uart_channel_1,
@@ -57,4 +57,15 @@ private:
 	void initUartPins(GPIO_TypeDef* txGPIOx, uint16_t txPin, GPIO_TypeDef* rxGPIOx, uint16_t rxPin);
 };
 
-extern ChannelUart ch1, ch2, ch3, ch4;
+#if (USE_UART_1 == 1)
+extern ChannelUart ch1;
+#endif
+#if (USE_UART_2 == 1)
+extern ChannelUart ch2;
+#endif
+#if (USE_UART_3 == 1)
+extern ChannelUart ch3;
+#endif
+#if (USE_UART_4 == 1)
+extern ChannelUart ch4;
+#endif

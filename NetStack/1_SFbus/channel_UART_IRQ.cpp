@@ -1,9 +1,10 @@
 #include "channel_UART_IRQ.h"
 
 #include "stm32f10x.h"
-#include "NetConfig.h"
 
+#if (USE_UART_5 == 1)
 ChannelUartIrq channelUartIrq;
+#endif
 
 ChannelUartIrq::ChannelUartIrq()
 {
@@ -171,6 +172,7 @@ void ChannelUartIrq::irqOnIdleReceived()
 }
 
 extern "C"	{
+#if (USE_UART_5 == 1)
 void UART5_IRQHandler (void)
 {
 	if (USART_GetITStatus(UART5,USART_IT_RXNE) != RESET)	{
@@ -187,4 +189,5 @@ void UART5_IRQHandler (void)
 		channelUartIrq.irqOnIdleReceived();
 	}
 }
+#endif
 }

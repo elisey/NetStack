@@ -4,6 +4,12 @@
 #define netConfigNUM_OF_FRAMES				(40)
 #define netConfigMAX_FRAME_SIZE				(143)
 
+//SfBus PHY settings
+#define USE_UART_1							(1)
+#define USE_UART_2							(1)
+#define USE_UART_3							(1)
+#define USE_UART_4							(1)
+#define USE_UART_5							(1)
 
 //SfBus MAC settings
 #define SFBus_BAUD_RATE						(1000000)
