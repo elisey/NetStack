@@ -93,6 +93,9 @@ void NcmpLayerMaster::waitForAnyPackets(uint32_t prevTick, unsigned int timeout)
 	do
 	{
 		timeDelta = getTimeDelta( prevTick, xTaskGetTickCount() );
+		if (timeout <= timeDelta)	{
+			return;
+		}
 		BaseType_t result = xQueueReceive(rxQueue, &npFrame, timeout - timeDelta);
 		if (result == pdFAIL)	{
 			return;
