@@ -21,6 +21,7 @@ void NcmpLayerMaster::task()
 
 		prevRouteIndex = RouterTable::instance().getNextRouteToPing(prevRouteIndex, interfaceId);
 		if (prevRouteIndex != (-1))	{
+			interfaceState = interfaceConnectionState_Connected;
 			targetAddress = (RouterTable::instance())[prevRouteIndex].address;
 
 			bool pingResult;
@@ -36,6 +37,9 @@ void NcmpLayerMaster::task()
 			if (pingResult == false)	{
 				deleteSlave(targetAddress);
 			}
+		}
+		else	{
+			interfaceState = interfaceConnectionState_Disconnected;
 		}
 		waitForAnyPackets(prevTick, ncmp_PING_PERIOD);
 	}

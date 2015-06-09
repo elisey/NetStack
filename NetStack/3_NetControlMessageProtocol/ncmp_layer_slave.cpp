@@ -27,12 +27,16 @@ void NcmpLayerSlave::task()
 				sendMyRoute(currentMaster);
 				sendRoutes();
 				RouterTable::instance().setDefaultGate(foundMaster);
+
+				interfaceState = interfaceConnectionState_Connected;
 			}
 		}
 		else	{
 			if (waitForPingAndReply(ncmp_WAIT_FOR_PING_PERIOD) == false)	{
 				currentMaster = 0;
 				RouterTable::instance().setDefaultGate(0);
+
+				interfaceState = interfaceConnectionState_Disconnected;
 			}
 		}
 	}

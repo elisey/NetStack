@@ -5,7 +5,8 @@ static void NcmpLayer_Task(void *param);
 
 NcmpLayerBase::NcmpLayerBase(NpLayer *_ptrNpLayer, interfaceType_t _interfaceType)
 : 	ptrNpLayer(_ptrNpLayer),
- 	interfaceType(_interfaceType)
+ 	interfaceType(_interfaceType),
+ 	interfaceState(interfaceConnectionState_Disconnected)
 {
 	interfaceId = ptrNpLayer->getInterfaceId();
 	rxQueue = xQueueCreate(ncmp_RX_QUEUE_SIZE, sizeof(NpFrame));
@@ -18,6 +19,11 @@ NcmpLayerBase::NcmpLayerBase(NpLayer *_ptrNpLayer, interfaceType_t _interfaceTyp
 			this,
 			ncmp_TASK_PRIORITY,
 			NULL);
+}
+
+interfaceConnectionState_t NcmpLayerBase::getInterfaceConnectionState()
+{
+	return interfaceState;
 }
 
 static void NcmpLayer_Task(void *param)
