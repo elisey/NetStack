@@ -17,7 +17,7 @@ typedef enum	{
 	connectionStatus_connected
 } connectionStatus_t;
 
-#define INPUT_RING_BUFFER_SIZE	(0xFF)
+#define INPUT_RING_BUFFER_SIZE	(256)
 
 class TpSocket {
 public:

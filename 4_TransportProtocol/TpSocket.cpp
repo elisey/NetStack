@@ -115,6 +115,9 @@ uint8_t TpSocket::receiveChar()
 
 	ch = inBuffer[rdBufferIndex];
 	rdBufferIndex++;
+	if (rdBufferIndex >= INPUT_RING_BUFFER_SIZE)	{
+		rdBufferIndex = 0;
+	}
 	return ( ch );
 }
 
@@ -333,18 +336,42 @@ void TpSocket::parceInConnectedState(TpFrame *ptrTpFrame, bool isPacketUnique)
 			uint8_t *src = ptrTpFrame->getPayloadPtr();
 			unsigned int i;
 			for (i = 0; i < size; ++i) {
-				int counter = 0;
-				while (xSemaphoreGive(ringBufferCountingSemaphore) == pdFAIL)
-				{
-					assert(wrBufferIndex != rdBufferIndex);
-					counter++;
-					assert(counter < 50);
-					pin4_on;
-					vTaskDelay(1);
-					pin4_off;
-				}
-				inBuffer[wrBufferIndex] = src[i];
+
+/*				inBuffer[wrBufferIndex] = src[i];
 				wrBufferIndex++;
+				if (wrBufferIndex >= INPUT_RING_BUFFER_SIZE)	{
+					wrBufferIndex = 0;
+				}
+				xSemaphoreGive(ringBufferCountingSemaphore);*/
+
+
+				//Попытка сначала взять семафор, а затем поместить байт в буфер. Все это в критической секции, чтобы ожидающая
+				// семафор задача, имеющая более высокий приоритет не перехватила управление между выдачей семафора и помещением
+				// байта в буфер.
+
+				while(1)
+				{
+					int counter = 0;
+
+					portENTER_CRITICAL();
+					if (xSemaphoreGive(ringBufferCountingSemaphore) == pdFAIL)	{
+						portEXIT_CRITICAL();
+
+						assert(wrBufferIndex != rdBufferIndex);
+						counter++;
+						assert(counter < 50);
+						vTaskDelay(1);
+					}
+					else	{
+						inBuffer[wrBufferIndex] = src[i];
+						wrBufferIndex++;
+						if (wrBufferIndex >= INPUT_RING_BUFFER_SIZE)	{
+							wrBufferIndex = 0;
+						}
+						portEXIT_CRITICAL();
+						break;
+					}
+				}
 			}
 		}
 		return;
