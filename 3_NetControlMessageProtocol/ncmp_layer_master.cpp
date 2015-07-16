@@ -2,7 +2,7 @@
 
 #include "routeTable.h"
 #include "Routing.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 uint32_t getTimeDelta(uint32_t prevTime, uint32_t currentTime);
 

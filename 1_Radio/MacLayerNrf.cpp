@@ -2,7 +2,7 @@
 #include "nrf24L01Plus.h"
 #include "debug.h"
 #include "delay.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 #define ADDRESS_WIDTH	(5)		// (3 - 5)
 #define ADDRESS_FILLER	(0xC2)

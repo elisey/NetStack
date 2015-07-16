@@ -1,5 +1,5 @@
 #include "MacLayerSFBus.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 #define SFBus_CRC_SIZE				(2u)
 

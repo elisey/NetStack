@@ -4,7 +4,7 @@
 #include "routeTable.h"
 #include "MacFrame.h"
 #include "TpLayer.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 static void NpLayer_RxTask(void *param);
 

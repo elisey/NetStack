@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include "PoolNode.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 #define TP_FRAME_SRC_PORT			(0)
 #define TP_FRAME_DST_PORT			(1)

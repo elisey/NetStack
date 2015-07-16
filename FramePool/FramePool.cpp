@@ -1,5 +1,5 @@
 #include "FramePool.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 uint8_t framesPool[netConfigMAX_FRAME_SIZE * netConfigNUM_OF_FRAMES];
 

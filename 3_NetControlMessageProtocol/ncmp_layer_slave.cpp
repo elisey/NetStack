@@ -5,7 +5,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 #include "debug.h"
 
 NcmpLayerSlave::NcmpLayerSlave(NpLayer *_ptrNpLayer, interfaceType_t _interfaceType)

@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 class RouterTableNode
 {

@@ -2,7 +2,7 @@
 #include "TpLayer.h"
 
 #include "Routing.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 static void TpSocket_RxTask(void *param);
 

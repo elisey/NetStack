@@ -3,7 +3,7 @@
 #include "TpSocket.h"
 #include "NpFrame.h"
 #include "Mutex.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 #define DYNAMIC_START_PORT_INDEX	(128)	//начиная с этого значения выдаются динамические порты.
 

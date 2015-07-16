@@ -6,7 +6,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 class ChannelUartIrq : public Channel
 {

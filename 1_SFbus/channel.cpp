@@ -1,6 +1,6 @@
 #include "channel.h"
 #include "debug.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 Channel::Channel()
 {

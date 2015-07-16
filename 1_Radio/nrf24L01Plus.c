@@ -17,7 +17,7 @@
  */
 #include "nrf24L01Plus.h"
 #include "nrf24L01Plus_HAL.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 #define commandACTIVATE					(0x50)
 #define commandR_RX_PL_WID				(0x60)

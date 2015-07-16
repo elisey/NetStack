@@ -9,7 +9,7 @@
 #include "PoolNode.h"
 #include "debug.h"
 
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 typedef enum	{
 	NpFrame_NCMP = 1,	// net control message protocol
 	NpFrame_TP = 2,		// transport protocol

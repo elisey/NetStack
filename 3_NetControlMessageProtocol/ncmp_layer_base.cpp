@@ -1,5 +1,5 @@
 #include "ncmp_layer_base.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 static void NcmpLayer_Task(void *param);
 

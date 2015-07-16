@@ -1,7 +1,7 @@
 #include "Routing.h"
 #include "routeTable.h"
 #include "NetStackBuilder.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 Routing::Routing()
 {

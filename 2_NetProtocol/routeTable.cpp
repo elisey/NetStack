@@ -1,7 +1,7 @@
 #include "routeTable.h"
 #include "debug.h"
 #include "NpFrame.h"
-#include "NetConfig.h"
+#include "NetStackConfig.h"
 
 RouterTable::RouterTable()	: defaultGate(0)
 {
