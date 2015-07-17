@@ -48,13 +48,10 @@ bool TpSocket::connect( uint16_t _remoteAddress, uint8_t _remotePort)
 {
 	bool result = false;
 	mutex.lock();
-	if (connectionStatus == connectionStatus_disconnected)	{
-		setStateConnected(_remotePort, _remoteAddress);
-
-		result = sendConnect();
-		if (result == false)	{
-			setStateDisconnected();
-		}
+	setStateConnected(_remotePort, _remoteAddress);
+	result = sendConnect();
+	if (result == false)	{
+		setStateDisconnected();
 	}
 	mutex.unlock();
 	return result;
@@ -80,12 +77,59 @@ void TpSocket::abort()
 	mutex.unlock();
 }
 
-bool TpSocket::send(uint8_t *buffer, unsigned int size)
+bool TpSocket::write(uint8_t *buffer, unsigned int size)
 {
 	mutex.lock();
 	bool result = sendBuffer(buffer, size);
 	mutex.unlock();
 	return result;
+}
+
+int TpSocket::read(uint8_t *buffer, unsigned int size, bool blocking)
+{
+	int data;
+	unsigned int numOfBytes = 0;
+	TickType_t timeout;
+
+	if (blocking == true)	{
+		timeout = portMAX_DELAY;
+	}
+	else {
+		timeout = 0;
+	}
+
+	while(1)
+	{
+		data = getChar(timeout);
+		if (data == -1)	{
+			break;
+		}
+		buffer[numOfBytes] = (uint8_t)data;
+		numOfBytes++;
+		if (numOfBytes >= size)	{
+			break;
+		}
+	}
+
+	return numOfBytes;
+}
+
+int TpSocket::getChar(TickType_t timeout)
+{
+	uint8_t ch;
+
+	BaseType_t result;
+	result = xSemaphoreTake(ringBufferCountingSemaphore, timeout);
+	if (result == pdFAIL)	{
+		return (-1);
+	}
+
+	ch = inBuffer[rdBufferIndex];
+	rdBufferIndex++;
+	if (rdBufferIndex >= INPUT_RING_BUFFER_SIZE)	{
+		rdBufferIndex = 0;
+	}
+	return (int)( ch );
 }
 
 bool TpSocket::checkConnectionStatus()
@@ -103,22 +147,6 @@ bool TpSocket::checkConnectionStatus()
 bool TpSocket::isConnected()
 {
 	return (connectionStatus == connectionStatus_connected);
-}
-
-uint8_t TpSocket::receiveChar()
-{
-	uint8_t ch;
-
-	BaseType_t result;
-	result = xSemaphoreTake(ringBufferCountingSemaphore, portMAX_DELAY);
-	assert(result == pdPASS);
-
-	ch = inBuffer[rdBufferIndex];
-	rdBufferIndex++;
-	if (rdBufferIndex >= INPUT_RING_BUFFER_SIZE)	{
-		rdBufferIndex = 0;
-	}
-	return ( ch );
 }
 
 bool TpSocket::sendConnect()

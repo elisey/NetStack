@@ -23,22 +23,22 @@ class TpSocket {
 public:
 	TpSocket();
 	void bind(uint8_t _selfPort);
-
 	bool listen();
 	bool connect( uint16_t dstAddress, uint8_t dstPort);
 	bool close();
 	void abort();
-	bool send(uint8_t *buffer, unsigned int size);
-	bool checkConnectionStatus();
-	bool isConnected();
-	uint8_t receiveChar();
+	bool write(uint8_t *buffer, unsigned int size);
+	int read(uint8_t *buffer, unsigned int size, bool blocking = false);
 
+	int getChar(TickType_t timeout);
+	bool checkConnectionStatus();
 	void handleRxTpFrame(TpFrame* ptrTpFrame);
 
 	void rxTask();
 	void txTask();
 
 private:
+	bool isConnected();
 	bool sendConnect();
 	bool sendDisconnect();
 	bool sendBuffer(uint8_t *buffer, unsigned int size);
