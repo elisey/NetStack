@@ -1,6 +1,8 @@
 #include "FramePool.h"
 #include "NetStackConfig.h"
 
+FramePool framePool;
+
 uint8_t framesPool[netConfigMAX_FRAME_SIZE * netConfigNUM_OF_FRAMES];
 
 FramePool::FramePool()

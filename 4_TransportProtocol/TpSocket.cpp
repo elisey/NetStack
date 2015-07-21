@@ -216,7 +216,7 @@ bool TpSocket::transfer(TpFrame *ptrTpFrame, TpFrameType_t tpFrameType)
 		npFrameToSend.copy(npFrame);
 
 		clearAckQueue();
-		bool isTransferFail = Routing::instance().send( &npFrameToSend, remoteAddress, np_MAX_TTL, NpFrame_TP );
+		bool isTransferFail = routing.send( &npFrameToSend, remoteAddress, np_MAX_TTL, NpFrame_TP );
 		if (isTransferFail == false)	{
 			vTaskDelay(tp_RESEND_TIMEOUT_IF_FAIL / portTICK_RATE_MS);
 			continue;
@@ -301,7 +301,7 @@ bool TpSocket::sendAck(uint8_t _remotePort, uint16_t _remoteAddress, uint8_t uni
 	NpFrame npFrame;
 	npFrame.clone(tpFrame);
 
-	return Routing::instance().send( &npFrame, _remoteAddress, np_MAX_TTL, NpFrame_TP );
+	return routing.send( &npFrame, _remoteAddress, np_MAX_TTL, NpFrame_TP );
 }
 
 void TpSocket::parceInDisconnectedState(TpFrame *ptrTpFrame, bool isPacketUnique)

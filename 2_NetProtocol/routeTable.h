@@ -28,6 +28,7 @@ public:
 
 class RouterTable	{
 public:
+	RouterTable();
 	RouterTableNode& operator[](int index);
 	uint8_t getInterfaceForDestinationAddress(uint16_t dstAddress);
 	void insertRoute(uint16_t dstAddress, uint8_t interfaceId, bool isNeighbor = false);
@@ -43,15 +44,9 @@ private:
 
 	RouterTableNode routerTableNodes[rt_ROUTER_TABLE_SIZE];
 	uint16_t defaultGate;
-	//Singleton realisation
-public:
-	static RouterTable& instance()
-	{
-		static RouterTable theSingleInstance;
-		return theSingleInstance;
-	}
-private:
-	RouterTable();
+
 	RouterTable(const RouterTable& root);
 	RouterTable& operator=(const RouterTable&);
 };
+
+extern RouterTable routerTable;

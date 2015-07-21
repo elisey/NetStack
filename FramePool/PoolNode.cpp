@@ -13,9 +13,7 @@ PoolNode::PoolNode(size_t _bufferOffset)
 
 bool PoolNode::alloc(uint32_t timeout)
 {
-	FramePool &pool = FramePool::instance();
-
-	int tempMemoryIndex = pool.takeFreeFrameIndex(timeout);
+	int tempMemoryIndex = framePool.takeFreeFrameIndex(timeout);
 	if (tempMemoryIndex == -1)	{
 		if (timeout != 0)	{
 			assert(0);
@@ -23,7 +21,7 @@ bool PoolNode::alloc(uint32_t timeout)
 		return false;
 	}
 	memoryIndex = tempMemoryIndex;
-	uint8_t *ptrData = pool.getMemoryPtrByMemoryIndex(memoryIndex);
+	uint8_t *ptrData = framePool.getMemoryPtrByMemoryIndex(memoryIndex);
 	buffer.setDataPtr(ptrData + bufferOffset);
 	frameCounter++;
 	return true;
@@ -31,15 +29,13 @@ bool PoolNode::alloc(uint32_t timeout)
 
 bool PoolNode::allocFromIsr()
 {
-	FramePool &pool = FramePool::instance();
-
-	int tempMemoryIndex = pool.takeFreeFrameIndexFromISR();
+	int tempMemoryIndex = framePool.takeFreeFrameIndexFromISR();
 	if (tempMemoryIndex == (-1))	{
 		//pin2_on;
 		return false;
 	}
 	memoryIndex = tempMemoryIndex;
-	uint8_t *ptrData = pool.getMemoryPtrByMemoryIndex(memoryIndex);
+	uint8_t *ptrData = framePool.getMemoryPtrByMemoryIndex(memoryIndex);
 	buffer.setDataPtr(ptrData + bufferOffset);
 	frameCounter++;
 	return true;
@@ -47,9 +43,7 @@ bool PoolNode::allocFromIsr()
 
 void PoolNode::free()
 {
-	FramePool &pool = FramePool::instance();
-
-	pool.releaseFrame(memoryIndex);
+	framePool.releaseFrame(memoryIndex);
 	memoryIndex = -1;
 	buffer.setDataPtr(NULL);
 	frameCounter--;
@@ -57,8 +51,6 @@ void PoolNode::free()
 
 void PoolNode::clone(PoolNode &node)
 {
-	FramePool &pool = FramePool::instance();
-
 	size_t newLength = node.buffer.getLenght() + node.bufferOffset - bufferOffset;
 	buffer.setLenght(newLength);
 
@@ -66,7 +58,7 @@ void PoolNode::clone(PoolNode &node)
 	node.memoryIndex = -1;
 	node.buffer.setDataPtr(NULL);
 
-	uint8_t *ptrData = pool.getMemoryPtrByMemoryIndex(memoryIndex);
+	uint8_t *ptrData = framePool.getMemoryPtrByMemoryIndex(memoryIndex);
 	buffer.setDataPtr(ptrData + bufferOffset);
 }
 

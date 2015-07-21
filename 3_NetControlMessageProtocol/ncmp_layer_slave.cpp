@@ -26,7 +26,7 @@ void NcmpLayerSlave::task()
 				currentMaster = foundMaster;
 				sendMyRoute(currentMaster);
 				sendRoutes();
-				RouterTable::instance().setDefaultGate(foundMaster);
+				routerTable.setDefaultGate(foundMaster);
 
 				interfaceState = interfaceConnectionState_Connected;
 			}
@@ -34,7 +34,7 @@ void NcmpLayerSlave::task()
 		else	{
 			if (waitForPingAndReply(ncmp_WAIT_FOR_PING_PERIOD) == false)	{
 				currentMaster = 0;
-				RouterTable::instance().setDefaultGate(0);
+				routerTable.setDefaultGate(0);
 
 				interfaceState = interfaceConnectionState_Disconnected;
 			}
@@ -125,9 +125,9 @@ void NcmpLayerSlave::sendRoutes()
 	ncmpFrame.insertEntryToRoutesPacket( selfAddress );
 	int i;
 	for (i = 0; i < rt_ROUTER_TABLE_SIZE; ++i) {
-		uint16_t address = RouterTable::instance()[i].address;
+		uint16_t address = routerTable[i].address;
 		if (address != 0)	{
-			ncmpFrame.insertEntryToRoutesPacket( RouterTable::instance()[i].address );
+			ncmpFrame.insertEntryToRoutesPacket( routerTable[i].address );
 		}
 	}
 	NpFrame npFrame;
@@ -173,9 +173,9 @@ void NcmpLayerSlave::sendPongWithRoutes(uint16_t dstAddress)
 	ncmpFrame.insertEntryToRoutesPacket( selfAddress );
 	int i;
 	for (i = 0; i < rt_ROUTER_TABLE_SIZE; ++i) {
-		uint16_t address = RouterTable::instance()[i].address;
+		uint16_t address = routerTable[i].address;
 		if (address != 0)	{
-			ncmpFrame.insertEntryToRoutesPacket( RouterTable::instance()[i].address );
+			ncmpFrame.insertEntryToRoutesPacket( routerTable[i].address );
 		}
 	}
 	NpFrame npFrame;

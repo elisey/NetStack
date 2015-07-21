@@ -3,6 +3,8 @@
 #include "NetStackBuilder.h"
 #include "NetStackConfig.h"
 
+Routing routing;
+
 Routing::Routing()
 {
 }
@@ -43,7 +45,7 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 		}
 	}
 	else	{
-		uint8_t targetInterfaceId = RouterTable::instance().getInterfaceForDestinationAddress(dstAddress);
+		uint8_t targetInterfaceId = routerTable.getInterfaceForDestinationAddress(dstAddress);
 		if (targetInterfaceId != srcInterfaceId)	{
 			if (interfaces[targetInterfaceId] != NULL)	{
 				NpFrame newFrame;			//TODO по возможности избавиться от копрования
@@ -58,7 +60,7 @@ void Routing::handleFrame(NpFrame* ptrNpFrame, uint8_t srcInterfaceId)
 bool Routing::send(NpFrame *ptrNpFrame, uint16_t dstAddress, uint8_t ttl, NpFrame_ProtocolType_t protocolType)
 {
 	bool result;
-	uint8_t targetInterfaceId = RouterTable::instance().getInterfaceForDestinationAddress(dstAddress);
+	uint8_t targetInterfaceId = routerTable.getInterfaceForDestinationAddress(dstAddress);
 	if (interfaces[targetInterfaceId] != NULL)	{
 		result = interfaces[targetInterfaceId]->send(ptrNpFrame, dstAddress, ttl, protocolType);
 	}

@@ -47,7 +47,7 @@ void NpLayer::rxTask()
 
 		#if (np_ROUTE_OTHER_PACKETS == 1)
 		if (needRoutePacket(&npFrame) == true)	{
-			Routing::instance().handleFrame(&npFrame, inderfaceId);
+			routing.handleFrame(&npFrame, inderfaceId);
 		}
 		#endif
 		if ( needHandleOwnPacket(&npFrame) == true)	{
@@ -177,7 +177,7 @@ bool NpLayer::transfer(NpFrame *ptrNpFrame)
 uint16_t NpLayer::getNextHopAddress(NpFrame *ptrNpFrame)
 {
 	if (inderfaceId == 0)	{
-		return RouterTable::instance().getDefaultGate();
+		return routerTable.getDefaultGate();
 	}
 	else	{
 		return ptrNpFrame->getDstAddress();

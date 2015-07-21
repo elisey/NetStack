@@ -3,6 +3,8 @@
 #include "NpFrame.h"
 #include "NetStackConfig.h"
 
+RouterTable routerTable;
+
 RouterTable::RouterTable()	: defaultGate(0)
 {
 }

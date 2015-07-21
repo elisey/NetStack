@@ -8,6 +8,7 @@
 class FramePool
 {
 public:
+	FramePool();
 	int takeFreeFrameIndex(uint32_t timeout);
 	int takeFreeFrameIndexFromISR();
 	uint8_t* getMemoryPtrByMemoryIndex(int memoryIndex);
@@ -15,15 +16,8 @@ public:
 
 private:
 	QueueHandle_t freeFramesQueue;
-
-public:
-	static FramePool& instance()
-	{
-		static FramePool theSingleInstance;
-		return theSingleInstance;
-	}
-private:
-	FramePool();
 	FramePool(const FramePool& root);
 	FramePool& operator=(const FramePool&);
 };
+
+extern FramePool framePool;
