@@ -4,17 +4,20 @@
 #include "Routing.h"
 #include "NetStackConfig.h"
 
+#include <stdlib.h>
+
 static void TpSocket_RxTask(void *param);
 
-TpSocket::TpSocket()
+TpSocket::TpSocket(size_t _inputBufferSize)
 	:	connectionStatus(connectionStatus_disconnected),
 	 	nextUniqueId(0),
+	 	inputBufferSize(_inputBufferSize),
 	 	wrBufferIndex(0),
 	 	rdBufferIndex(0)
 {
 	rxQueue = xQueueCreate(10, sizeof(TpFrame));
 	ackQueue = xQueueCreate(3, sizeof(uint8_t));
-	ringBufferCountingSemaphore = xSemaphoreCreateCounting(INPUT_RING_BUFFER_SIZE, 0);
+	ringBufferCountingSemaphore = xSemaphoreCreateCounting(inputBufferSize, 0);
 	xTaskCreate(
 			TpSocket_RxTask,
 			"TpSocket_RxTask",
@@ -22,6 +25,9 @@ TpSocket::TpSocket()
 			this,
 			tskIDLE_PRIORITY + 1,
 			NULL);
+
+	inBuffer = (uint8_t*)(malloc(inputBufferSize));
+	assert(inBuffer != NULL);
 }
 
 void TpSocket::bind(uint8_t _selfPort = 0)
@@ -126,7 +132,7 @@ int TpSocket::getChar(TickType_t timeout)
 
 	ch = inBuffer[rdBufferIndex];
 	rdBufferIndex++;
-	if (rdBufferIndex >= INPUT_RING_BUFFER_SIZE)	{
+	if (rdBufferIndex >= inputBufferSize)	{
 		rdBufferIndex = 0;
 	}
 	return (int)( ch );
@@ -362,48 +368,40 @@ void TpSocket::parceInConnectedState(TpFrame *ptrTpFrame, bool isPacketUnique)
 		if (isPacketUnique == true)	{
 			unsigned int size = ptrTpFrame->getPayloadSize();
 			uint8_t *src = ptrTpFrame->getPayloadPtr();
+
 			unsigned int i;
 			for (i = 0; i < size; ++i) {
-
-/*				inBuffer[wrBufferIndex] = src[i];
-				wrBufferIndex++;
-				if (wrBufferIndex >= INPUT_RING_BUFFER_SIZE)	{
-					wrBufferIndex = 0;
-				}
-				xSemaphoreGive(ringBufferCountingSemaphore);*/
-
-
-				//Попытка сначала взять семафор, а затем поместить байт в буфер. Все это в критической секции, чтобы ожидающая
-				// семафор задача, имеющая более высокий приоритет не перехватила управление между выдачей семафора и помещением
-				// байта в буфер.
-
-				while(1)
-				{
-					int counter = 0;
-
-					portENTER_CRITICAL();
-					if (xSemaphoreGive(ringBufferCountingSemaphore) == pdFAIL)	{
-						portEXIT_CRITICAL();
-
-						assert(wrBufferIndex != rdBufferIndex);
-						counter++;
-						assert(counter < 50);
-						vTaskDelay(1);
-					}
-					else	{
-						inBuffer[wrBufferIndex] = src[i];
-						wrBufferIndex++;
-						if (wrBufferIndex >= INPUT_RING_BUFFER_SIZE)	{
-							wrBufferIndex = 0;
-						}
-						portEXIT_CRITICAL();
-						break;
-					}
-				}
+				waitForRxRingBufferSpaceAvailable();
+				putNewByteToRxRingBuffer(src[i]);
 			}
 		}
 		return;
 	}
+}
+
+/*
+ * Проверка наличия места в счетном семафоре производится в обход стандартной функциональности
+ * семафора. Используется функция проверки оставшегося места в очереди, так как счетный семафор
+ * реализован как очередь с нулевым размером ячеек.
+ */
+void TpSocket::waitForRxRingBufferSpaceAvailable()
+{
+	int counter = 0;
+	while (uxQueueSpacesAvailable(ringBufferCountingSemaphore) == 0)	{
+		counter++;
+		assert(counter < 50);
+		vTaskDelay(1);
+	}
+}
+
+void TpSocket::putNewByteToRxRingBuffer(uint8_t data)
+{
+	inBuffer[wrBufferIndex] = data;
+	wrBufferIndex++;
+	if (wrBufferIndex >= inputBufferSize)	{
+		wrBufferIndex = 0;
+	}
+	xSemaphoreGive(ringBufferCountingSemaphore);
 }
 
 void TpSocket::clearAckQueue()

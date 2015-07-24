@@ -17,11 +17,9 @@ typedef enum	{
 	connectionStatus_connected
 } connectionStatus_t;
 
-#define INPUT_RING_BUFFER_SIZE	(256)
-
 class TpSocket {
 public:
-	TpSocket();
+	TpSocket(size_t _inputBufferSize);
 	void bind(uint8_t _selfPort);
 	bool listen();
 	bool connect( uint16_t dstAddress, uint8_t dstPort);
@@ -48,6 +46,8 @@ private:
 	void parceInListenState(TpFrame *ptrTpFrame, bool isPacketUnique);
 	void parceInConnectedState(TpFrame *ptrTpFrame, bool isPacketUnique);
 
+	void waitForRxRingBufferSpaceAvailable();
+	void putNewByteToRxRingBuffer(uint8_t data);
 	void clearAckQueue();
 	void ackReceived(uint8_t uniqueId);
 	bool waitForAck(uint8_t uniqueId, int timeout);
@@ -71,9 +71,10 @@ private:
 	xSemaphoreHandle ringBufferCountingSemaphore;
 	Mutex mutex;
 
-	uint8_t inBuffer[INPUT_RING_BUFFER_SIZE];
-	volatile uint8_t wrBufferIndex;
-	uint8_t rdBufferIndex;
+	const size_t inputBufferSize;
+	uint8_t *inBuffer;
+	volatile size_t wrBufferIndex;
+	size_t rdBufferIndex;
 
 	UniqueItemHandler<5, uint8_t> uniqueFrame;
 };
