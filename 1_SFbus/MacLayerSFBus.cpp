@@ -90,7 +90,15 @@ bool MacLayerSFBus::send(PoolNode *ptrPoolNode, uint16_t dstAddress)
 	MacFrame macFrame;
 	macFrame.clone(*ptrPoolNode);
 
-	macFrame.setPacketAckType(packetAckType_withAck);
+	packetAckType_t ackType;
+	if (SFBus_USE_ACKNOWLEDGEMENT != 0)	{
+		ackType = packetAckType_withAck;
+	}
+	else {
+		ackType = packetAckType_noAck;
+	}
+
+	macFrame.setPacketAckType(ackType);
 	macFrame.setPid( getUniquePid() );
 	// добавить место для CRC в буфер
 	macFrame.getBuffer().setLenght( macFrame.getBuffer().getLenght() + SFBus_CRC_SIZE );
