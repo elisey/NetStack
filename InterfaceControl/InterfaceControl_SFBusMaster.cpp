@@ -5,15 +5,15 @@ static void InterfaceControl_Task(void *param);
 InterfaceControl_SFBusMaster::InterfaceControl_SFBusMaster(
 		NcmpLayerBase *_ptrNcmpLayerBase,
 		Led * _ptrLed,
-		Pin *_ptrPoeStatusPin,
-		Pin *_ptrPoeControlPin)
+		PinInput *_ptrPoeStatusPin,
+		PinOutput *_ptrPoeControlPin)
 
 :	InterfaceControlBase(_ptrNcmpLayerBase, _ptrLed),
- 	poeState(false),
+ 	poeState(true),
 	ptrPoeStatusPin(_ptrPoeStatusPin),
 	ptrPoeControlPin(_ptrPoeControlPin)
 {
-	ptrPoeControlPin->write(false);
+	ptrPoeControlPin->write(true);
 
 	xTaskCreate(
 			InterfaceControl_Task,

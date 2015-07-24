@@ -11,21 +11,16 @@ public:
 	InterfaceControl_SFBusMaster(
 			NcmpLayerBase *_ptrNcmpLayerBase,
 			Led * _ptrLed,
-			Pin *_ptrPoeStatusPin,
-			Pin *_ptrPoeControlPin);
+			PinInput *_ptrPoeStatusPin,
+			PinOutput *_ptrPoeControlPin);
+
 	void task();
 
 	void setPoeState(bool newState);
 	bool getPoeState();
 
-
 private:
 	bool poeState;
-	Pin* ptrTxFaultPin;
-	Pin* ptrRxFaultPin;
-	Pin* ptrPoeStatusPin;
-	Pin* ptrPoeControlPin;
-
-
-
+	PinInput* ptrPoeStatusPin;
+	PinOutput* ptrPoeControlPin;
 };
