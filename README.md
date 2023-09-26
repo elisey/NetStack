@@ -1,6 +1,11 @@
-# NetStack
-Сетевой стек, реализованный с нуля. 
- - На нижнем уровне поддерживает топологии шина и точка-точка.
- - На сетевом уровне обеспечивает прозрачную адресацию всех устройств, дробление и сборка длинных пакетов
- - На транспортном уровне поддерживает поточную передачу данных одновременно по нескольким сокетам с контролем доставки и повторной отправкой в случае потерь.
- - Дополнительный модуль обеспечивает контроль целостности сети, наличие в сети соседних устройств, автоматическое построение таблицы маршрутизации.
+# Net stack
+
+Custom multilayer network stack with wire and wireless communication support
+
+It is implemented from scratch with C++ for ARM STM32 microcontrollers.
+
+- At the lower level, it supports bus and point-to-point topologies.
+- At the network level, it provides transparent addressing of all devices, splitting and reassembling of long packets
+- At the transport layer, it supports streaming data simultaneously over several sockets with delivery control and resending in case of losses.
+- At the MAC level it supports wired (duplex) and wireless (NRF24L01) connections
+- The additional module provides monitoring of network integrity, the presence of neighboring devices in the network, and automatic construction of a routing table.
