@@ -1,6 +1,6 @@
 # Net stack
 
-Custom multilayer network stack with wire and wireless communication support
+Custom network stack (partly compliant with OSI model) with wired and wireless communication support.
 
 It is implemented from scratch with C++ for ARM STM32 microcontrollers.
 
